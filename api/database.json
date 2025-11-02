@@ -3767,10 +3767,7 @@
     }
   ],
   "holdings": {
-    "stocks": [
-      "SGMO",
-      "ORGN"
-    ],
-    "last_updated": "2025-11-02T12:44:15.450Z"
+    "stocks": [],
+    "last_updated": "2025-11-02T17:21:39.952Z"
   }
 }

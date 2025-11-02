@@ -8,6 +8,7 @@ const FireDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [selectedPriceFilter, setSelectedPriceFilter] = useState<string | null>('under1');
+  const [showOnlyHoldings, setShowOnlyHoldings] = useState<boolean>(false);
 
   useEffect(() => {
     loadData();
@@ -167,16 +168,27 @@ const FireDashboard: React.FC = () => {
     }
   };
 
+  // Apply holdings filter
+  const applyHoldingsFilter = (stocks: Stock[]) => {
+    if (!showOnlyHoldings) return stocks;
+    return stocks.filter(s => holdings.has(s.ticker));
+  };
+
   // Price bucket counts for all fire stocks
   const priceUnder1 = uniqueFireStocks.filter(s => s.price < 1.0);
   const price1to2 = uniqueFireStocks.filter(s => s.price >= 1.0 && s.price <= 2.0);
   const priceOver2 = uniqueFireStocks.filter(s => s.price > 2.0);
+  const holdingsCount = uniqueFireStocks.filter(s => holdings.has(s.ticker)).length;
 
   const getDisplayStocks = () => {
     let stocks = uniqueFireStocks;
     
-    // Apply price filter if selected
-    if (selectedPriceFilter) {
+    // If holdings filter is active, only show holdings (ignore price filters)
+    if (showOnlyHoldings) {
+      stocks = stocks.filter(s => holdings.has(s.ticker));
+    }
+    // Otherwise, apply price filter if selected
+    else if (selectedPriceFilter) {
       stocks = applyPriceFilter(stocks);
     }
     
@@ -221,7 +233,14 @@ const FireDashboard: React.FC = () => {
         }}
       >
         <button
-          onClick={() => setSelectedPriceFilter(selectedPriceFilter === 'under1' ? null : 'under1')}
+          onClick={() => {
+            if (selectedPriceFilter === 'under1') {
+              setSelectedPriceFilter(null);
+            } else {
+              setSelectedPriceFilter('under1');
+              setShowOnlyHoldings(false); // Clear holdings filter
+            }
+          }}
           style={{
             flex: 1,
             padding: "15px",
@@ -257,7 +276,14 @@ const FireDashboard: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setSelectedPriceFilter(selectedPriceFilter === '1to2' ? null : '1to2')}
+          onClick={() => {
+            if (selectedPriceFilter === '1to2') {
+              setSelectedPriceFilter(null);
+            } else {
+              setSelectedPriceFilter('1to2');
+              setShowOnlyHoldings(false); // Clear holdings filter
+            }
+          }}
           style={{
             flex: 1,
             padding: "15px",
@@ -293,7 +319,14 @@ const FireDashboard: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setSelectedPriceFilter(selectedPriceFilter === 'over2' ? null : 'over2')}
+          onClick={() => {
+            if (selectedPriceFilter === 'over2') {
+              setSelectedPriceFilter(null);
+            } else {
+              setSelectedPriceFilter('over2');
+              setShowOnlyHoldings(false); // Clear holdings filter
+            }
+          }}
           style={{
             flex: 1,
             padding: "15px",
@@ -327,22 +360,63 @@ const FireDashboard: React.FC = () => {
             Price &gt; $2.00
           </div>
         </button>
+
+        <button
+          onClick={() => {
+            if (showOnlyHoldings) {
+              setShowOnlyHoldings(false);
+            } else {
+              setShowOnlyHoldings(true);
+              setSelectedPriceFilter(null); // Clear price filter
+            }
+          }}
+          style={{
+            flex: 1,
+            padding: "15px",
+            backgroundColor: showOnlyHoldings ? "#ffd700" : "#fff",
+            color: showOnlyHoldings ? "#333" : "#ffd700",
+            border: "2px solid #ffd700",
+            borderRadius: "8px",
+            textAlign: "center",
+            boxShadow: showOnlyHoldings
+              ? "0 4px 8px rgba(255,215,0,0.3)"
+              : "0 2px 6px rgba(0,0,0,0.1)",
+            cursor: "pointer",
+            transition: "all 0.3s",
+            transform: showOnlyHoldings ? "translateY(-1px)" : "none",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "1.5rem",
+              fontWeight: "bold",
+              marginBottom: "6px",
+            }}
+          >
+            {holdingsCount}
+          </div>
+          <div style={{ fontSize: "0.8rem", fontWeight: "600" }}>
+            ⭐ Only Holdings
+          </div>
+          <div style={{ fontSize: "0.65rem", opacity: 0.8, marginTop: "3px" }}>
+            Your Portfolio
+          </div>
+        </button>
       </div>
 
       {/* Selected Stocks Display */}
-      {selectedPriceFilter && displayStocks.length > 0 && (
+      {(selectedPriceFilter || showOnlyHoldings) && displayStocks.length > 0 && (
         <section style={{ marginBottom: "25px", width: "100%" }}>
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
               marginBottom: "15px",
             }}
           >
             <h2
               style={{
-                color: selectedPriceFilter === 'under1'
+                color: showOnlyHoldings 
+                    ? "#ffd700"
+                    : selectedPriceFilter === 'under1'
                     ? "#28a745"
                     : selectedPriceFilter === '1to2'
                     ? "#17a2b8"
@@ -351,29 +425,12 @@ const FireDashboard: React.FC = () => {
                 fontSize: "1.3rem",
               }}
             >
-              {selectedPriceFilter === 'under1'
-                ? "💰 Under $1"
-                : selectedPriceFilter === '1to2'
-                ? "💎 $1 - $2"
-                : "🏆 Over $2"}
+              {showOnlyHoldings && "⭐ Your Holdings"}
+              {!showOnlyHoldings && selectedPriceFilter === 'under1' && "💰 Under $1"}
+              {!showOnlyHoldings && selectedPriceFilter === '1to2' && "💎 $1 - $2"}
+              {!showOnlyHoldings && selectedPriceFilter === 'over2' && "🏆 Over $2"}
               {" "}({displayStocks.length})
             </h2>
-            <button
-              onClick={() => setSelectedPriceFilter(null)}
-              style={{
-                padding: "6px 12px",
-                backgroundColor: "#fff",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "11px",
-                fontWeight: "600",
-                color: "#666",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-              }}
-            >
-              ✕ Close
-            </button>
           </div>
 
           <div
@@ -397,7 +454,7 @@ const FireDashboard: React.FC = () => {
                 style={{
                   padding: "12px",
                   backgroundColor: "#f8f9fa",
-                  border: `1px solid ${selectedPriceFilter === 'under1' ? "#28a745" : selectedPriceFilter === '1to2' ? "#17a2b8" : "#6f42c1"}`,
+                  border: `1px solid ${showOnlyHoldings ? "#ffd700" : selectedPriceFilter === 'under1' ? "#28a745" : selectedPriceFilter === '1to2' ? "#17a2b8" : "#6f42c1"}`,
                   borderRadius: "6px",
                   cursor: "pointer",
                   transition: "all 0.2s",
@@ -574,7 +631,7 @@ const FireDashboard: React.FC = () => {
         </section>
       )}
 
-      {selectedPriceFilter && displayStocks.length === 0 && (
+      {(selectedPriceFilter || showOnlyHoldings) && displayStocks.length === 0 && (
         <div
           style={{
             textAlign: "center",
@@ -586,36 +643,39 @@ const FireDashboard: React.FC = () => {
           }}
         >
           <h3 style={{ fontSize: "1.1rem", marginBottom: "6px" }}>
-            No stocks found for this combination
+            {showOnlyHoldings ? "No holdings found" : "No stocks found for this combination"}
           </h3>
           <p style={{ fontSize: "0.85rem" }}>
-            {selectedPriceFilter 
-              ? "Try removing the price filter or selecting a different fire level"
-              : "Try starting a new scan to discover more stocks"
+            {showOnlyHoldings 
+              ? "You haven't marked any stocks as holdings yet. Click the ☆ icon on any stock to add it to your holdings."
+              : selectedPriceFilter 
+                ? "Try removing the price filter or selecting a different fire level"
+                : "Try starting a new scan to discover more stocks"
             }
           </p>
-          {selectedPriceFilter && (
-            <button
-              onClick={() => setSelectedPriceFilter(null)}
-              style={{
-                marginTop: "10px",
-                padding: "8px 16px",
-                backgroundColor: "#28a745",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "0.8rem",
-                fontWeight: "600",
-              }}
-            >
-              Clear Price Filter
-            </button>
-          )}
+          <button
+            onClick={() => {
+              setSelectedPriceFilter(null);
+              setShowOnlyHoldings(false);
+            }}
+            style={{
+              marginTop: "10px",
+              padding: "8px 16px",
+              backgroundColor: "#28a745",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "0.8rem",
+              fontWeight: "600",
+            }}
+          >
+            Clear All Filters
+          </button>
         </div>
       )}
 
-      {!selectedPriceFilter && fireStocks.length > 0 && (
+      {!selectedPriceFilter && !showOnlyHoldings && fireStocks.length > 0 && (
         <section style={{ marginBottom: "25px", width: "100%" }}>
           <div
             style={{
