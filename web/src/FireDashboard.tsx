@@ -616,28 +616,235 @@ const FireDashboard: React.FC = () => {
       )}
 
       {!selectedPriceFilter && fireStocks.length > 0 && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "40px 30px",
-            backgroundColor: "#fff",
-            borderRadius: "6px",
-            color: "#666",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h3
-            style={{ fontSize: "1.3rem", marginBottom: "12px", color: "#333" }}
+        <section style={{ marginBottom: "25px", width: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "15px",
+            }}
           >
-            Select a Fire Level to View Stocks
-          </h3>
-          <p style={{ fontSize: "0.9rem", marginBottom: "15px" }}>
-            Click on any of the cards above to explore stocks in that category
-          </p>
-          <div style={{ fontSize: "1.3rem", letterSpacing: "6px" }}>
-            🔥🔥🔥 • 🔥🔥 • 🔥
+            <h2
+              style={{
+                color: "#333",
+                margin: 0,
+                fontSize: "1.3rem",
+              }}
+            >
+              🔥 All Fire Stocks ({uniqueFireStocks.length})
+            </h2>
           </div>
-        </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+              gap: "10px",
+              maxHeight: "75vh",
+              overflowY: "auto",
+              padding: "12px",
+              backgroundColor: "#fff",
+              borderRadius: "6px",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+              width: "100%",
+            }}
+          >
+            {uniqueFireStocks
+              .sort((a, b) => {
+                const fireA = getFireLevel(a);
+                const fireB = getFireLevel(b);
+                
+                // First sort by fire level (descending - highest fire first)
+                if (fireA !== fireB) {
+                  return fireB - fireA;
+                }
+                
+                // Then sort by price (ascending - lowest price first)
+                return a.price - b.price;
+              })
+              .map((stock) => (
+              <div
+                key={stock.ticker}
+                onClick={() => openChart(stock.ticker)}
+                style={{
+                  padding: "12px",
+                  backgroundColor: "#f8f9fa",
+                  border: "1px solid #dee2e6",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 3px 6px rgba(0,0,0,0.15)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "6px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: "1rem",
+                      color: "#333",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {stock.ticker}
+                    {holdings.has(stock.ticker) && (
+                      <span 
+                        style={{ 
+                          color: "#ffd700", 
+                          marginLeft: "6px",
+                          cursor: "pointer",
+                          fontSize: "1.3rem",
+                          backgroundColor: "#fff3cd",
+                          padding: "2px 6px",
+                          borderRadius: "12px",
+                          border: "1px solid #ffeaa7",
+                          boxShadow: "0 1px 3px rgba(255,215,0,0.3)",
+                          display: "inline-block",
+                          transition: "all 0.2s ease"
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleHolding(stock.ticker);
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.1)";
+                          e.currentTarget.style.boxShadow = "0 2px 6px rgba(255,215,0,0.4)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.boxShadow = "0 1px 3px rgba(255,215,0,0.3)";
+                        }}
+                        title="Currently holding (click to remove)"
+                      >
+                        ⭐
+                      </span>
+                    )}
+                    {!holdings.has(stock.ticker) && (
+                      <span 
+                        style={{ 
+                          color: "#999", 
+                          marginLeft: "6px",
+                          cursor: "pointer",
+                          fontSize: "1.3rem",
+                          backgroundColor: "#f8f9fa",
+                          padding: "2px 6px",
+                          borderRadius: "12px",
+                          border: "1px solid #e9ecef",
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                          display: "inline-block",
+                          transition: "all 0.2s ease"
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleHolding(stock.ticker);
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.1)";
+                          e.currentTarget.style.backgroundColor = "#fff3cd";
+                          e.currentTarget.style.borderColor = "#ffeaa7";
+                          e.currentTarget.style.color = "#ffd700";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.backgroundColor = "#f8f9fa";
+                          e.currentTarget.style.borderColor = "#e9ecef";
+                          e.currentTarget.style.color = "#999";
+                        }}
+                        title="Click to mark as holding"
+                      >
+                        ☆
+                      </span>
+                    )}
+                    {stock.is_new && (
+                      <span style={{ color: "#28a745", marginLeft: "4px" }}>
+                        NEW
+                      </span>
+                    )}
+                  </span>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    {stock.fire_level_changed && (
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          color:
+                            stock.fire_level! > (stock.previous_fire_level || 0)
+                              ? "#28a745"
+                              : "#dc3545",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {stock.fire_level! > (stock.previous_fire_level || 0)
+                          ? "▲"
+                          : "▼"}
+                      </span>
+                    )}
+                    <span style={{ fontSize: "1rem" }}>
+                      {getFireEmoji(getFireLevel(stock))}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontWeight: "bold",
+                    fontSize: "1rem",
+                    color: "#4F46E5",
+                    marginBottom: "6px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                  }}
+                >
+                  ${stock.price.toFixed(2)}
+                  {stock.price_change !== undefined &&
+                    stock.price_change !== 0 && (
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          color: stock.price_change > 0 ? "#dc3545" : "#28a745",
+                          fontWeight: "normal",
+                        }}
+                      >
+                        ({stock.price_change > 0 ? "+" : ""}$
+                        {stock.price_change.toFixed(2)})
+                      </span>
+                    )}
+                </div>
+                <div
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "#666",
+                    lineHeight: "1.2",
+                  }}
+                >
+                  <div>BR: {stock.blackrock_pct.toFixed(1)}%</div>
+                  <div>VG: {stock.vanguard_pct.toFixed(1)}%</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       {fireStocks.length === 0 && !selectedPriceFilter && (

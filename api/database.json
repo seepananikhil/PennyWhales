@@ -2712,25 +2712,6 @@
         "rank_score": 2.21
       },
       {
-        "ticker": "SEER",
-        "price": 2.21,
-        "blackrock_pct": 3.6045057692307694,
-        "vanguard_pct": 4.235853846153846,
-        "blackrock_source": "Nasdaq",
-        "vanguard_source": "Nasdaq",
-        "data_quality": "🔥 High",
-        "sources_count": 1,
-        "discrepancy": false,
-        "notes": "",
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false,
-        "price_change": 0,
-        "is_new": false,
-        "rank_category": 2,
-        "rank_score": 2.21
-      },
-      {
         "ticker": "HYFM",
         "price": 2.215,
         "blackrock_pct": 1.0092999999999999,
@@ -3379,18 +3360,18 @@
     ],
     "summary": {
       "total_processed": 158,
-      "qualifying_count": 158,
+      "qualifying_count": 157,
       "high_tier": 49,
-      "medium_tier": 105,
+      "medium_tier": 104,
       "low_tier": 4,
       "under_dollar": 19,
       "premium_count": 1,
       "fire_level_3": 32,
       "fire_level_2": 24,
-      "fire_level_1": 102,
-      "total_fire_stocks": 158
+      "fire_level_1": 101,
+      "total_fire_stocks": 157
     },
-    "timestamp": "2025-11-02T12:01:42.938Z",
+    "timestamp": "2025-11-02T12:45:23.330Z",
     "new_stocks_only": false
   },
   "processedStocks": {
