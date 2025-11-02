@@ -119,24 +119,6 @@ const Scans: React.FC = () => {
           >
             🔍 Stock Scans
           </h1>
-          <button
-            onClick={loadScanStatus}
-            disabled={loading}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              borderRadius: theme.borderRadius.md,
-              backgroundColor: theme.ui.background,
-              color: theme.ui.text.primary,
-              cursor: loading ? "not-allowed" : "pointer",
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.medium,
-              transition: `all ${theme.transition.normal}`,
-              border: `1px solid ${theme.ui.border}`,
-              opacity: loading ? 0.6 : 1,
-            }}
-          >
-            {loading ? "🔄 Refreshing..." : "🔄 Refresh Status"}
-          </button>
         </div>
 
         <p

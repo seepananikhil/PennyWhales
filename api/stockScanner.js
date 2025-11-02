@@ -221,7 +221,7 @@ class StockScanner {
   }
 
   // Save results to JSON
-  async saveResults(stocks, totalProcessed, newStocksOnly = false) {
+  async saveResults(stocks, totalProcessed) {
     try {
       // Add rankings
       stocks.forEach(stock => {
@@ -258,8 +258,7 @@ class StockScanner {
           under_dollar: underDollar.length,
           premium_count: premium.length
         },
-        timestamp: new Date().toISOString(),
-        new_stocks_only: newStocksOnly
+        timestamp: new Date().toISOString()
       };
 
       await dbService.saveScanResults(results);
@@ -300,8 +299,17 @@ class StockScanner {
 
       const result = await this.analyzeTicker(ticker);
       if (result) {
+        // Calculate fire level for consistency with daily scan
+        result.fire_level = this.calculateFireLevel(result);
+        
+        // Add default change tracking fields for consistency
+        result.previous_fire_level = result.fire_level; // Same as current since it's a fresh scan
+        result.fire_level_changed = false; // No change in full scan
+        result.price_change = 0; // No previous price to compare
+        result.is_new = false; // All stocks in full scan are considered existing
+        
         this.results.push(result);
-        console.log(`✅ ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}%`);
+        console.log(`✅ ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}% | Fire:${result.fire_level}🔥`);
       }
 
       // Rate limiting
@@ -309,13 +317,12 @@ class StockScanner {
     }
 
     // Save results
-    await this.saveResults(this.results, allTickers.length, false);
+    await this.saveResults(this.results, allTickers.length);
 
     console.log(`🎯 Scan complete: ${this.results.length} qualifying stocks found`);
     
     return {
       stocks: this.results,
-      newStocksOnly,
       summary: {
         total_processed: allTickers.length,
         qualifying_count: this.results.length
@@ -388,7 +395,7 @@ class StockScanner {
     }
 
     // Save results
-    await this.saveResults(this.results, tickers.length, false);
+    await this.saveResults(this.results, tickers.length);
 
     const changeCount = this.results.filter(s => s.fire_level_changed).length;
     const newCount = this.results.filter(s => s.is_new).length;
@@ -397,7 +404,6 @@ class StockScanner {
     
     return {
       stocks: this.results,
-      newStocksOnly: false,
       summary: {
         total_processed: tickers.length,
         qualifying_count: this.results.length,
