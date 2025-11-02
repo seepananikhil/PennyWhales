@@ -5,6 +5,7 @@ import { Stock } from './types';
 const TickerManagement: React.FC = () => {
   const [tickers, setTickers] = useState<string[]>([]);
   const [stockData, setStockData] = useState<Map<string, Stock>>(new Map());
+  const [holdings, setHoldings] = useState<Set<string>>(new Set());
   const [bulkTickersText, setBulkTickersText] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +15,7 @@ const TickerManagement: React.FC = () => {
   }, []);
 
   const loadData = async () => {
-    await Promise.all([loadTickers(), loadStockData()]);
+    await Promise.all([loadTickers(), loadStockData(), loadHoldings()]);
   };
 
   const loadTickers = async () => {
@@ -43,6 +44,39 @@ const TickerManagement: React.FC = () => {
       }
     } catch (err) {
       console.error('Error loading stock data:', err);
+    }
+  };
+
+  const loadHoldings = async () => {
+    try {
+      const data = await api.getHoldings();
+      setHoldings(new Set(data.holdings || []));
+    } catch (err) {
+      console.error('Error loading holdings:', err);
+    }
+  };
+
+  const toggleHolding = async (ticker: string) => {
+    try {
+      const isCurrentlyHolding = holdings.has(ticker);
+      
+      if (isCurrentlyHolding) {
+        await api.removeHolding(ticker);
+        setHoldings(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(ticker);
+          return newSet;
+        });
+      } else {
+        await api.addHolding(ticker);
+        setHoldings(prev => {
+          const newSet = new Set(prev);
+          newSet.add(ticker);
+          return newSet;
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling holding:", error);
     }
   };
 
@@ -90,6 +124,7 @@ const TickerManagement: React.FC = () => {
         setBulkTickersText('');
         setError(null);
         await loadStockData(); // Reload stock data
+        await loadHoldings(); // Reload holdings
       } else {
         setError('Failed to update tickers');
       }
@@ -125,6 +160,7 @@ const TickerManagement: React.FC = () => {
         setBulkTickersText('');
         setError(null);
         await loadStockData(); // Reload stock data
+        await loadHoldings(); // Reload holdings
       } else {
         setError('Failed to add tickers');
       }
@@ -148,6 +184,7 @@ const TickerManagement: React.FC = () => {
         setTickers(tickers.filter(t => t !== ticker));
         setError(null);
         await loadStockData(); // Reload stock data
+        await loadHoldings(); // Reload holdings
       } else {
         setError(`Failed to delete ticker ${ticker}`);
       }
@@ -226,6 +263,16 @@ const TickerManagement: React.FC = () => {
               fontWeight: 'bold'
             }}>
               No Fire {tickers.length - stockData.size}
+            </div>
+            <div style={{
+              padding: '8px 12px',
+              backgroundColor: '#ffd700',
+              color: '#333',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}>
+              ⭐ Holdings {holdings.size}
             </div>
           </div>
         )}
@@ -438,6 +485,38 @@ const TickerManagement: React.FC = () => {
                       }}>
                         {ticker}
                       </span>
+                      {holdings.has(ticker) && (
+                        <span 
+                          style={{ 
+                            color: "#ffd700", 
+                            cursor: "pointer",
+                            fontSize: "12px"
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleHolding(ticker);
+                          }}
+                          title="Currently holding (click to remove)"
+                        >
+                          ⭐
+                        </span>
+                      )}
+                      {!holdings.has(ticker) && (
+                        <span 
+                          style={{ 
+                            color: "#ccc", 
+                            cursor: "pointer",
+                            fontSize: "12px"
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleHolding(ticker);
+                          }}
+                          title="Click to mark as holding"
+                        >
+                          ☆
+                        </span>
+                      )}
                       {stock && (
                         <span style={{ fontSize: '12px' }}>
                           {getFireEmoji(stock.fire_level || 0)}

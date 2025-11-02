@@ -308,6 +308,60 @@ app.delete('/api/tickers/:ticker', async (req, res) => {
   }
 });
 
+// Holdings Management Endpoints
+app.get('/api/holdings', async (req, res) => {
+  try {
+    const holdings = await dbService.getHoldings();
+    res.json({ holdings, count: holdings.length });
+  } catch (error) {
+    console.error('Error getting holdings:', error);
+    res.status(500).json({ error: 'Failed to get holdings' });
+  }
+});
+
+app.post('/api/holdings/:ticker', async (req, res) => {
+  try {
+    const { ticker } = req.params;
+    const success = await dbService.addHolding(ticker);
+    
+    if (success) {
+      res.json({ success: true, message: `Added ${ticker} to holdings` });
+    } else {
+      res.json({ success: false, message: `${ticker} already in holdings` });
+    }
+  } catch (error) {
+    console.error('Error adding holding:', error);
+    res.status(500).json({ error: 'Failed to add holding' });
+  }
+});
+
+app.delete('/api/holdings/:ticker', async (req, res) => {
+  try {
+    const { ticker } = req.params;
+    const success = await dbService.removeHolding(ticker);
+    
+    if (success) {
+      res.json({ success: true, message: `Removed ${ticker} from holdings` });
+    } else {
+      res.status(404).json({ success: false, message: `${ticker} not found in holdings` });
+    }
+  } catch (error) {
+    console.error('Error removing holding:', error);
+    res.status(500).json({ error: 'Failed to remove holding' });
+  }
+});
+
+app.get('/api/holdings/:ticker', async (req, res) => {
+  try {
+    const { ticker } = req.params;
+    const isHolding = await dbService.isHolding(ticker);
+    res.json({ ticker, isHolding });
+  } catch (error) {
+    console.error('Error checking holding:', error);
+    res.status(500).json({ error: 'Failed to check holding status' });
+  }
+});
+
 // Watchlist Management Endpoints
 app.get('/api/watchlists', async (req, res) => {
   try {
@@ -442,6 +496,7 @@ app.listen(PORT, () => {
   console.log(`📊 Pure JavaScript implementation - no Python required!`);
   console.log(`� Using LowDB for data storage`);
   console.log(`🎯 Ticker management available at /api/tickers`);
+  console.log(`⭐ Holdings management available at /api/holdings`);
 });
 
 module.exports = app;

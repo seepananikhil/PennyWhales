@@ -48,11 +48,23 @@ class DatabaseService {
           updated: new Date().toISOString()
         }
       ],
+      holdings: {
+        stocks: [], // Array of ticker symbols user is holding
+        last_updated: null
+      },
       settings: {
         created: new Date().toISOString(),
         version: '1.0.0'
       }
     };
+
+    // Ensure holdings section exists for existing databases
+    if (!this.db.data.holdings) {
+      this.db.data.holdings = {
+        stocks: [], // Array of ticker symbols user is holding
+        last_updated: null
+      };
+    }
 
     await this.db.write();
     this.initialized = true;
@@ -118,6 +130,47 @@ class DatabaseService {
     await this.db.write();
     console.log(`📝 Updated ticker list (${this.db.data.tickers.length} tickers)`);
     return this.db.data.tickers;
+  }
+
+  // Holdings Management
+  async getHoldings() {
+    await this.init();
+    return this.db.data.holdings.stocks || [];
+  }
+
+  async addHolding(ticker) {
+    await this.init();
+    const normalizedTicker = ticker.toUpperCase().trim();
+    
+    if (!this.db.data.holdings.stocks.includes(normalizedTicker)) {
+      this.db.data.holdings.stocks.push(normalizedTicker);
+      this.db.data.holdings.last_updated = new Date().toISOString();
+      await this.db.write();
+      console.log(`⭐ Added to holdings: ${normalizedTicker}`);
+      return true;
+    }
+    return false; // Already exists
+  }
+
+  async removeHolding(ticker) {
+    await this.init();
+    const normalizedTicker = ticker.toUpperCase().trim();
+    const index = this.db.data.holdings.stocks.indexOf(normalizedTicker);
+    
+    if (index > -1) {
+      this.db.data.holdings.stocks.splice(index, 1);
+      this.db.data.holdings.last_updated = new Date().toISOString();
+      await this.db.write();
+      console.log(`🗑️ Removed from holdings: ${normalizedTicker}`);
+      return true;
+    }
+    return false; // Not found
+  }
+
+  async isHolding(ticker) {
+    await this.init();
+    const normalizedTicker = ticker.toUpperCase().trim();
+    return this.db.data.holdings.stocks.includes(normalizedTicker);
   }
 
   // Calculate fire level for a stock - based purely on shareholding
@@ -210,7 +263,7 @@ class DatabaseService {
     };
     
     await this.db.write();
-    console.log('🗑️ Cleared scan results and processed stocks');
+    console.log('🗑️ Cleared scan results and processed stocks (tickers, holdings, and watchlists preserved)');
   }
 
   // Processed Stocks Management

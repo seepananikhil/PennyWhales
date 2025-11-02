@@ -4,15 +4,20 @@ import api from "./api";
 
 const FireDashboard: React.FC = () => {
   const [results, setResults] = useState<ScanResult | null>(null);
+  const [holdings, setHoldings] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
-  const [selectedPriceFilter, setSelectedPriceFilter] = useState<string | null>(null);
+  const [selectedPriceFilter, setSelectedPriceFilter] = useState<string | null>('under1');
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
+    await Promise.all([loadResults(), loadHoldings()]);
+  };
+
+  const loadResults = async () => {
     try {
       const data = await api.getLatestResults();
       setResults(data);
@@ -20,6 +25,39 @@ const FireDashboard: React.FC = () => {
       console.error("Error loading data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadHoldings = async () => {
+    try {
+      const data = await api.getHoldings();
+      setHoldings(new Set(data.holdings || []));
+    } catch (error) {
+      console.error("Error loading holdings:", error);
+    }
+  };
+
+  const toggleHolding = async (ticker: string) => {
+    try {
+      const isCurrentlyHolding = holdings.has(ticker);
+      
+      if (isCurrentlyHolding) {
+        await api.removeHolding(ticker);
+        setHoldings(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(ticker);
+          return newSet;
+        });
+      } else {
+        await api.addHolding(ticker);
+        setHoldings(prev => {
+          const newSet = new Set(prev);
+          newSet.add(ticker);
+          return newSet;
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling holding:", error);
     }
   };
 
@@ -392,6 +430,74 @@ const FireDashboard: React.FC = () => {
                     }}
                   >
                     {stock.ticker}
+                    {holdings.has(stock.ticker) && (
+                      <span 
+                        style={{ 
+                          color: "#ffd700", 
+                          marginLeft: "6px",
+                          cursor: "pointer",
+                          fontSize: "1.3rem",
+                          backgroundColor: "#fff3cd",
+                          padding: "2px 6px",
+                          borderRadius: "12px",
+                          border: "1px solid #ffeaa7",
+                          boxShadow: "0 1px 3px rgba(255,215,0,0.3)",
+                          display: "inline-block",
+                          transition: "all 0.2s ease"
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleHolding(stock.ticker);
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.1)";
+                          e.currentTarget.style.boxShadow = "0 2px 6px rgba(255,215,0,0.4)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.boxShadow = "0 1px 3px rgba(255,215,0,0.3)";
+                        }}
+                        title="Currently holding (click to remove)"
+                      >
+                        ⭐
+                      </span>
+                    )}
+                    {!holdings.has(stock.ticker) && (
+                      <span 
+                        style={{ 
+                          color: "#999", 
+                          marginLeft: "6px",
+                          cursor: "pointer",
+                          fontSize: "1.3rem",
+                          backgroundColor: "#f8f9fa",
+                          padding: "2px 6px",
+                          borderRadius: "12px",
+                          border: "1px solid #e9ecef",
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                          display: "inline-block",
+                          transition: "all 0.2s ease"
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleHolding(stock.ticker);
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.1)";
+                          e.currentTarget.style.backgroundColor = "#fff3cd";
+                          e.currentTarget.style.borderColor = "#ffeaa7";
+                          e.currentTarget.style.color = "#ffd700";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.backgroundColor = "#f8f9fa";
+                          e.currentTarget.style.borderColor = "#e9ecef";
+                          e.currentTarget.style.color = "#999";
+                        }}
+                        title="Click to mark as holding"
+                      >
+                        ☆
+                      </span>
+                    )}
                     {stock.is_new && (
                       <span style={{ color: "#28a745", marginLeft: "4px" }}>
                         NEW

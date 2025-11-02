@@ -65,6 +65,27 @@ export const api = {
     return response.data;
   },
 
+  // Holdings Management
+  getHoldings: async (): Promise<{ holdings: string[]; count: number }> => {
+    const response = await axios.get(`${API_BASE}/api/holdings`);
+    return response.data;
+  },
+
+  addHolding: async (ticker: string): Promise<{ success: boolean; message: string }> => {
+    const response = await axios.post(`${API_BASE}/api/holdings/${ticker}`);
+    return response.data;
+  },
+
+  removeHolding: async (ticker: string): Promise<{ success: boolean; message: string }> => {
+    const response = await axios.delete(`${API_BASE}/api/holdings/${ticker}`);
+    return response.data;
+  },
+
+  isHolding: async (ticker: string): Promise<{ ticker: string; isHolding: boolean }> => {
+    const response = await axios.get(`${API_BASE}/api/holdings/${ticker}`);
+    return response.data;
+  },
+
   // Watchlist Management
   getWatchlists: async (): Promise<{ watchlists: any[]; count: number }> => {
     const response = await axios.get(`${API_BASE}/api/watchlists`);

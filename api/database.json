@@ -385,9 +385,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -24.461672025316457,
-        "fire_level": 3
+        "rank_score": -24.461672025316457
       },
       {
         "ticker": "CHRS",
@@ -400,9 +404,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -18.354083620689657,
-        "fire_level": 3
+        "rank_score": -18.354083620689657
       },
       {
         "ticker": "EGHT",
@@ -415,9 +423,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -18.186858823529413,
-        "fire_level": 3
+        "rank_score": -18.186858823529413
       },
       {
         "ticker": "SVC",
@@ -430,9 +442,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -17.76449880239521,
-        "fire_level": 3
+        "rank_score": -17.76449880239521
       },
       {
         "ticker": "IRWD",
@@ -445,9 +461,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -17.403717901234565,
-        "fire_level": 3
+        "rank_score": -17.403717901234565
       },
       {
         "ticker": "FATE",
@@ -460,9 +480,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -17.010191304347828,
-        "fire_level": 3
+        "rank_score": -17.010191304347828
       },
       {
         "ticker": "CERS",
@@ -475,9 +499,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -16.366004166666666,
-        "fire_level": 3
+        "rank_score": -16.366004166666666
       },
       {
         "ticker": "PLUG",
@@ -490,9 +518,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -15.018629301948051,
-        "fire_level": 3
+        "rank_score": -15.018629301948051
       },
       {
         "ticker": "OSUR",
@@ -505,9 +537,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -14.795361643835616,
-        "fire_level": 3
+        "rank_score": -14.795361643835616
       },
       {
         "ticker": "MXCT",
@@ -520,9 +556,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -14.754621495327102,
-        "fire_level": 3
+        "rank_score": -14.754621495327102
       },
       {
         "ticker": "HAIN",
@@ -535,9 +575,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -14.627817777777777,
-        "fire_level": 3
+        "rank_score": -14.627817777777777
       },
       {
         "ticker": "CNDT",
@@ -550,9 +594,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -14.53625,
-        "fire_level": 3
+        "rank_score": -14.53625
       },
       {
         "ticker": "ALEC",
@@ -565,9 +613,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -13.808353465346537,
-        "fire_level": 3
+        "rank_score": -13.808353465346537
       },
       {
         "ticker": "GERN",
@@ -580,9 +632,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -13.410234639498432,
-        "fire_level": 3
+        "rank_score": -13.410234639498432
       },
       {
         "ticker": "IOVA",
@@ -595,9 +651,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -13.326511049723756,
-        "fire_level": 3
+        "rank_score": -13.326511049723756
       },
       {
         "ticker": "CDXS",
@@ -610,9 +670,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -13.004245555555555,
-        "fire_level": 3
+        "rank_score": -13.004245555555555
       },
       {
         "ticker": "BYND",
@@ -625,9 +689,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -12.893607142857144,
-        "fire_level": 3
+        "rank_score": -12.893607142857144
       },
       {
         "ticker": "PACB",
@@ -640,9 +708,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -12.866616333333333,
-        "fire_level": 3
+        "rank_score": -12.866616333333333
       },
       {
         "ticker": "GEVO",
@@ -655,9 +727,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -12.808390495867767,
-        "fire_level": 3
+        "rank_score": -12.808390495867767
       },
       {
         "ticker": "TRUE",
@@ -670,9 +746,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -12.765141573033707,
-        "fire_level": 2
+        "rank_score": -12.765141573033707
       },
       {
         "ticker": "ARAY",
@@ -685,9 +765,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -12.740086725663716,
-        "fire_level": 2
+        "rank_score": -12.740086725663716
       },
       {
         "ticker": "NFE",
@@ -700,9 +784,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -12.595754736842105,
-        "fire_level": 3
+        "rank_score": -12.595754736842105
       },
       {
         "ticker": "AKBA",
@@ -715,9 +803,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -12.425230943396228,
-        "fire_level": 3
+        "rank_score": -12.425230943396228
       },
       {
         "ticker": "SSP",
@@ -730,9 +822,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -12.306515789473684,
-        "fire_level": 3
+        "rank_score": -12.306515789473684
       },
       {
         "ticker": "CLNE",
@@ -745,9 +841,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -12.238244748858447,
-        "fire_level": 3
+        "rank_score": -12.238244748858447
       },
       {
         "ticker": "LUNG",
@@ -760,9 +860,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -12.13801463414634,
-        "fire_level": 3
+        "rank_score": -12.13801463414634
       },
       {
         "ticker": "DCGO",
@@ -775,9 +879,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -12.003364285714287,
-        "fire_level": 3
+        "rank_score": -12.003364285714287
       },
       {
         "ticker": "MVIS",
@@ -790,9 +898,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -11.885944186046512,
-        "fire_level": 3
+        "rank_score": -11.885944186046512
       },
       {
         "ticker": "IHRT",
@@ -805,9 +917,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -11.52592015503876,
-        "fire_level": 3
+        "rank_score": -11.52592015503876
       },
       {
         "ticker": "CRDF",
@@ -820,9 +936,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -11.416544776119403,
-        "fire_level": 3
+        "rank_score": -11.416544776119403
       },
       {
         "ticker": "MYPS",
@@ -835,9 +955,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -11.38303119266055,
-        "fire_level": 3
+        "rank_score": -11.38303119266055
       },
       {
         "ticker": "ESPR",
@@ -850,9 +974,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -11.362495689655173,
-        "fire_level": 3
+        "rank_score": -11.362495689655173
       },
       {
         "ticker": "ACRS",
@@ -865,9 +993,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -11.249746296296296,
-        "fire_level": 3
+        "rank_score": -11.249746296296296
       },
       {
         "ticker": "LPRO",
@@ -880,9 +1012,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -11.19141779661017,
-        "fire_level": 2
+        "rank_score": -11.19141779661017
       },
       {
         "ticker": "LAB",
@@ -895,9 +1031,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -10.93210942408377,
-        "fire_level": 2
+        "rank_score": -10.93210942408377
       },
       {
         "ticker": "QSI",
@@ -910,9 +1050,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -10.643966120218579,
-        "fire_level": 2
+        "rank_score": -10.643966120218579
       },
       {
         "ticker": "ATYR",
@@ -925,9 +1069,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -10.642034897959183,
-        "fire_level": 2
+        "rank_score": -10.642034897959183
       },
       {
         "ticker": "GOSS",
@@ -940,9 +1088,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 3,
+        "previous_fire_level": 3,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -10.351441850220265,
-        "fire_level": 3
+        "rank_score": -10.351441850220265
       },
       {
         "ticker": "EXFY",
@@ -955,9 +1107,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -10.29342098765432,
-        "fire_level": 2
+        "rank_score": -10.29342098765432
       },
       {
         "ticker": "SKIN",
@@ -970,9 +1126,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -10.17691496062992,
-        "fire_level": 2
+        "rank_score": -10.17691496062992
       },
       {
         "ticker": "HRTX",
@@ -985,9 +1145,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -10.137675956284154,
-        "fire_level": 2
+        "rank_score": -10.137675956284154
       },
       {
         "ticker": "MAPS",
@@ -1000,9 +1164,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -9.809831481481481,
-        "fire_level": 1
+        "rank_score": -9.809831481481481
       },
       {
         "ticker": "ERAS",
@@ -1015,9 +1183,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -9.786291197183097,
-        "fire_level": 2
+        "rank_score": -9.786291197183097
       },
       {
         "ticker": "POWW",
@@ -1030,9 +1202,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -9.732438461538463,
-        "fire_level": 2
+        "rank_score": -9.732438461538463
       },
       {
         "ticker": "BTMD",
@@ -1045,9 +1221,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -9.618236363636363,
-        "fire_level": 2
+        "rank_score": -9.618236363636363
       },
       {
         "ticker": "OPK",
@@ -1060,9 +1240,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -9.060383854166666,
-        "fire_level": 1
+        "rank_score": -9.060383854166666
       },
       {
         "ticker": "TCRX",
@@ -1075,9 +1259,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -9.049638461538462,
-        "fire_level": 1
+        "rank_score": -9.049638461538462
       },
       {
         "ticker": "HFFG",
@@ -1090,9 +1278,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -8.894684905660377,
-        "fire_level": 1
+        "rank_score": -8.894684905660377
       },
       {
         "ticker": "PRTS",
@@ -1105,9 +1297,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 1,
-        "rank_score": -8.373099694915254,
-        "fire_level": 1
+        "rank_score": -8.373099694915254
       },
       {
         "ticker": "HBIO",
@@ -1120,9 +1316,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.517,
-        "fire_level": 1
+        "rank_score": 0.517
       },
       {
         "ticker": "SGMO",
@@ -1135,9 +1335,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.598,
-        "fire_level": 1
+        "rank_score": 0.598
       },
       {
         "ticker": "ORGN",
@@ -1150,9 +1354,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.6122,
-        "fire_level": 1
+        "rank_score": 0.6122
       },
       {
         "ticker": "NDLS",
@@ -1165,9 +1373,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.6518,
-        "fire_level": 1
+        "rank_score": 0.6518
       },
       {
         "ticker": "SCYX",
@@ -1180,9 +1392,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.66,
-        "fire_level": 1
+        "rank_score": 0.66
       },
       {
         "ticker": "BCAB",
@@ -1195,9 +1411,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.6994,
-        "fire_level": 1
+        "rank_score": 0.6994
       },
       {
         "ticker": "NVNO",
@@ -1210,9 +1430,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.7049,
-        "fire_level": 1
+        "rank_score": 0.7049
       },
       {
         "ticker": "ASRT",
@@ -1225,9 +1449,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.744,
-        "fire_level": 1
+        "rank_score": 0.744
       },
       {
         "ticker": "CUE",
@@ -1240,9 +1468,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.7676,
-        "fire_level": 1
+        "rank_score": 0.7676
       },
       {
         "ticker": "IMUX",
@@ -1255,9 +1487,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.7788,
-        "fire_level": 1
+        "rank_score": 0.7788
       },
       {
         "ticker": "SOND",
@@ -1270,9 +1506,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.794,
-        "fire_level": 1
+        "rank_score": 0.794
       },
       {
         "ticker": "CTSO",
@@ -1285,9 +1525,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.795,
-        "fire_level": 1
+        "rank_score": 0.795
       },
       {
         "ticker": "ATOS",
@@ -1300,9 +1544,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.89,
-        "fire_level": 1
+        "rank_score": 0.89
       },
       {
         "ticker": "ELUT",
@@ -1315,9 +1563,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.909,
-        "fire_level": 1
+        "rank_score": 0.909
       },
       {
         "ticker": "PDSB",
@@ -1330,9 +1582,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.935,
-        "fire_level": 1
+        "rank_score": 0.935
       },
       {
         "ticker": "DXLG",
@@ -1345,9 +1601,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.999,
-        "fire_level": 1
+        "rank_score": 0.999
       },
       {
         "ticker": "ALTO",
@@ -1360,9 +1620,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.01,
-        "fire_level": 1
+        "rank_score": 1.01
       },
       {
         "ticker": "IRIX",
@@ -1375,9 +1639,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.05,
-        "fire_level": 1
+        "rank_score": 1.05
       },
       {
         "ticker": "CNTX",
@@ -1390,9 +1658,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.09,
-        "fire_level": 1
+        "rank_score": 1.09
       },
       {
         "ticker": "RMTI",
@@ -1405,9 +1677,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.11,
-        "fire_level": 1
+        "rank_score": 1.11
       },
       {
         "ticker": "STRO",
@@ -1420,9 +1696,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.12,
-        "fire_level": 1
+        "rank_score": 1.12
       },
       {
         "ticker": "HYPR",
@@ -1435,9 +1715,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.12,
-        "fire_level": 1
+        "rank_score": 1.12
       },
       {
         "ticker": "ZYXI",
@@ -1450,9 +1734,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.15,
-        "fire_level": 1
+        "rank_score": 1.15
       },
       {
         "ticker": "APLT",
@@ -1465,9 +1753,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.15,
-        "fire_level": 1
+        "rank_score": 1.15
       },
       {
         "ticker": "LAZR",
@@ -1480,9 +1772,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.16,
-        "fire_level": 1
+        "rank_score": 1.16
       },
       {
         "ticker": "TXMD",
@@ -1495,9 +1791,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.19,
-        "fire_level": 1
+        "rank_score": 1.19
       },
       {
         "ticker": "LUCD",
@@ -1510,9 +1810,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.21,
-        "fire_level": 1
+        "rank_score": 1.21
       },
       {
         "ticker": "ANTX",
@@ -1525,9 +1829,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.23,
-        "fire_level": 1
+        "rank_score": 1.23
       },
       {
         "ticker": "TELA",
@@ -1540,9 +1848,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.23,
-        "fire_level": 1
+        "rank_score": 1.23
       },
       {
         "ticker": "ALLO",
@@ -1555,9 +1867,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.24,
-        "fire_level": 2
+        "rank_score": 1.24
       },
       {
         "ticker": "NOTV",
@@ -1570,9 +1886,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.33,
-        "fire_level": 1
+        "rank_score": 1.33
       },
       {
         "ticker": "FFAI",
@@ -1585,9 +1905,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.38,
-        "fire_level": 1
+        "rank_score": 1.38
       },
       {
         "ticker": "RDI",
@@ -1600,9 +1924,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.39,
-        "fire_level": 1
+        "rank_score": 1.39
       },
       {
         "ticker": "MESA",
@@ -1615,9 +1943,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.39,
-        "fire_level": 1
+        "rank_score": 1.39
       },
       {
         "ticker": "OVID",
@@ -1630,9 +1962,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.39,
-        "fire_level": 1
+        "rank_score": 1.39
       },
       {
         "ticker": "PMVP",
@@ -1645,9 +1981,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.41,
-        "fire_level": 1
+        "rank_score": 1.41
       },
       {
         "ticker": "GTIM",
@@ -1660,9 +2000,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.45,
-        "fire_level": 1
+        "rank_score": 1.45
       },
       {
         "ticker": "USIO",
@@ -1675,9 +2019,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.47,
-        "fire_level": 1
+        "rank_score": 1.47
       },
       {
         "ticker": "HGBL",
@@ -1690,9 +2038,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.47,
-        "fire_level": 2
+        "rank_score": 1.47
       },
       {
         "ticker": "IKT",
@@ -1705,9 +2057,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.47,
-        "fire_level": 1
+        "rank_score": 1.47
       },
       {
         "ticker": "ZNTL",
@@ -1720,9 +2076,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.5,
-        "fire_level": 1
+        "rank_score": 1.5
       },
       {
         "ticker": "QRHC",
@@ -1735,9 +2095,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.52,
-        "fire_level": 1
+        "rank_score": 1.52
       },
       {
         "ticker": "CVGI",
@@ -1750,9 +2114,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.52,
-        "fire_level": 1
+        "rank_score": 1.52
       },
       {
         "ticker": "GRWG",
@@ -1765,9 +2133,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.52,
-        "fire_level": 1
+        "rank_score": 1.52
       },
       {
         "ticker": "OABI",
@@ -1780,9 +2152,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.55,
-        "fire_level": 1
+        "rank_score": 1.55
       },
       {
         "ticker": "KLTR",
@@ -1795,9 +2171,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.55,
-        "fire_level": 1
+        "rank_score": 1.55
       },
       {
         "ticker": "OCGN",
@@ -1810,9 +2190,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.56,
-        "fire_level": 1
+        "rank_score": 1.56
       },
       {
         "ticker": "RNTX",
@@ -1825,9 +2209,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.565,
-        "fire_level": 1
+        "rank_score": 1.565
       },
       {
         "ticker": "MGNX",
@@ -1840,9 +2228,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.66,
-        "fire_level": 2
+        "rank_score": 1.66
       },
       {
         "ticker": "HUMA",
@@ -1855,9 +2247,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.67,
-        "fire_level": 2
+        "rank_score": 1.67
       },
       {
         "ticker": "PLRX",
@@ -1870,9 +2266,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.68,
-        "fire_level": 1
+        "rank_score": 1.68
       },
       {
         "ticker": "BLNK",
@@ -1885,9 +2285,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.7,
-        "fire_level": 1
+        "rank_score": 1.7
       },
       {
         "ticker": "NNBR",
@@ -1900,9 +2304,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.71,
-        "fire_level": 1
+        "rank_score": 1.71
       },
       {
         "ticker": "MCHX",
@@ -1915,9 +2323,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.75,
-        "fire_level": 1
+        "rank_score": 1.75
       },
       {
         "ticker": "FARM",
@@ -1930,9 +2342,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.76,
-        "fire_level": 1
+        "rank_score": 1.76
       },
       {
         "ticker": "SPWR",
@@ -1945,9 +2361,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.8,
-        "fire_level": 1
+        "rank_score": 1.8
       },
       {
         "ticker": "SLS",
@@ -1960,9 +2380,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.82,
-        "fire_level": 2
+        "rank_score": 1.82
       },
       {
         "ticker": "INMB",
@@ -1975,9 +2399,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.83,
-        "fire_level": 1
+        "rank_score": 1.83
       },
       {
         "ticker": "BEAT",
@@ -1990,9 +2418,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.85,
-        "fire_level": 1
+        "rank_score": 1.85
       },
       {
         "ticker": "KLXE",
@@ -2005,9 +2437,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.87,
-        "fire_level": 1
+        "rank_score": 1.87
       },
       {
         "ticker": "CNTY",
@@ -2020,9 +2456,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.92,
-        "fire_level": 2
+        "rank_score": 1.92
       },
       {
         "ticker": "STTK",
@@ -2035,9 +2475,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.92,
-        "fire_level": 1
+        "rank_score": 1.92
       },
       {
         "ticker": "CDLX",
@@ -2050,9 +2494,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.94,
-        "fire_level": 1
+        "rank_score": 1.94
       },
       {
         "ticker": "GPRO",
@@ -2065,9 +2513,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 1.97,
-        "fire_level": 2
+        "rank_score": 1.97
       },
       {
         "ticker": "MNTK",
@@ -2080,9 +2532,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.03,
-        "fire_level": 1
+        "rank_score": 2.03
       },
       {
         "ticker": "TUSK",
@@ -2095,9 +2551,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.04,
-        "fire_level": 1
+        "rank_score": 2.04
       },
       {
         "ticker": "PROP",
@@ -2110,9 +2570,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.05,
-        "fire_level": 1
+        "rank_score": 2.05
       },
       {
         "ticker": "UPLD",
@@ -2125,9 +2589,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.08,
-        "fire_level": 2
+        "rank_score": 2.08
       },
       {
         "ticker": "FOSL",
@@ -2140,9 +2608,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.08,
-        "fire_level": 1
+        "rank_score": 2.08
       },
       {
         "ticker": "MURA",
@@ -2155,9 +2627,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.09,
-        "fire_level": 1
+        "rank_score": 2.09
       },
       {
         "ticker": "NKTX",
@@ -2170,9 +2646,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.11,
-        "fire_level": 2
+        "rank_score": 2.11
       },
       {
         "ticker": "AMTX",
@@ -2185,9 +2665,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.13,
-        "fire_level": 1
+        "rank_score": 2.13
       },
       {
         "ticker": "SND",
@@ -2200,9 +2684,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.15,
-        "fire_level": 1
+        "rank_score": 2.15
       },
       {
         "ticker": "AWRE",
@@ -2215,9 +2703,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.21,
-        "fire_level": 1
+        "rank_score": 2.21
       },
       {
         "ticker": "SEER",
@@ -2230,9 +2722,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.21,
-        "fire_level": 1
+        "rank_score": 2.21
       },
       {
         "ticker": "HYFM",
@@ -2245,9 +2741,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.215,
-        "fire_level": 1
+        "rank_score": 2.215
       },
       {
         "ticker": "STKS",
@@ -2260,9 +2760,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.27,
-        "fire_level": 1
+        "rank_score": 2.27
       },
       {
         "ticker": "BWEN",
@@ -2275,9 +2779,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.34,
-        "fire_level": 1
+        "rank_score": 2.34
       },
       {
         "ticker": "GNSS",
@@ -2290,9 +2798,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.34,
-        "fire_level": 1
+        "rank_score": 2.34
       },
       {
         "ticker": "VRA",
@@ -2305,9 +2817,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.35,
-        "fire_level": 1
+        "rank_score": 2.35
       },
       {
         "ticker": "XBIT",
@@ -2320,9 +2836,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.35,
-        "fire_level": 1
+        "rank_score": 2.35
       },
       {
         "ticker": "INO",
@@ -2335,9 +2855,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.35,
-        "fire_level": 1
+        "rank_score": 2.35
       },
       {
         "ticker": "FLUX",
@@ -2350,9 +2874,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.37,
-        "fire_level": 1
+        "rank_score": 2.37
       },
       {
         "ticker": "BRLT",
@@ -2365,9 +2893,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.41,
-        "fire_level": 1
+        "rank_score": 2.41
       },
       {
         "ticker": "OPAL",
@@ -2380,9 +2912,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.41,
-        "fire_level": 1
+        "rank_score": 2.41
       },
       {
         "ticker": "CRBU",
@@ -2395,9 +2931,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.42,
-        "fire_level": 1
+        "rank_score": 2.42
       },
       {
         "ticker": "SPRO",
@@ -2410,9 +2950,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.43,
-        "fire_level": 1
+        "rank_score": 2.43
       },
       {
         "ticker": "FLL",
@@ -2425,9 +2969,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.45,
-        "fire_level": 1
+        "rank_score": 2.45
       },
       {
         "ticker": "SPWH",
@@ -2440,9 +2988,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.47,
-        "fire_level": 1
+        "rank_score": 2.47
       },
       {
         "ticker": "FTEK",
@@ -2455,9 +3007,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.48,
-        "fire_level": 1
+        "rank_score": 2.48
       },
       {
         "ticker": "GROW",
@@ -2470,9 +3026,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.49,
-        "fire_level": 2
+        "rank_score": 2.49
       },
       {
         "ticker": "GEG",
@@ -2485,9 +3045,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.5,
-        "fire_level": 1
+        "rank_score": 2.5
       },
       {
         "ticker": "REKR",
@@ -2500,9 +3064,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.53,
-        "fire_level": 1
+        "rank_score": 2.53
       },
       {
         "ticker": "MGX",
@@ -2515,9 +3083,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.54,
-        "fire_level": 1
+        "rank_score": 2.54
       },
       {
         "ticker": "HURA",
@@ -2530,9 +3102,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.55,
-        "fire_level": 1
+        "rank_score": 2.55
       },
       {
         "ticker": "PHUN",
@@ -2545,9 +3121,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.57,
-        "fire_level": 2
+        "rank_score": 2.57
       },
       {
         "ticker": "PETS",
@@ -2560,9 +3140,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.57,
-        "fire_level": 1
+        "rank_score": 2.57
       },
       {
         "ticker": "BEEM",
@@ -2575,9 +3159,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.6,
-        "fire_level": 1
+        "rank_score": 2.6
       },
       {
         "ticker": "CCCC",
@@ -2590,9 +3178,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.61,
-        "fire_level": 1
+        "rank_score": 2.61
       },
       {
         "ticker": "AUID",
@@ -2605,9 +3197,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.63,
-        "fire_level": 1
+        "rank_score": 2.63
       },
       {
         "ticker": "STIM",
@@ -2620,9 +3216,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.65,
-        "fire_level": 1
+        "rank_score": 2.65
       },
       {
         "ticker": "CMTL",
@@ -2635,9 +3235,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.84,
-        "fire_level": 1
+        "rank_score": 2.84
       },
       {
         "ticker": "VERU",
@@ -2650,9 +3254,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.95,
-        "fire_level": 1
+        "rank_score": 2.95
       },
       {
         "ticker": "CCLD",
@@ -2665,9 +3273,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 2,
+        "previous_fire_level": 2,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.95,
-        "fire_level": 2
+        "rank_score": 2.95
       },
       {
         "ticker": "GENK",
@@ -2680,9 +3292,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 2,
-        "rank_score": 2.985,
-        "fire_level": 1
+        "rank_score": 2.985
       },
       {
         "ticker": "RNXT",
@@ -2695,9 +3311,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 3,
-        "rank_score": 1.11,
-        "fire_level": 1
+        "rank_score": 1.11
       },
       {
         "ticker": "SOHO",
@@ -2710,9 +3330,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 3,
-        "rank_score": 2.12,
-        "fire_level": 1
+        "rank_score": 2.12
       },
       {
         "ticker": "NAII",
@@ -2725,9 +3349,13 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 3,
-        "rank_score": 2.725,
-        "fire_level": 1
+        "rank_score": 2.725
       },
       {
         "ticker": "CRWS",
@@ -2740,13 +3368,17 @@
         "sources_count": 1,
         "discrepancy": false,
         "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
         "rank_category": 3,
-        "rank_score": 2.875,
-        "fire_level": 1
+        "rank_score": 2.875
       }
     ],
     "summary": {
-      "total_processed": 371,
+      "total_processed": 158,
       "qualifying_count": 158,
       "high_tier": 49,
       "medium_tier": 105,
@@ -2758,7 +3390,7 @@
       "fire_level_1": 102,
       "total_fire_stocks": 158
     },
-    "timestamp": "2025-11-02T11:57:07.389Z",
+    "timestamp": "2025-11-02T12:01:42.938Z",
     "new_stocks_only": false
   },
   "processedStocks": {
@@ -3152,5 +3784,12 @@
       "created": "2025-11-02T08:22:17.661Z",
       "updated": "2025-11-02T08:22:17.661Z"
     }
-  ]
+  ],
+  "holdings": {
+    "stocks": [
+      "SGMO",
+      "ORGN"
+    ],
+    "last_updated": "2025-11-02T12:44:15.450Z"
+  }
 }
