@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Stock, ScanResult, ScanStatus } from "./types";
+import { Stock, ScanResult } from "./types";
 import api from "./api";
 
 const FireDashboard: React.FC = () => {
   const [results, setResults] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
-  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+  const [selectedPriceFilter, setSelectedPriceFilter] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -77,7 +77,7 @@ const FireDashboard: React.FC = () => {
       if (result.success) {
         // Clear local state
         setResults(null);
-        setSelectedLevel(null);
+        setSelectedPriceFilter(null);
         alert("Database cleared successfully!");
       } else {
         alert("Failed to clear database");
@@ -113,15 +113,48 @@ const FireDashboard: React.FC = () => {
       arr.findIndex((s) => s.ticker === stock.ticker) === index
   );
 
-  const level3 = uniqueFireStocks.filter((s) => getFireLevel(s) === 3);
-  const level2 = uniqueFireStocks.filter((s) => getFireLevel(s) === 2);
-  const level1 = uniqueFireStocks.filter((s) => getFireLevel(s) === 1);
+  // Apply price filtering
+  const applyPriceFilter = (stocks: Stock[]) => {
+    if (!selectedPriceFilter) return stocks;
+    
+    switch (selectedPriceFilter) {
+      case 'under1':
+        return stocks.filter(s => s.price < 1.0);
+      case '1to2':
+        return stocks.filter(s => s.price >= 1.0 && s.price <= 2.0);
+      case 'over2':
+        return stocks.filter(s => s.price > 2.0);
+      default:
+        return stocks;
+    }
+  };
+
+  // Price bucket counts for all fire stocks
+  const priceUnder1 = uniqueFireStocks.filter(s => s.price < 1.0);
+  const price1to2 = uniqueFireStocks.filter(s => s.price >= 1.0 && s.price <= 2.0);
+  const priceOver2 = uniqueFireStocks.filter(s => s.price > 2.0);
 
   const getDisplayStocks = () => {
-    if (selectedLevel === 3) return level3;
-    if (selectedLevel === 2) return level2;
-    if (selectedLevel === 1) return level1;
-    return [];
+    let stocks = uniqueFireStocks;
+    
+    // Apply price filter if selected
+    if (selectedPriceFilter) {
+      stocks = applyPriceFilter(stocks);
+    }
+    
+    // Sort by fire level (highest first) then by price (lowest first)
+    return stocks.sort((a, b) => {
+      const fireA = getFireLevel(a);
+      const fireB = getFireLevel(b);
+      
+      // First sort by fire level (descending - highest fire first)
+      if (fireA !== fireB) {
+        return fireB - fireA;
+      }
+      
+      // Then sort by price (ascending - lowest price first)
+      return a.price - b.price;
+    });
   };
 
   const displayStocks = getDisplayStocks();
@@ -138,192 +171,128 @@ const FireDashboard: React.FC = () => {
         boxSizing: "border-box",
       }}
     >
-      {/* Scan Buttons */}
-      <div style={{ textAlign: "center", marginBottom: "25px" }}>
-        <button
-          onClick={() => startScan("daily")}
-          disabled={scanning}
-          style={{
-            padding: "10px 25px",
-            fontSize: "14px",
-            backgroundColor: scanning ? "#ccc" : "#28a745",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            cursor: scanning ? "not-allowed" : "pointer",
-            fontWeight: "bold",
-            boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
-            marginRight: "10px",
-          }}
-        >
-          {scanning ? "🔍 Scanning..." : "� Daily Scan (Fire Stocks Only)"}
-        </button>
-        <button
-          onClick={clearDatabase}
-          style={{
-            padding: "10px 25px",
-            fontSize: "14px",
-            backgroundColor: "#dc3545",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontWeight: "bold",
-            boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-          🗑️ Clear Database
-        </button>
-      </div>
-      {/* Summary Cards */}
+
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "15px",
+          display: 'flex',
+          gap: "5px",
           marginBottom: "25px",
           width: "100%",
           maxWidth: "100%",
+          justifyContent: "center",
         }}
       >
         <button
-          onClick={() => setSelectedLevel(selectedLevel === 3 ? null : 3)}
+          onClick={() => setSelectedPriceFilter(selectedPriceFilter === 'under1' ? null : 'under1')}
           style={{
-            padding: "20px",
-            backgroundColor: selectedLevel === 3 ? "#ff4444" : "#fff",
-            color: selectedLevel === 3 ? "#fff" : "#ff4444",
-            border: "2px solid #ff4444",
-            borderRadius: "10px",
+            flex: 1,
+            padding: "15px",
+            backgroundColor: selectedPriceFilter === 'under1' ? "#28a745" : "#fff",
+            color: selectedPriceFilter === 'under1' ? "#fff" : "#28a745",
+            border: "2px solid #28a745",
+            borderRadius: "8px",
             textAlign: "center",
             boxShadow:
-              selectedLevel === 3
-                ? "0 4px 8px rgba(255,68,68,0.3)"
+              selectedPriceFilter === 'under1'
+                ? "0 4px 8px rgba(40,167,69,0.3)"
                 : "0 2px 6px rgba(0,0,0,0.1)",
             cursor: "pointer",
             transition: "all 0.3s",
-            transform: selectedLevel === 3 ? "translateY(-1px)" : "none",
+            transform: selectedPriceFilter === 'under1' ? "translateY(-1px)" : "none",
           }}
         >
           <div
             style={{
-              fontSize: "2rem",
+              fontSize: "1.5rem",
               fontWeight: "bold",
               marginBottom: "6px",
             }}
           >
-            {level3.length}
+            {priceUnder1.length}
           </div>
           <div style={{ fontSize: "0.8rem", fontWeight: "600" }}>
-            🔥🔥🔥 Excellent
+            💰 Under $1
           </div>
           <div style={{ fontSize: "0.65rem", opacity: 0.8, marginTop: "3px" }}>
-            Both funds ≥5%, Price &lt;$1
+            Price &lt; $1.00
           </div>
         </button>
 
         <button
-          onClick={() => setSelectedLevel(selectedLevel === 2 ? null : 2)}
+          onClick={() => setSelectedPriceFilter(selectedPriceFilter === '1to2' ? null : '1to2')}
           style={{
-            padding: "20px",
-            backgroundColor: selectedLevel === 2 ? "#ff8800" : "#fff",
-            color: selectedLevel === 2 ? "#fff" : "#ff8800",
-            border: "2px solid #ff8800",
-            borderRadius: "10px",
+            flex: 1,
+            padding: "15px",
+            backgroundColor: selectedPriceFilter === '1to2' ? "#17a2b8" : "#fff",
+            color: selectedPriceFilter === '1to2' ? "#fff" : "#17a2b8",
+            border: "2px solid #17a2b8",
+            borderRadius: "8px",
             textAlign: "center",
             boxShadow:
-              selectedLevel === 2
-                ? "0 4px 8px rgba(255,136,0,0.3)"
+              selectedPriceFilter === '1to2'
+                ? "0 4px 8px rgba(23,162,184,0.3)"
                 : "0 2px 6px rgba(0,0,0,0.1)",
             cursor: "pointer",
             transition: "all 0.3s",
-            transform: selectedLevel === 2 ? "translateY(-1px)" : "none",
+            transform: selectedPriceFilter === '1to2' ? "translateY(-1px)" : "none",
           }}
         >
           <div
             style={{
-              fontSize: "2rem",
+              fontSize: "1.5rem",
               fontWeight: "bold",
               marginBottom: "6px",
             }}
           >
-            {level2.length}
+            {price1to2.length}
           </div>
           <div style={{ fontSize: "0.8rem", fontWeight: "600" }}>
-            🔥🔥 Strong
+            💎 $1 - $2
           </div>
           <div style={{ fontSize: "0.65rem", opacity: 0.8, marginTop: "3px" }}>
-            Both funds ≥5%, Price ≤$2
+            Price $1.00 - $2.00
           </div>
         </button>
 
         <button
-          onClick={() => setSelectedLevel(selectedLevel === 1 ? null : 1)}
+          onClick={() => setSelectedPriceFilter(selectedPriceFilter === 'over2' ? null : 'over2')}
           style={{
-            padding: "20px",
-            backgroundColor: selectedLevel === 1 ? "#ffcc00" : "#fff",
-            color: selectedLevel === 1 ? "#fff" : "#ffcc00",
-            border: "2px solid #ffcc00",
-            borderRadius: "10px",
+            flex: 1,
+            padding: "15px",
+            backgroundColor: selectedPriceFilter === 'over2' ? "#6f42c1" : "#fff",
+            color: selectedPriceFilter === 'over2' ? "#fff" : "#6f42c1",
+            border: "2px solid #6f42c1",
+            borderRadius: "8px",
             textAlign: "center",
             boxShadow:
-              selectedLevel === 1
-                ? "0 4px 8px rgba(255,204,0,0.3)"
+              selectedPriceFilter === 'over2'
+                ? "0 4px 8px rgba(111,66,193,0.3)"
                 : "0 2px 6px rgba(0,0,0,0.1)",
             cursor: "pointer",
             transition: "all 0.3s",
-            transform: selectedLevel === 1 ? "translateY(-1px)" : "none",
+            transform: selectedPriceFilter === 'over2' ? "translateY(-1px)" : "none",
           }}
         >
           <div
             style={{
-              fontSize: "2rem",
+              fontSize: "1.5rem",
               fontWeight: "bold",
               marginBottom: "6px",
             }}
           >
-            {level1.length}
+            {priceOver2.length}
           </div>
           <div style={{ fontSize: "0.8rem", fontWeight: "600" }}>
-            🔥 Moderate
+            🏆 Over $2
           </div>
           <div style={{ fontSize: "0.65rem", opacity: 0.8, marginTop: "3px" }}>
-            One fund ≥5%, Price ≤$2
+            Price &gt; $2.00
           </div>
         </button>
-
-        <div
-          style={{
-            padding: "20px",
-            backgroundColor: "#fff",
-            border: "2px solid #00cc88",
-            borderRadius: "10px",
-            textAlign: "center",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "2rem",
-              fontWeight: "bold",
-              color: "#00cc88",
-              marginBottom: "6px",
-            }}
-          >
-            {fireStocks.length}
-          </div>
-          <div
-            style={{ fontSize: "0.8rem", color: "#00cc88", fontWeight: "600" }}
-          >
-            Total Fire Stocks
-          </div>
-          <div style={{ fontSize: "0.65rem", color: "#666", marginTop: "3px" }}>
-            All categories combined
-          </div>
-        </div>
       </div>
 
       {/* Selected Stocks Display */}
-      {selectedLevel && displayStocks.length > 0 && (
+      {selectedPriceFilter && displayStocks.length > 0 && (
         <section style={{ marginBottom: "25px", width: "100%" }}>
           <div
             style={{
@@ -335,26 +304,24 @@ const FireDashboard: React.FC = () => {
           >
             <h2
               style={{
-                color:
-                  selectedLevel === 3
-                    ? "#ff4444"
-                    : selectedLevel === 2
-                    ? "#ff8800"
-                    : "#ffcc00",
+                color: selectedPriceFilter === 'under1'
+                    ? "#28a745"
+                    : selectedPriceFilter === '1to2'
+                    ? "#17a2b8"
+                    : "#6f42c1",
                 margin: 0,
                 fontSize: "1.3rem",
               }}
             >
-              {getFireEmoji(selectedLevel)}{" "}
-              {selectedLevel === 3
-                ? "Excellent"
-                : selectedLevel === 2
-                ? "Strong"
-                : "Moderate"}{" "}
-              ({displayStocks.length})
+              {selectedPriceFilter === 'under1'
+                ? "💰 Under $1"
+                : selectedPriceFilter === '1to2'
+                ? "💎 $1 - $2"
+                : "🏆 Over $2"}
+              {" "}({displayStocks.length})
             </h2>
             <button
-              onClick={() => setSelectedLevel(null)}
+              onClick={() => setSelectedPriceFilter(null)}
               style={{
                 padding: "6px 12px",
                 backgroundColor: "#fff",
@@ -392,13 +359,7 @@ const FireDashboard: React.FC = () => {
                 style={{
                   padding: "12px",
                   backgroundColor: "#f8f9fa",
-                  border: `1px solid ${
-                    selectedLevel === 3
-                      ? "#ff4444"
-                      : selectedLevel === 2
-                      ? "#ff8800"
-                      : "#ffcc00"
-                  }`,
+                  border: `1px solid ${selectedPriceFilter === 'under1' ? "#28a745" : selectedPriceFilter === '1to2' ? "#17a2b8" : "#6f42c1"}`,
                   borderRadius: "6px",
                   cursor: "pointer",
                   transition: "all 0.2s",
@@ -461,7 +422,7 @@ const FireDashboard: React.FC = () => {
                       </span>
                     )}
                     <span style={{ fontSize: "1rem" }}>
-                      {getFireEmoji(selectedLevel)}
+                      {getFireEmoji(getFireLevel(stock))}
                     </span>
                   </div>
                 </div>
@@ -469,12 +430,7 @@ const FireDashboard: React.FC = () => {
                   style={{
                     fontWeight: "bold",
                     fontSize: "1rem",
-                    color:
-                      selectedLevel === 3
-                        ? "#ff4444"
-                        : selectedLevel === 2
-                        ? "#ff8800"
-                        : "#ffcc00",
+                    color: "#4F46E5",
                     marginBottom: "6px",
                     display: "flex",
                     alignItems: "center",
@@ -512,7 +468,7 @@ const FireDashboard: React.FC = () => {
         </section>
       )}
 
-      {selectedLevel && displayStocks.length === 0 && (
+      {selectedPriceFilter && displayStocks.length === 0 && (
         <div
           style={{
             textAlign: "center",
@@ -524,15 +480,36 @@ const FireDashboard: React.FC = () => {
           }}
         >
           <h3 style={{ fontSize: "1.1rem", marginBottom: "6px" }}>
-            No stocks found for this fire level
+            No stocks found for this combination
           </h3>
           <p style={{ fontSize: "0.85rem" }}>
-            Try starting a new scan to discover more stocks
+            {selectedPriceFilter 
+              ? "Try removing the price filter or selecting a different fire level"
+              : "Try starting a new scan to discover more stocks"
+            }
           </p>
+          {selectedPriceFilter && (
+            <button
+              onClick={() => setSelectedPriceFilter(null)}
+              style={{
+                marginTop: "10px",
+                padding: "8px 16px",
+                backgroundColor: "#28a745",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "0.8rem",
+                fontWeight: "600",
+              }}
+            >
+              Clear Price Filter
+            </button>
+          )}
         </div>
       )}
 
-      {!selectedLevel && fireStocks.length > 0 && (
+      {!selectedPriceFilter && fireStocks.length > 0 && (
         <div
           style={{
             textAlign: "center",
@@ -557,7 +534,7 @@ const FireDashboard: React.FC = () => {
         </div>
       )}
 
-      {fireStocks.length === 0 && !selectedLevel && (
+      {fireStocks.length === 0 && !selectedPriceFilter && (
         <div
           style={{
             textAlign: "center",

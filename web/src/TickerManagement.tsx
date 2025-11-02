@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import api from './api';
+import { Stock } from './types';
 
 const TickerManagement: React.FC = () => {
   const [tickers, setTickers] = useState<string[]>([]);
+  const [stockData, setStockData] = useState<Map<string, Stock>>(new Map());
   const [bulkTickersText, setBulkTickersText] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadTickers();
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    await Promise.all([loadTickers(), loadStockData()]);
+  };
 
   const loadTickers = async () => {
     try {
@@ -22,6 +28,39 @@ const TickerManagement: React.FC = () => {
       console.error('Error loading tickers:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadStockData = async () => {
+    try {
+      const results = await api.getLatestResults();
+      if (results?.stocks) {
+        const stockMap = new Map<string, Stock>();
+        results.stocks.forEach(stock => {
+          stockMap.set(stock.ticker, stock);
+        });
+        setStockData(stockMap);
+      }
+    } catch (err) {
+      console.error('Error loading stock data:', err);
+    }
+  };
+
+  const getFireEmoji = (level: number): string => {
+    switch (level) {
+      case 3: return "🔥🔥🔥";
+      case 2: return "🔥🔥";
+      case 1: return "🔥";
+      default: return "";
+    }
+  };
+
+  const getFireColor = (level: number): string => {
+    switch (level) {
+      case 3: return "#dc2626"; // Red
+      case 2: return "#f59e0b"; // Orange
+      case 1: return "#22c55e"; // Green
+      default: return "#6b7280"; // Gray
     }
   };
 
@@ -50,6 +89,7 @@ const TickerManagement: React.FC = () => {
         setTickers(newTickers);
         setBulkTickersText('');
         setError(null);
+        await loadStockData(); // Reload stock data
       } else {
         setError('Failed to update tickers');
       }
@@ -84,6 +124,7 @@ const TickerManagement: React.FC = () => {
         setTickers([...tickers, ...tickersToAdd]);
         setBulkTickersText('');
         setError(null);
+        await loadStockData(); // Reload stock data
       } else {
         setError('Failed to add tickers');
       }
@@ -106,6 +147,7 @@ const TickerManagement: React.FC = () => {
       if (response.ok) {
         setTickers(tickers.filter(t => t !== ticker));
         setError(null);
+        await loadStockData(); // Reload stock data
       } else {
         setError(`Failed to delete ticker ${ticker}`);
       }
@@ -135,6 +177,58 @@ const TickerManagement: React.FC = () => {
       <div style={{ textAlign: 'center', marginBottom: '30px' }}>
         <h1 style={{ margin: '0 0 10px 0', color: '#333' }}>🎯 Ticker Management</h1>
         <p style={{ color: '#666', margin: 0 }}>Total Tickers: <strong>{tickers.length}</strong></p>
+        
+        {/* Fire Stock Summary */}
+        {stockData.size > 0 && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '15px',
+            marginTop: '15px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{
+              padding: '8px 12px',
+              backgroundColor: '#dc2626',
+              color: 'white',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}>
+              🔥🔥🔥 {Array.from(stockData.values()).filter(s => s.fire_level === 3).length}
+            </div>
+            <div style={{
+              padding: '8px 12px',
+              backgroundColor: '#f59e0b',
+              color: 'white',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}>
+              🔥🔥 {Array.from(stockData.values()).filter(s => s.fire_level === 2).length}
+            </div>
+            <div style={{
+              padding: '8px 12px',
+              backgroundColor: '#22c55e',
+              color: 'white',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}>
+              🔥 {Array.from(stockData.values()).filter(s => s.fire_level === 1).length}
+            </div>
+            <div style={{
+              padding: '8px 12px',
+              backgroundColor: '#6b7280',
+              color: 'white',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}>
+              No Fire {tickers.length - stockData.size}
+            </div>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -223,57 +317,198 @@ const TickerManagement: React.FC = () => {
         borderRadius: '8px',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }}>
-        <h2 style={{ margin: '0 0 20px 0', color: '#333' }}>All Tickers ({tickers.length})</h2>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+          flexWrap: 'wrap',
+          gap: '10px'
+        }}>
+          <h2 style={{ margin: 0, color: '#333' }}>All Tickers ({tickers.length})</h2>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              onClick={async () => {
+                try {
+                  await fetch('http://localhost:9000/api/scan/daily', { method: 'POST' });
+                  // Poll for updates after a delay
+                  setTimeout(() => {
+                    loadStockData();
+                  }, 3000);
+                } catch (error) {
+                  console.error('Daily scan failed:', error);
+                  setError('Daily scan failed');
+                }
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '12px'
+              }}
+            >
+              🔥 Daily Scan
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  await fetch('http://localhost:9000/api/scan/start', { method: 'POST' });
+                  // Poll for updates after a delay
+                  setTimeout(() => {
+                    loadStockData();
+                  }, 5000);
+                } catch (error) {
+                  console.error('Full scan failed:', error);
+                  setError('Full scan failed');
+                }
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#fd7e14',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '12px'
+              }}
+            >
+              🔍 Full Scan
+            </button>
+            <button
+              onClick={loadStockData}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#17a2b8',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '12px'
+              }}
+            >
+              🔄 Refresh Data
+            </button>
+          </div>
+        </div>
         
         {tickers.length > 0 ? (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-            gap: '8px',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '12px',
             maxHeight: '60vh',
             overflowY: 'auto',
             padding: '10px',
             backgroundColor: '#f8f9fa',
             borderRadius: '6px'
           }}>
-            {tickers.map((ticker) => (
-              <div
-                key={ticker}
-                style={{
-                  padding: '8px 12px',
-                  backgroundColor: '#e9ecef',
-                  borderRadius: '4px',
-                  textAlign: 'center',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  color: '#495057',
-                  fontFamily: 'monospace',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  position: 'relative'
-                }}
-              >
-                <span style={{ flex: 1 }}>{ticker}</span>
-                <button
-                  onClick={() => handleDeleteTicker(ticker)}
+            {tickers.map((ticker) => {
+              const stock = stockData.get(ticker);
+              return (
+                <div
+                  key={ticker}
                   style={{
-                    backgroundColor: '#dc3545',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '3px',
-                    padding: '2px 6px',
-                    fontSize: '10px',
-                    cursor: 'pointer',
-                    marginLeft: '6px',
-                    fontWeight: 'bold'
+                    padding: '12px',
+                    backgroundColor: '#fff',
+                    borderRadius: '6px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    border: stock ? `2px solid ${getFireColor(stock.fire_level || 0)}` : '2px solid #e9ecef',
+                    position: 'relative'
                   }}
-                  title={`Delete ${ticker}`}
                 >
-                  ✕
-                </button>
-              </div>
-            ))}
+                  {/* Header with ticker and delete button */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{
+                        fontWeight: 'bold',
+                        fontSize: '14px',
+                        color: '#333',
+                        fontFamily: 'monospace'
+                      }}>
+                        {ticker}
+                      </span>
+                      {stock && (
+                        <span style={{ fontSize: '12px' }}>
+                          {getFireEmoji(stock.fire_level || 0)}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleDeleteTicker(ticker)}
+                      style={{
+                        backgroundColor: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '3px',
+                        padding: '2px 6px',
+                        fontSize: '10px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                      }}
+                      title={`Delete ${ticker}`}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Stock details */}
+                  {stock ? (
+                    <div style={{ fontSize: '11px', color: '#666', lineHeight: '1.4' }}>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '4px'
+                      }}>
+                        <span style={{ fontWeight: 'bold', color: '#333' }}>
+                          ${stock.price.toFixed(2)}
+                        </span>
+                        {stock.fire_level_changed && (
+                          <span style={{
+                            fontSize: '10px',
+                            color: (stock.fire_level || 0) > (stock.previous_fire_level || 0) ? '#28a745' : '#dc3545',
+                            fontWeight: 'bold'
+                          }}>
+                            {(stock.fire_level || 0) > (stock.previous_fire_level || 0) ? '📈' : '📉'}
+                          </span>
+                        )}
+                      </div>
+                      <div>BR: {stock.blackrock_pct.toFixed(1)}%</div>
+                      <div>VG: {stock.vanguard_pct.toFixed(1)}%</div>
+                      {stock.is_new && (
+                        <div style={{
+                          color: '#28a745',
+                          fontWeight: 'bold',
+                          fontSize: '10px',
+                          marginTop: '2px'
+                        }}>
+                          NEW
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{
+                      fontSize: '11px',
+                      color: '#999',
+                      fontStyle: 'italic'
+                    }}>
+                      No scan data available
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div style={{

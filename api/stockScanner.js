@@ -3,7 +3,6 @@ const path = require('path');
 const dbService = require('./database');
 
 // Configuration
-const PRICE_THRESHOLD = 2.0;
 const HOLD_THRESHOLD = 3.0; // 3% minimum holding
 const DELAY_BETWEEN_REQUESTS = 500; // ms
 const REQUIRE_BOTH_HOLDERS = false;
@@ -16,26 +15,21 @@ class StockScanner {
     this.onProgress = null;
   }
 
-  // Calculate fire level for a stock (same logic as database service)
+    // Calculate fire level for a stock (same logic as database service)
   calculateFireLevel(stock) {
-    const { blackrock_pct, vanguard_pct } = stock;
+    const hasBlackrock = stock.blackrock_pct >= 5;
+    const hasVanguard = stock.vanguard_pct >= 5;
+    const hasBothFunds = hasBlackrock && hasVanguard;
     
-    // Fire level based purely on institutional shareholding strength
-    // 🔥🔥🔥 Excellent: Both funds ≥5% (strongest institutional backing)
-    if (blackrock_pct >= 5.0 && vanguard_pct >= 5.0) {
-      return 3;
-    }
-    // 🔥🔥 Strong: One fund ≥5% AND the other ≥3% (strong backing from both)
-    else if ((blackrock_pct >= 5.0 && vanguard_pct >= 3.0) || 
-             (vanguard_pct >= 5.0 && blackrock_pct >= 3.0)) {
-      return 2;
-    }
-    // 🔥 Moderate: At least one fund ≥5% (solid single-fund backing)
-    else if (blackrock_pct >= 5.0 || vanguard_pct >= 5.0) {
-      return 1;
+    if (hasBothFunds) {
+      return 3; // Excellent: Both funds ≥5%
+    } else if (hasBlackrock || hasVanguard) {
+      return 2; // Strong: One fund ≥5%
+    } else if (stock.blackrock_pct >= 3 || stock.vanguard_pct >= 3) {
+      return 1; // Moderate: One fund ≥3%
     }
     
-    return 0; // No significant institutional backing
+    return 0; // No fire rating
   }
 
   // Load tickers from file
@@ -187,7 +181,7 @@ class StockScanner {
 
       const { blackrock, vanguard } = this.parseHoldings(holdingsData);
 
-      // Check if meets criteria
+      // Check if meets criteria - based purely on shareholding, not price
       const meetsCriteria = REQUIRE_BOTH_HOLDERS 
         ? (blackrock >= HOLD_THRESHOLD && vanguard >= HOLD_THRESHOLD)
         : (blackrock >= HOLD_THRESHOLD || vanguard >= HOLD_THRESHOLD);
