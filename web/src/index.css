@@ -705,12 +705,7 @@ code {
   opacity: 0.5;
 }
 
-/* App Navigation Styles */
-.app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+/* App Navigation Styles - REMOVED: These styles conflict with the new sidebar layout */
 
 .app-nav {
   background: #1a1a1a;
