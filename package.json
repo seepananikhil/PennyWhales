@@ -1,0 +1,25 @@
+{
+  "name": "stock-scanner-project",
+  "version": "1.0.0",
+  "description": "Stock Scanner Dashboard with React Frontend and Node.js Backend - Pure JavaScript",
+  "main": "index.js",
+  "scripts": {
+    "install-all": "npm install && cd web && npm install && cd ../api && npm install",
+    "dev": "concurrently \"npm run dev-api\" \"npm run dev-web\"",
+    "dev-api": "cd api && npm run dev",
+    "dev-web": "cd web && npm start",
+    "start": "concurrently \"npm run start-api\" \"npm run start-web\"",
+    "start-api": "cd api && npm start",
+    "start-web": "cd web && npm start",
+    "build": "cd web && npm run build",
+    "test-scanner": "cd api && node -e \"const Scanner = require('./stockScanner'); const s = new Scanner(); s.scan().then(() => console.log('Done')).catch(console.error)\"",
+    "scan-python": "python3 scanner_pro_enhanced.py"
+  },
+  "keywords": ["stock", "scanner", "dashboard", "react", "node", "javascript"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {}
+}
