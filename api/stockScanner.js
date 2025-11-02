@@ -278,42 +278,10 @@ class StockScanner {
       throw new Error('No tickers found');
     }
 
-    const processedStocks = await this.loadProcessedStocks();
-    const newTickers = allTickers.filter(t => !processedStocks.has(t));
-    const newStocksOnly = processedStocks.size > 0 && newTickers.length < allTickers.length;
+    // For full scan, always process ALL tickers (no processed stocks filtering)
+    const tickersToScan = allTickers;
     
-    const tickersToScan = newStocksOnly ? newTickers : allTickers;
-    
-    if (tickersToScan.length === 0) {
-      console.log('✅ No new stocks to scan! Loading previous results...');
-      
-      // Load previous results to show existing stocks
-      const previousResults = await this.loadPreviousResults();
-      if (previousResults && previousResults.stocks && previousResults.stocks.length > 0) {
-        // Update timestamp and mark as new stocks only
-        const updatedResults = {
-          ...previousResults,
-          timestamp: new Date().toISOString(),
-          new_stocks_only: true
-        };
-        
-        // Save the updated results
-        await this.saveResults(previousResults.stocks, allTickers.length, true);
-        
-        console.log(`📊 Showing ${previousResults.stocks.length} previously found stocks`);
-        return {
-          stocks: previousResults.stocks,
-          newStocksOnly: true,
-          summary: previousResults.summary
-        };
-      } else {
-        // No previous results either
-        await this.saveResults([], allTickers.length, true);
-        return { stocks: [], newStocksOnly: true };
-      }
-    }
-
-    console.log(`📊 Scanning ${tickersToScan.length} ${newStocksOnly ? 'new' : 'total'} tickers...`);
+    console.log(`📊 Full scan: Processing ALL ${tickersToScan.length} tickers...`);
     
     this.total = tickersToScan.length;
     this.processed = 0;
@@ -340,12 +308,8 @@ class StockScanner {
       await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_REQUESTS));
     }
 
-    // Update processed stocks
-    const allProcessed = new Set([...processedStocks, ...tickersToScan]);
-    await this.saveProcessedStocks(allProcessed);
-
     // Save results
-    await this.saveResults(this.results, allTickers.length, newStocksOnly);
+    await this.saveResults(this.results, allTickers.length, false);
 
     console.log(`🎯 Scan complete: ${this.results.length} qualifying stocks found`);
     

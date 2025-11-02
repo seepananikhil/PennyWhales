@@ -57,20 +57,27 @@ const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* Footer Actions */}
-      <div className="sidebar-footer">
-        <button 
-          className="theme-toggle-sidebar" 
-          onClick={onToggleTheme}
-          title={`Switch to ${isDarkTheme ? 'light' : 'dark'} theme`}
-        >
-          <span className="toggle-icon">
-            {isDarkTheme ? '☀️' : '🌙'}
-          </span>
-          <span className="toggle-text">
-            {isDarkTheme ? 'Light' : 'Dark'}
-          </span>
-        </button>
-      </div>
+        {/* Developer Credit */}
+        <div style={{
+          marginTop: '1rem',
+          padding: '0.75rem',
+          textAlign: 'center',
+          borderTop: '1px solid var(--border-color)',
+          fontSize: '0.75rem',
+          color: 'var(--text-secondary)',
+          lineHeight: '1.4'
+        }}>
+          <div style={{ marginBottom: '0.25rem' }}>
+            Developed with ❤️ by
+          </div>
+          <div style={{ 
+            fontWeight: '600',
+            color: 'var(--text-primary)',
+            fontSize: '0.8rem'
+          }}>
+            Nikhil Seepana
+          </div>
+        </div>
     </aside>
   );
 };

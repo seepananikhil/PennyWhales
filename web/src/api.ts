@@ -28,18 +28,6 @@ export const api = {
     return response.data;
   },
 
-  // Get processed stocks count
-  getProcessedStocks: async (): Promise<{ count: number; last_updated: string }> => {
-    const response = await axios.get(`${API_BASE}/api/processed-stocks`);
-    return response.data;
-  },
-
-  // Reset processed stocks (for testing)
-  resetProcessedStocks: async (): Promise<{ success: boolean }> => {
-    const response = await axios.post(`${API_BASE}/api/processed-stocks/reset`);
-    return response.data;
-  },
-
   // Ticker Management
   getTickers: async (): Promise<{ tickers: string[]; count: number }> => {
     const response = await axios.get(`${API_BASE}/api/tickers`);
@@ -66,7 +54,7 @@ export const api = {
     return response.data;
   },
 
-  getStats: async (): Promise<{ totalTickers: number; processedStocks: number; lastScan: string | null; qualifyingStocks: number }> => {
+  getStats: async (): Promise<{ totalTickers: number; lastScan: string | null; qualifyingStocks: number }> => {
     const response = await axios.get(`${API_BASE}/api/stats`);
     return response.data;
   },

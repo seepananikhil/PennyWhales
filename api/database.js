@@ -266,7 +266,8 @@ class DatabaseService {
     };
     
     await this.db.write();
-    console.log('🗑️ Cleared scan results and processed stocks (tickers, holdings, and watchlists preserved)');
+    await this.db.write();
+        console.log('🗑️ Cleared scan results and processed stocks (tickers, holdings, and watchlists preserved)');
   }
 
   // Processed Stocks Management
@@ -504,7 +505,6 @@ class DatabaseService {
     await this.init();
     return {
       totalTickers: this.db.data.tickers?.length || 0,
-      processedStocks: this.db.data.processedStocks?.stocks?.length || 0,
       lastScan: this.db.data.scanResults?.timestamp || null,
       qualifyingStocks: this.db.data.scanResults?.stocks?.length || 0
     };
