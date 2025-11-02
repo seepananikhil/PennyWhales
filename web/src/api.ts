@@ -10,6 +10,12 @@ export const api = {
     return response.data;
   },
 
+  // Start a daily scan
+  startDailyScan: async (): Promise<{ success: boolean; message: string }> => {
+    const response = await axios.post(`${API_BASE}/api/scan/daily`);
+    return response.data;
+  },
+
   // Get current scan status
   getScanStatus: async (): Promise<ScanStatus> => {
     const response = await axios.get(`${API_BASE}/api/scan/status`);

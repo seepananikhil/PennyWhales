@@ -181,15 +181,8 @@ class StockScanner {
 
       const { blackrock, vanguard } = this.parseHoldings(holdingsData);
 
-      // Check if meets criteria - based purely on shareholding, not price
-      const meetsCriteria = REQUIRE_BOTH_HOLDERS 
-        ? (blackrock >= HOLD_THRESHOLD && vanguard >= HOLD_THRESHOLD)
-        : (blackrock >= HOLD_THRESHOLD || vanguard >= HOLD_THRESHOLD);
-
-      if (!meetsCriteria) {
-        return null;
-      }
-
+      // Always return the stock data regardless of holding percentages
+      // The fire level calculation will handle the rating (including 0 for no fire)
       return {
         ticker,
         price,

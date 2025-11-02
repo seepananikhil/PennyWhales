@@ -134,6 +134,20 @@ html, body {
   font-weight: 600;
 }
 
+/* Ensure NavLink inherits proper styling */
+.sidebar-nav-item {
+  text-decoration: none;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-nav-item:visited {
+  color: var(--text-secondary);
+}
+
+.sidebar-nav-item.active:visited {
+  color: var(--accent-color);
+}
+
 .nav-icon {
   font-size: 1.2rem;
   min-width: 20px;
@@ -195,9 +209,11 @@ html, body {
 .app-main {
   flex: 1;
   padding: 1.5rem;
-  overflow-y: auto;
+  overflow: hidden;
   height: 100%;
   background-color: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
 }
 
 /* Responsive design */

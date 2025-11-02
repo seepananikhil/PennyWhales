@@ -3,16 +3,16 @@ import api from './api';
 import { Stock } from './types';
 import { theme, getFireLevelStyle } from './theme';
 import StockCard from './components/StockCard';
-import StockGrid from './components/StockGrid';
-import SectionHeader from './components/SectionHeader';
+import TickerModal from './components/TickerModal';
 
 const TickerManagement: React.FC = () => {
   const [tickers, setTickers] = useState<string[]>([]);
   const [stockData, setStockData] = useState<Map<string, Stock>>(new Map());
   const [holdings, setHoldings] = useState<Set<string>>(new Set());
-  const [bulkTickersText, setBulkTickersText] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [activeFilter, setActiveFilter] = useState<string>('all');
 
   useEffect(() => {
     loadData();
@@ -53,17 +53,27 @@ const TickerManagement: React.FC = () => {
 
   const loadHoldings = async () => {
     try {
-      const data = await api.getHoldings();
-      setHoldings(new Set(data.holdings || []));
+      const holdingsData = await api.getHoldings();
+      setHoldings(new Set(holdingsData.holdings?.map((holding: any) => holding.ticker) || []));
     } catch (err) {
       console.error('Error loading holdings:', err);
     }
   };
 
-  const toggleHolding = async (ticker: string) => {
+  const handleSaveTickers = async (newTickers: string[]) => {
+    try {
+      await api.updateTickers(newTickers);
+      setTickers(newTickers);
+      await loadStockData(); // Refresh stock data
+    } catch (err) {
+      setError('Failed to update tickers');
+      console.error('Error updating tickers:', err);
+    }
+  };
+
+  const handleToggleHolding = async (ticker: string) => {
     try {
       const isCurrentlyHolding = holdings.has(ticker);
-      
       if (isCurrentlyHolding) {
         await api.removeHolding(ticker);
         setHoldings(prev => {
@@ -73,516 +83,441 @@ const TickerManagement: React.FC = () => {
         });
       } else {
         await api.addHolding(ticker);
-        setHoldings(prev => {
-          const newSet = new Set(prev);
-          newSet.add(ticker);
-          return newSet;
-        });
-      }
-    } catch (error) {
-      console.error("Error toggling holding:", error);
-    }
-  };
-
-  const getFireEmoji = (level: number): string => {
-    return getFireLevelStyle(level).emoji;
-  };
-
-  const getFireColor = (level: number): string => {
-    return getFireLevelStyle(level).primary;
-  };
-
-  const handleBulkUpdate = async () => {
-    if (!bulkTickersText.trim()) return;
-
-    try {
-      const newTickers = bulkTickersText
-        .split(/[,\n\r\s]+/)
-        .map(t => t.trim().toUpperCase())
-        .filter(t => t && t.length > 0);
-
-      if (newTickers.length === 0) {
-        setError('No valid tickers provided');
-        return;
-      }
-
-      // Use PUT to replace all tickers
-      const response = await fetch('http://localhost:9000/api/tickers', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tickers: newTickers })
-      });
-
-      if (response.ok) {
-        setTickers(newTickers);
-        setBulkTickersText('');
-        setError(null);
-        await loadStockData(); // Reload stock data
-        await loadHoldings(); // Reload holdings
-      } else {
-        setError('Failed to update tickers');
+        setHoldings(prev => new Set(prev).add(ticker));
       }
     } catch (err) {
-      setError('Failed to update tickers');
-      console.error('Error updating tickers:', err);
+      console.error('Error toggling holding:', err);
     }
   };
 
-  const handleBulkAdd = async () => {
-    if (!bulkTickersText.trim()) return;
-
-    try {
-      const tickersToAdd = bulkTickersText
-        .split(/[,\n\r\s]+/)
-        .map(t => t.trim().toUpperCase())
-        .filter(t => t && t.length > 0 && !tickers.includes(t));
-
-      if (tickersToAdd.length === 0) {
-        setError('No new tickers to add');
-        return;
-      }
-
-      // Use PATCH to add new tickers
-      const response = await fetch('http://localhost:9000/api/tickers', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tickers: tickersToAdd })
-      });
-
-      if (response.ok) {
-        setTickers([...tickers, ...tickersToAdd]);
-        setBulkTickersText('');
-        setError(null);
-        await loadStockData(); // Reload stock data
-        await loadHoldings(); // Reload holdings
-      } else {
-        setError('Failed to add tickers');
-      }
-    } catch (err) {
-      setError('Failed to add tickers');
-      console.error('Error adding tickers:', err);
-    }
+  const handleOpenChart = (ticker: string) => {
+    window.open(`https://finance.yahoo.com/quote/${ticker}`, '_blank');
   };
 
-  const handleDeleteTicker = async (ticker: string) => {
-    if (!window.confirm(`Are you sure you want to delete ticker ${ticker}?`)) {
-      return;
-    }
+  // Calculate stats
+  const tickersWithData = tickers.filter(ticker => stockData.has(ticker));
+  const tickersWithoutData = tickers.filter(ticker => !stockData.has(ticker));
+  const fire3Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 3);
+  const fire2Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 2);
+  const fire1Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 1);
+  const noFireTickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 0);
+  const holdingTickers = tickers.filter(ticker => holdings.has(ticker));
 
-    try {
-      const response = await fetch(`http://localhost:9000/api/tickers/${ticker}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        setTickers(tickers.filter(t => t !== ticker));
-        setError(null);
-        await loadStockData(); // Reload stock data
-        await loadHoldings(); // Reload holdings
-      } else {
-        setError(`Failed to delete ticker ${ticker}`);
-      }
-    } catch (err) {
-      setError(`Failed to delete ticker ${ticker}`);
-      console.error('Error deleting ticker:', err);
+  // Filter stocks based on active filter
+  const getFilteredStocks = () => {
+    let stocks;
+    switch (activeFilter) {
+      case 'fire3':
+        stocks = fire3Tickers;
+        break;
+      case 'fire2':
+        stocks = fire2Tickers;
+        break;
+      case 'fire1':
+        stocks = fire1Tickers;
+        break;
+      case 'nofire':
+        stocks = noFireTickers;
+        break;
+      case 'holdings':
+        stocks = holdingTickers;
+        break;
+      default:
+        stocks = tickersWithData;
     }
+    
+    // Sort by price (highest to lowest)
+    return stocks.sort((a, b) => {
+      const stockA = stockData.get(a);
+      const stockB = stockData.get(b);
+      const priceA = stockA?.price || 0;
+      const priceB = stockB?.price || 0;
+      return priceB - priceA;
+    });
   };
 
-  const openChart = (ticker: string) => {
-    window.open(
-      `https://www.tradingview.com/chart/?symbol=${ticker}`,
-      "_blank"
-    );
-  };
+  const filteredStocks = getFilteredStocks();
 
   if (loading) {
     return (
-      <div style={{ 
-        padding: theme.spacing.xxl, 
-        textAlign: 'center',
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%',
+        fontSize: theme.typography.fontSize.lg,
+        color: theme.ui.text.secondary,
         fontFamily: theme.typography.fontFamily
       }}>
-        <div style={{ 
-          fontSize: theme.typography.fontSize.lg,
-          color: theme.ui.text.secondary
-        }}>
-          Loading...
-        </div>
+        Loading ticker data...
       </div>
     );
   }
 
   return (
-    <div style={{ 
-      padding: theme.spacing.xl, 
-      maxWidth: '100%', 
-      backgroundColor: theme.ui.background, 
-      minHeight: '100vh',
-      boxSizing: 'border-box',
-      fontFamily: theme.typography.fontFamily,
+    <div style={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      fontFamily: theme.typography.fontFamily
     }}>
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: theme.spacing.xxl }}>
-        <h1 style={{ 
-          margin: `0 0 ${theme.spacing.md} 0`, 
-          color: theme.ui.text.primary,
-          fontSize: theme.typography.fontSize.xl,
-          fontWeight: theme.typography.fontWeight.bold
+      {/* Header Section */}
+      <div style={{
+        padding: theme.spacing.lg,
+        borderBottom: `1px solid ${theme.ui.border}`,
+        backgroundColor: theme.ui.surface,
+        flexShrink: 0
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: theme.spacing.md
         }}>
-          🎯 Ticker Management
-        </h1>
-        <p style={{ 
-          color: theme.ui.text.secondary, 
-          margin: 0,
-          fontSize: theme.typography.fontSize.base
-        }}>
-          Total Tickers: <strong>{tickers.length}</strong>
-        </p>
-        
-        {/* Fire Stock Summary */}
-        {stockData.size > 0 && (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: theme.spacing.lg,
-            marginTop: theme.spacing.lg,
-            flexWrap: 'wrap'
+          <h1 style={{
+            margin: 0,
+            fontSize: theme.typography.fontSize.xxl,
+            fontWeight: theme.typography.fontWeight.bold,
+            color: theme.ui.text.primary
           }}>
-            <div style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              backgroundColor: theme.fire.level3.primary,
-              color: theme.ui.surface,
+            🎯 Ticker Management
+          </h1>
+          <button
+            onClick={() => setShowModal(true)}
+            style={{
+              padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+              border: 'none',
               borderRadius: theme.borderRadius.md,
+              backgroundColor: theme.status.info,
+              color: 'white',
+              cursor: 'pointer',
               fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.bold,
+              fontWeight: theme.typography.fontWeight.semibold,
+              transition: `all ${theme.transition.normal}`,
               boxShadow: theme.ui.shadow.sm
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+            }}
+          >
+            ✏️ Add/Update Tickers
+          </button>
+        </div>
+
+        {/* Stats Row */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+          gap: theme.spacing.md,
+          marginBottom: theme.spacing.md
+        }}>
+          <div 
+            onClick={() => setActiveFilter('all')}
+            style={{
+              textAlign: 'center',
+              padding: theme.spacing.sm,
+              backgroundColor: activeFilter === 'all' ? theme.status.info : theme.ui.background,
+              borderRadius: theme.borderRadius.md,
+              border: `2px solid ${activeFilter === 'all' ? theme.status.info : theme.ui.border}`,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'all' ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: activeFilter === 'all' ? theme.ui.shadow.md : theme.ui.shadow.sm
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'all') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'all') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: activeFilter === 'all' ? 'white' : theme.ui.text.primary
             }}>
-              🔥🔥🔥 {Array.from(stockData.values()).filter(s => s.fire_level === 3).length}
+              {tickers.length}
             </div>
             <div style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              backgroundColor: theme.fire.level2.primary,
-              color: theme.ui.surface,
-              borderRadius: theme.borderRadius.md,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.bold,
-              boxShadow: theme.ui.shadow.sm
+              fontSize: theme.typography.fontSize.xs,
+              color: activeFilter === 'all' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              fontWeight: theme.typography.fontWeight.medium
             }}>
-              🔥🔥 {Array.from(stockData.values()).filter(s => s.fire_level === 2).length}
-            </div>
-            <div style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              backgroundColor: theme.fire.level1.primary,
-              color: theme.ui.text.primary,
-              borderRadius: theme.borderRadius.md,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.bold,
-              boxShadow: theme.ui.shadow.sm
-            }}>
-              🔥 {Array.from(stockData.values()).filter(s => s.fire_level === 1).length}
-            </div>
-            <div style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              backgroundColor: theme.ui.text.muted,
-              color: theme.ui.surface,
-              borderRadius: theme.borderRadius.md,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.bold,
-              boxShadow: theme.ui.shadow.sm
-            }}>
-              No Fire {tickers.length - stockData.size}
-            </div>
-            <div style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              backgroundColor: theme.holdings.primary,
-              color: theme.ui.text.primary,
-              borderRadius: theme.borderRadius.md,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.bold,
-              boxShadow: theme.ui.shadow.sm
-            }}>
-              ⭐ Holdings {holdings.size}
+              Total Tickers
             </div>
           </div>
-        )}
+
+          <div 
+            onClick={() => setActiveFilter('fire3')}
+            style={{
+              textAlign: 'center',
+              padding: theme.spacing.sm,
+              backgroundColor: activeFilter === 'fire3' ? getFireLevelStyle(3).primary : getFireLevelStyle(3).background,
+              borderRadius: theme.borderRadius.md,
+              border: `2px solid ${activeFilter === 'fire3' ? getFireLevelStyle(3).primary : getFireLevelStyle(3).border}`,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'fire3' ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: activeFilter === 'fire3' ? theme.ui.shadow.md : theme.ui.shadow.sm
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'fire3') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'fire3') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: activeFilter === 'fire3' ? 'white' : getFireLevelStyle(3).primary
+            }}>
+              {fire3Tickers.length}
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.xs,
+              color: activeFilter === 'fire3' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              🔥🔥🔥
+            </div>
+          </div>
+
+          <div 
+            onClick={() => setActiveFilter('fire2')}
+            style={{
+              textAlign: 'center',
+              padding: theme.spacing.sm,
+              backgroundColor: activeFilter === 'fire2' ? getFireLevelStyle(2).primary : getFireLevelStyle(2).background,
+              borderRadius: theme.borderRadius.md,
+              border: `2px solid ${activeFilter === 'fire2' ? getFireLevelStyle(2).primary : getFireLevelStyle(2).border}`,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'fire2' ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: activeFilter === 'fire2' ? theme.ui.shadow.md : theme.ui.shadow.sm
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'fire2') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'fire2') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: activeFilter === 'fire2' ? 'white' : getFireLevelStyle(2).primary
+            }}>
+              {fire2Tickers.length}
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.xs,
+              color: activeFilter === 'fire2' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              🔥🔥
+            </div>
+          </div>
+
+          <div 
+            onClick={() => setActiveFilter('fire1')}
+            style={{
+              textAlign: 'center',
+              padding: theme.spacing.sm,
+              backgroundColor: activeFilter === 'fire1' ? getFireLevelStyle(1).primary : getFireLevelStyle(1).background,
+              borderRadius: theme.borderRadius.md,
+              border: `2px solid ${activeFilter === 'fire1' ? getFireLevelStyle(1).primary : getFireLevelStyle(1).border}`,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'fire1' ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: activeFilter === 'fire1' ? theme.ui.shadow.md : theme.ui.shadow.sm
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'fire1') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'fire1') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: activeFilter === 'fire1' ? 'white' : getFireLevelStyle(1).primary
+            }}>
+              {fire1Tickers.length}
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.xs,
+              color: activeFilter === 'fire1' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              🔥
+            </div>
+          </div>
+
+          <div 
+            onClick={() => setActiveFilter('nofire')}
+            style={{
+              textAlign: 'center',
+              padding: theme.spacing.sm,
+              backgroundColor: activeFilter === 'nofire' ? theme.ui.text.secondary : theme.ui.background,
+              borderRadius: theme.borderRadius.md,
+              border: `2px solid ${activeFilter === 'nofire' ? theme.ui.text.secondary : theme.ui.border}`,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'nofire' ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: activeFilter === 'nofire' ? theme.ui.shadow.md : theme.ui.shadow.sm
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'nofire') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'nofire') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: activeFilter === 'nofire' ? 'white' : theme.ui.text.secondary
+            }}>
+              {noFireTickers.length}
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.xs,
+              color: activeFilter === 'nofire' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              No Fire
+            </div>
+          </div>
+
+          <div 
+            onClick={() => setActiveFilter('holdings')}
+            style={{
+              textAlign: 'center',
+              padding: theme.spacing.sm,
+              backgroundColor: activeFilter === 'holdings' ? '#ffd700' : '#fff3cd',
+              borderRadius: theme.borderRadius.md,
+              border: `2px solid ${activeFilter === 'holdings' ? '#ffd700' : '#ffeaa7'}`,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'holdings' ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: activeFilter === 'holdings' ? theme.ui.shadow.md : theme.ui.shadow.sm
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'holdings') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'holdings') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: activeFilter === 'holdings' ? 'white' : '#ffd700'
+            }}>
+              {holdingTickers.length}
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.xs,
+              color: activeFilter === 'holdings' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              ⭐ Holdings
+            </div>
+          </div>
+        </div>
       </div>
 
-      {error && (
-        <div style={{
-          padding: theme.spacing.md,
-          backgroundColor: '#f8d7da',
-          color: '#721c24',
-          border: '1px solid #f5c6cb',
-          borderRadius: theme.borderRadius.md,
-          marginBottom: theme.spacing.xl,
-          textAlign: 'center',
-          fontFamily: theme.typography.fontFamily,
-          fontSize: theme.typography.fontSize.base
-        }}>
-          ❌ {error}
-        </div>
-      )}
-
-      {/* Bulk Input Section */}
+      {/* Content Section */}
       <div style={{
-        backgroundColor: theme.ui.surface,
-        padding: theme.spacing.xl,
-        borderRadius: theme.borderRadius.lg,
-        boxShadow: theme.ui.shadow.md,
-        marginBottom: theme.spacing.xxl
+        flex: 1,
+        padding: theme.spacing.lg,
+        overflow: 'auto'
       }}>
-        <h2 style={{ 
-          margin: `0 0 ${theme.spacing.lg} 0`, 
-          color: theme.ui.text.primary,
-          fontFamily: theme.typography.fontFamily,
-          fontSize: theme.typography.fontSize.xl,
-          fontWeight: theme.typography.fontWeight.semibold
-        }}>
-          Add/Update Tickers
-        </h2>
-        <p style={{ 
-          color: theme.ui.text.secondary, 
-          fontSize: theme.typography.fontSize.base, 
-          margin: `0 0 ${theme.spacing.lg} 0`,
-          fontFamily: theme.typography.fontFamily
-        }}>
-          Enter tickers separated by commas, spaces, or new lines
-        </p>
-        
-        <textarea
-          value={bulkTickersText}
-          onChange={(e) => setBulkTickersText(e.target.value)}
-          placeholder="AAPL, MSFT, GOOGL, TSLA&#10;NVDA AMZN META&#10;NFLX"
-          rows={6}
-          style={{
-            width: '100%',
+        {error && (
+          <div style={{
             padding: theme.spacing.md,
-            border: `1px solid ${theme.ui.border}`,
+            backgroundColor: '#f8d7da',
+            color: '#721c24',
             borderRadius: theme.borderRadius.md,
-            fontSize: theme.typography.fontSize.base,
-            fontFamily: 'monospace',
-            resize: 'vertical',
-            boxSizing: 'border-box',
-            transition: `border-color ${theme.transition.normal}`,
-            outline: 'none'
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = theme.price.under1.primary;
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = theme.ui.border;
-          }}
-        />
-        
-        <div style={{ 
-          marginTop: theme.spacing.lg, 
-          display: 'flex', 
-          gap: theme.spacing.md,
-          flexWrap: 'wrap'
-        }}>
-          <button
-            onClick={handleBulkAdd}
-            disabled={!bulkTickersText.trim()}
-            style={{
-              padding: `${theme.spacing.md} ${theme.spacing.xl}`,
-              backgroundColor: bulkTickersText.trim() ? theme.status.success : theme.ui.text.muted,
-              color: theme.ui.surface,
-              border: 'none',
-              borderRadius: theme.borderRadius.md,
-              cursor: bulkTickersText.trim() ? 'pointer' : 'not-allowed',
-              fontWeight: theme.typography.fontWeight.bold,
-              fontSize: theme.typography.fontSize.base,
-              fontFamily: theme.typography.fontFamily,
-              transition: `all ${theme.transition.normal}`,
-              boxShadow: theme.ui.shadow.sm
-            }}
-            onMouseEnter={(e) => {
-              if (bulkTickersText.trim()) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-            }}
-          >
-            ➕ Add New Tickers
-          </button>
-          
-          <button
-            onClick={handleBulkUpdate}
-            disabled={!bulkTickersText.trim()}
-            style={{
-              padding: `${theme.spacing.md} ${theme.spacing.xl}`,
-              backgroundColor: bulkTickersText.trim() ? theme.status.info : theme.ui.text.muted,
-              color: theme.ui.surface,
-              border: 'none',
-              borderRadius: theme.borderRadius.md,
-              cursor: bulkTickersText.trim() ? 'pointer' : 'not-allowed',
-              fontWeight: theme.typography.fontWeight.bold,
-              fontSize: theme.typography.fontSize.base,
-              fontFamily: theme.typography.fontFamily,
-              transition: `all ${theme.transition.normal}`,
-              boxShadow: theme.ui.shadow.sm
-            }}
-            onMouseEnter={(e) => {
-              if (bulkTickersText.trim()) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-            }}
-          >
-            🔄 Replace All Tickers
-          </button>
-        </div>
-      </div>
+            marginBottom: theme.spacing.md,
+            border: '1px solid #f5c6cb'
+          }}>
+            {error}
+          </div>
+        )}
 
-      {/* All Tickers Display */}
-      <div style={{
-        backgroundColor: theme.ui.surface,
-        padding: theme.spacing.xl,
-        borderRadius: theme.borderRadius.lg,
-        boxShadow: theme.ui.shadow.md
-      }}>
-        <SectionHeader
-          title="All Tickers"
-          count={tickers.length}
-          color={theme.ui.text.primary}
-          actions={
-            <>
-              <button
-                onClick={async () => {
-                  try {
-                    await fetch('http://localhost:9000/api/scan/daily', { method: 'POST' });
-                    setTimeout(() => {
-                      loadStockData();
-                    }, 3000);
-                  } catch (error) {
-                    console.error('Daily scan failed:', error);
-                    setError('Daily scan failed');
-                  }
-                }}
-                style={{
-                  padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-                  backgroundColor: theme.status.success,
-                  color: theme.ui.surface,
-                  border: 'none',
-                  borderRadius: theme.borderRadius.md,
-                  cursor: 'pointer',
-                  fontWeight: theme.typography.fontWeight.bold,
-                  fontSize: theme.typography.fontSize.sm,
-                  fontFamily: theme.typography.fontFamily,
-                  transition: `all ${theme.transition.normal}`,
-                  boxShadow: theme.ui.shadow.sm
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-                }}
-              >
-                � Daily Scan
-              </button>
-              <button
-                onClick={async () => {
-                  try {
-                    await fetch('http://localhost:9000/api/scan/start', { method: 'POST' });
-                    setTimeout(() => {
-                      loadStockData();
-                    }, 5000);
-                  } catch (error) {
-                    console.error('Full scan failed:', error);
-                    setError('Full scan failed');
-                  }
-                }}
-                style={{
-                  padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-                  backgroundColor: '#fd7e14',
-                  color: theme.ui.surface,
-                  border: 'none',
-                  borderRadius: theme.borderRadius.md,
-                  cursor: 'pointer',
-                  fontWeight: theme.typography.fontWeight.bold,
-                  fontSize: theme.typography.fontSize.sm,
-                  fontFamily: theme.typography.fontFamily,
-                  transition: `all ${theme.transition.normal}`,
-                  boxShadow: theme.ui.shadow.sm
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-                }}
-              >
-                🔍 Full Scan
-              </button>
-              <button
-                onClick={loadStockData}
-                style={{
-                  padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-                  backgroundColor: theme.status.info,
-                  color: theme.ui.surface,
-                  border: 'none',
-                  borderRadius: theme.borderRadius.md,
-                  cursor: 'pointer',
-                  fontWeight: theme.typography.fontWeight.bold,
-                  fontSize: theme.typography.fontSize.sm,
-                  fontFamily: theme.typography.fontFamily,
-                  transition: `all ${theme.transition.normal}`,
-                  boxShadow: theme.ui.shadow.sm
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-                }}
-              >
-                🔄 Refresh Data
-              </button>
-            </>
-          }
-        />
-        
-        {tickers.length > 0 ? (
-          <StockGrid
-            stocks={tickers.map(ticker => {
-              const stock = stockData.get(ticker);
-              return stock || {
-                ticker,
-                price: 0,
-                blackrock_pct: 0,
-                vanguard_pct: 0,
-                fire_level: 0,
-                is_new: false
-              } as Stock;
-            })}
-            holdings={holdings}
-            onToggleHolding={toggleHolding}
-            onOpenChart={openChart}
-            showHoldingStar={true}
-            emptyMessage="No tickers configured"
-            emptyDescription="Add some tickers above to start scanning"
-          />
+        {tickersWithData.length > 0 ? (
+          <>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: theme.spacing.md,
+              height: 'fit-content'
+            }}>
+              {filteredStocks.map(ticker => {
+                const stock = stockData.get(ticker)!;
+                return (
+                  <StockCard
+                    key={ticker}
+                    stock={stock}
+                    isHolding={holdings.has(ticker)}
+                    onToggleHolding={handleToggleHolding}
+                    onOpenChart={handleOpenChart}
+                  />
+                );
+              })}
+            </div>
+          </>
         ) : (
           <div style={{
             textAlign: 'center',
             padding: theme.spacing.xxl,
-            color: theme.ui.text.secondary,
-            fontFamily: theme.typography.fontFamily
+            color: theme.ui.text.secondary
           }}>
             <h3 style={{ 
               margin: `0 0 ${theme.spacing.md} 0`,
@@ -596,11 +531,19 @@ const TickerManagement: React.FC = () => {
               margin: 0,
               fontSize: theme.typography.fontSize.base
             }}>
-              Add some tickers above to start scanning
+              Click "Add/Update Tickers" to get started
             </p>
           </div>
         )}
       </div>
+
+      {/* Modal */}
+      <TickerModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSave={handleSaveTickers}
+        currentTickers={tickers}
+      />
     </div>
   );
 };

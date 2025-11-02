@@ -477,7 +477,6 @@ const FireDashboard: React.FC = () => {
           </div>
         </button>
       </div>
-
       {/* Selected Stocks Display */}
       {(selectedPriceFilter || showOnlyHoldings) &&
         displayStocks.length > 0 && (
@@ -727,7 +726,6 @@ const FireDashboard: React.FC = () => {
             </div>
           </section>
         )}
-
       {(selectedPriceFilter || showOnlyHoldings) &&
         displayStocks.length === 0 && (
           <div
@@ -773,7 +771,6 @@ const FireDashboard: React.FC = () => {
             </button>
           </div>
         )}
-
       {!selectedPriceFilter && !showOnlyHoldings && fireStocks.length > 0 && (
         <section style={{ marginBottom: "25px", width: "100%" }}>
           <div
@@ -1010,7 +1007,6 @@ const FireDashboard: React.FC = () => {
           </div>
         </section>
       )}
-
       {fireStocks.length === 0 && !selectedPriceFilter && (
         <div
           style={{
@@ -1031,35 +1027,7 @@ const FireDashboard: React.FC = () => {
             Start a scan to discover stocks with strong institutional backing
           </p>
         </div>
-      )}
-
-      {/* Footer */}
-      {results && (
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: "25px",
-            padding: "15px",
-            backgroundColor: "#fff",
-            borderRadius: "6px",
-            color: "#666",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "0.8rem",
-              fontWeight: "600",
-              marginBottom: "2px",
-            }}
-          >
-            Last Scan
-          </div>
-          <div style={{ fontSize: "0.9rem", color: "#333" }}>
-            {new Date(results.timestamp).toLocaleString()}
-          </div>
-        </div>
-      )}
+      )}{" "}
     </div>
   );
 };

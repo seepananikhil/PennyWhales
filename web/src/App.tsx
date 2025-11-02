@@ -1,32 +1,36 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import { ThemeProvider, useTheme } from './ThemeContext';
 import FireDashboard from './FireDashboard';
 import TickerManagement from './TickerManagement';
+import Scans from './Scans';
 import Sidebar from './components/Sidebar';
 
-type Page = 'dashboard' | 'tickers';
-
 const AppContent: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="app" data-theme={theme}>
-      <Sidebar
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        isDarkTheme={theme === 'dark'}
-        onToggleTheme={toggleTheme}
-      />
-      
-      <div className="app-content">
-        <main className="app-main">
-          {currentPage === 'dashboard' && <FireDashboard />}
-          {currentPage === 'tickers' && <TickerManagement />}
-        </main>
+    <Router>
+      <div className="app" data-theme={theme}>
+        <Sidebar
+          isDarkTheme={theme === 'dark'}
+          onToggleTheme={toggleTheme}
+        />
+        
+        <div className="app-content">
+          <main className="app-main">
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<FireDashboard />} />
+              <Route path="/tickers" element={<TickerManagement />} />
+              <Route path="/scans" element={<Scans />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </main>
+        </div>
       </div>
-    </div>
+    </Router>
   );
 };
 

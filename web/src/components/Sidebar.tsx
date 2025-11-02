@@ -1,16 +1,13 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import { theme } from '../theme';
 
 interface SidebarProps {
-  currentPage: 'dashboard' | 'tickers';
-  onPageChange: (page: 'dashboard' | 'tickers') => void;
   isDarkTheme: boolean;
   onToggleTheme: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
-  currentPage,
-  onPageChange,
   isDarkTheme,
   onToggleTheme,
 }) => {
@@ -31,23 +28,32 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Navigation Items */}
       <nav className="sidebar-nav">
-        <button
-          className={`sidebar-nav-item ${currentPage === 'dashboard' ? 'active' : ''}`}
-          onClick={() => onPageChange('dashboard')}
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
           title="Fire Dashboard"
         >
           <span className="nav-icon">🔥</span>
           <span className="nav-text">Dashboard</span>
-        </button>
+        </NavLink>
         
-        <button
-          className={`sidebar-nav-item ${currentPage === 'tickers' ? 'active' : ''}`}
-          onClick={() => onPageChange('tickers')}
+        <NavLink
+          to="/tickers"
+          className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
           title="Ticker Management"
         >
           <span className="nav-icon">🎯</span>
           <span className="nav-text">Tickers</span>
-        </button>
+        </NavLink>
+
+        <NavLink
+          to="/scans"
+          className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+          title="Stock Scans"
+        >
+          <span className="nav-icon">🔍</span>
+          <span className="nav-text">Scans</span>
+        </NavLink>
       </nav>
 
       {/* Footer Actions */}

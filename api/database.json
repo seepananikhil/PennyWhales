@@ -1573,7 +1573,7 @@
       },
       {
         "ticker": "PDSB",
-        "price": 0.935,
+        "price": 0.9351,
         "blackrock_pct": 1.0944489361702128,
         "vanguard_pct": 4.151793617021276,
         "blackrock_source": "Nasdaq",
@@ -1588,7 +1588,7 @@
         "price_change": 0,
         "is_new": false,
         "rank_category": 2,
-        "rank_score": 0.935
+        "rank_score": 0.9351
       },
       {
         "ticker": "DXLG",
@@ -2712,6 +2712,25 @@
         "rank_score": 2.21
       },
       {
+        "ticker": "SEER",
+        "price": 2.21,
+        "blackrock_pct": 3.6045057692307694,
+        "vanguard_pct": 4.235853846153846,
+        "blackrock_source": "Nasdaq",
+        "vanguard_source": "Nasdaq",
+        "data_quality": "🔥 High",
+        "sources_count": 1,
+        "discrepancy": false,
+        "notes": "",
+        "fire_level": 1,
+        "previous_fire_level": 1,
+        "fire_level_changed": false,
+        "price_change": 0,
+        "is_new": false,
+        "rank_category": 2,
+        "rank_score": 2.21
+      },
+      {
         "ticker": "HYFM",
         "price": 2.215,
         "blackrock_pct": 1.0092999999999999,
@@ -3359,20 +3378,22 @@
       }
     ],
     "summary": {
-      "total_processed": 158,
-      "qualifying_count": 157,
+      "total_processed": 371,
+      "qualifying_count": 158,
       "high_tier": 49,
-      "medium_tier": 104,
+      "medium_tier": 105,
       "low_tier": 4,
       "under_dollar": 19,
       "premium_count": 1,
       "fire_level_3": 32,
       "fire_level_2": 24,
-      "fire_level_1": 101,
-      "total_fire_stocks": 157
+      "fire_level_1": 102,
+      "fire_level_0": 0,
+      "total_fire_stocks": 158,
+      "total_scanned_stocks": 158
     },
-    "timestamp": "2025-11-02T12:45:23.330Z",
-    "new_stocks_only": false
+    "timestamp": "2025-11-02T18:56:20.687Z",
+    "new_stocks_only": true
   },
   "processedStocks": {
     "stocks": [
@@ -3748,7 +3769,7 @@
       "PLUG",
       "FPA"
     ],
-    "last_updated": "2025-11-02T11:57:07.386Z"
+    "last_updated": "2025-11-02T18:35:16.662Z"
   },
   "settings": {},
   "watchlists": [
@@ -3768,6 +3789,6 @@
   ],
   "holdings": {
     "stocks": [],
-    "last_updated": "2025-11-02T17:21:39.952Z"
+    "last_updated": "2025-11-02T17:59:07.720Z"
   }
 }

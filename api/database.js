@@ -214,6 +214,7 @@ class DatabaseService {
     const fireLevel3 = uniqueStocks.filter(s => s.fire_level === 3).length;
     const fireLevel2 = uniqueStocks.filter(s => s.fire_level === 2).length;
     const fireLevel1 = uniqueStocks.filter(s => s.fire_level === 1).length;
+    const fireLevel0 = uniqueStocks.filter(s => s.fire_level === 0).length;
     
     this.db.data.scanResults = {
       ...results,
@@ -223,7 +224,9 @@ class DatabaseService {
         fire_level_3: fireLevel3,
         fire_level_2: fireLevel2,
         fire_level_1: fireLevel1,
-        total_fire_stocks: fireLevel3 + fireLevel2 + fireLevel1
+        fire_level_0: fireLevel0,
+        total_fire_stocks: fireLevel3 + fireLevel2 + fireLevel1,
+        total_scanned_stocks: uniqueStocks.length
       },
       timestamp: new Date().toISOString()
     };
@@ -290,28 +293,57 @@ class DatabaseService {
 
   async addProcessedStocks(tickers) {
     await this.init();
-    let added = 0;
+    const normalizedTickers = tickers.map(t => t.toUpperCase().trim());
     
     // Ensure processedStocks structure exists
     if (!this.db.data.processedStocks) {
       this.db.data.processedStocks = { stocks: [], last_updated: null };
     }
-    
-    for (const ticker of tickers) {
-      const normalizedTicker = ticker.toUpperCase().trim();
-      if (!this.db.data.processedStocks.stocks.includes(normalizedTicker)) {
-        this.db.data.processedStocks.stocks.push(normalizedTicker);
-        added++;
+
+    // Add new tickers that aren't already processed
+    normalizedTickers.forEach(ticker => {
+      if (!this.db.data.processedStocks.stocks.includes(ticker)) {
+        this.db.data.processedStocks.stocks.push(ticker);
       }
-    }
-    
-    if (added > 0) {
+    });
+
+    if (normalizedTickers.length > 0) {
       this.db.data.processedStocks.last_updated = new Date().toISOString();
       await this.db.write();
-      console.log(`📊 Added ${added} processed stocks`);
     }
+  }
+
+  // New method to save complete processed stock data with BlackRock/Vanguard info
+  async saveProcessedStockData(stocks) {
+    await this.init();
     
-    return added;
+    // Ensure processedStocks structure exists with new format
+    if (!this.db.data.processedStocksData) {
+      this.db.data.processedStocksData = { 
+        stocks: [], 
+        last_updated: null 
+      };
+    }
+
+    // Remove duplicates by ticker and add new stocks
+    const existingTickers = new Set(this.db.data.processedStocksData.stocks.map(s => s.ticker));
+    const newStocks = stocks.filter(stock => !existingTickers.has(stock.ticker));
+    
+    // Update existing stocks and add new ones
+    this.db.data.processedStocksData.stocks = [
+      ...this.db.data.processedStocksData.stocks.filter(existingStock => 
+        !stocks.some(newStock => newStock.ticker === existingStock.ticker)
+      ),
+      ...stocks
+    ];
+
+    this.db.data.processedStocksData.last_updated = new Date().toISOString();
+    await this.db.write();
+  }
+
+  async getProcessedStockData() {
+    await this.init();
+    return this.db.data.processedStocksData?.stocks || [];
   }
 
   async resetProcessedStocks() {
