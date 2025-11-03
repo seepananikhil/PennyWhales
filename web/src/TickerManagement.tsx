@@ -13,6 +13,7 @@ const TickerManagement: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('combined-desc');
 
   useEffect(() => {
     loadData();
@@ -126,13 +127,50 @@ const TickerManagement: React.FC = () => {
         stocks = tickersWithData;
     }
     
-    // Sort by price (highest to lowest)
+    // Sort stocks based on selected sort option
     return stocks.sort((a, b) => {
       const stockA = stockData.get(a);
       const stockB = stockData.get(b);
-      const priceA = stockA?.price || 0;
-      const priceB = stockB?.price || 0;
-      return priceB - priceA;
+      
+      if (!stockA || !stockB) return 0;
+      
+      switch (sortBy) {
+        case 'combined-desc':
+          // Sort by combined VG + BR percentage (highest first)
+          const combinedA = stockA.vanguard_pct + stockA.blackrock_pct;
+          const combinedB = stockB.vanguard_pct + stockB.blackrock_pct;
+          return combinedB - combinedA;
+        case 'combined-asc':
+          // Sort by combined VG + BR percentage (lowest first)
+          const combinedAsc = stockA.vanguard_pct + stockA.blackrock_pct;
+          const combinedBsc = stockB.vanguard_pct + stockB.blackrock_pct;
+          return combinedAsc - combinedBsc;
+        case 'vg-desc':
+          return stockB.vanguard_pct - stockA.vanguard_pct;
+        case 'vg-asc':
+          return stockA.vanguard_pct - stockB.vanguard_pct;
+        case 'br-desc':
+          return stockB.blackrock_pct - stockA.blackrock_pct;
+        case 'br-asc':
+          return stockA.blackrock_pct - stockB.blackrock_pct;
+        case 'fire-desc':
+          const fireA = stockA.fire_level || 0;
+          const fireB = stockB.fire_level || 0;
+          if (fireA !== fireB) return fireB - fireA;
+          // If fire levels are equal, sort by combined VG+BR as secondary
+          const fireComboA = stockA.vanguard_pct + stockA.blackrock_pct;
+          const fireComboB = stockB.vanguard_pct + stockB.blackrock_pct;
+          return fireComboB - fireComboA;
+        case 'price-desc':
+          return stockB.price - stockA.price;
+        case 'price-asc':
+          return stockA.price - stockB.price;
+        default:
+          // Default to combined VG + BR (highest first)
+          const defaultA = stockA.vanguard_pct + stockA.blackrock_pct;
+          const defaultB = stockB.vanguard_pct + stockB.blackrock_pct;
+          return defaultB - defaultA;
+      }
     });
   };
 
@@ -183,31 +221,59 @@ const TickerManagement: React.FC = () => {
           }}>
             🎯 Ticker Management
           </h1>
-          <button
-            onClick={() => setShowModal(true)}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-              border: 'none',
-              borderRadius: theme.borderRadius.md,
-              backgroundColor: theme.status.info,
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold,
-              transition: `all ${theme.transition.normal}`,
-              boxShadow: theme.ui.shadow.sm
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-            }}
-          >
-            ✏️ Add/Update Tickers
-          </button>
+          <div style={{ display: 'flex', gap: theme.spacing.md, alignItems: 'center' }}>
+            {/* Sort Dropdown */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{
+                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                border: `1px solid ${theme.ui.border}`,
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: theme.ui.surface,
+                color: theme.ui.text.primary,
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.medium,
+                cursor: 'pointer',
+                fontFamily: theme.typography.fontFamily
+              }}
+            >
+              <option value="combined-desc">🔥 VG + BR % (High to Low)</option>
+              <option value="combined-asc">🔥 VG + BR % (Low to High)</option>
+              <option value="vg-desc">🔄 VG % (High to Low)</option>
+              <option value="vg-asc">🔄 VG % (Low to High)</option>
+              <option value="br-desc">🔄 BR % (High to Low)</option>
+              <option value="br-asc">🔄 BR % (Low to High)</option>
+              <option value="fire-desc">🔥 Fire Level (High to Low)</option>
+              <option value="price-desc">💰 Price (High to Low)</option>
+              <option value="price-asc">💰 Price (Low to High)</option>
+            </select>
+            <button
+              onClick={() => setShowModal(true)}
+              style={{
+                padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+                border: 'none',
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: theme.status.info,
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.semibold,
+                transition: `all ${theme.transition.normal}`,
+                boxShadow: theme.ui.shadow.sm
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }}
+            >
+              ✏️ Add/Update Tickers
+            </button>
+          </div>
         </div>
 
         {/* Stats Row */}
