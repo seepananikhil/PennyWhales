@@ -17,6 +17,11 @@ const TickerManagement: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [scanProgress, setScanProgress] = useState<{
+    scanning: boolean;
+    progress: { current: number; total: number; percentage: number } | null;
+    message: string | null;
+  }>({ scanning: false, progress: null, message: null });
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('combined-desc');
 
@@ -129,6 +134,72 @@ const TickerManagement: React.FC = () => {
       setError('Failed to update tickers');
       console.error('Error updating tickers:', err);
     }
+  };
+
+  const handleAddNewTickers = async (newTickers: string[]) => {
+    try {
+      setScanProgress({ scanning: true, progress: null, message: 'Adding new tickers...' });
+      
+      const result = await api.addNewTickers(newTickers);
+      
+      if (result.success && result.added > 0) {
+        setScanProgress({ 
+          scanning: true, 
+          progress: null, 
+          message: `Added ${result.added} new tickers. Starting fire analysis...` 
+        });
+        
+        // Update tickers list immediately
+        await loadTickers();
+        
+        // Monitor scan progress
+        monitorScanProgress();
+        
+      } else {
+        setScanProgress({ scanning: false, progress: null, message: null });
+        setError(result.message || 'No new tickers to add');
+      }
+    } catch (err) {
+      setScanProgress({ scanning: false, progress: null, message: null });
+      setError('Failed to add new tickers');
+      console.error('Error adding new tickers:', err);
+    }
+  };
+
+  const monitorScanProgress = async () => {
+    const checkProgress = async () => {
+      try {
+        const status = await api.getScanStatus();
+        
+        if (status.scanning) {
+          setScanProgress({
+            scanning: true,
+            progress: status.progress,
+            message: status.progress 
+              ? `Analyzing fire levels: ${status.progress.current}/${status.progress.total} (${status.progress.percentage}%)`
+              : 'Analyzing fire levels for new tickers...'
+          });
+          
+          // Continue monitoring
+          setTimeout(checkProgress, 2000);
+        } else {
+          // Scan completed
+          setScanProgress({ scanning: false, progress: null, message: null });
+          
+          // Refresh data
+          await loadStockData();
+          
+          if (status.error) {
+            setError(`Scan completed with error: ${status.error}`);
+          }
+        }
+      } catch (err) {
+        console.error('Error monitoring scan progress:', err);
+        setScanProgress({ scanning: false, progress: null, message: null });
+      }
+    };
+    
+    checkProgress();
   };
 
   const handleToggleHolding = async (ticker: string) => {
@@ -342,7 +413,7 @@ const TickerManagement: React.FC = () => {
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }}
             >
-              ✏️ Add/Update Tickers
+              🎯 Manage Tickers
             </button>
           </div>
         </div>
@@ -627,6 +698,33 @@ const TickerManagement: React.FC = () => {
           </div>
         )}
 
+        {scanProgress.scanning && (
+          <div style={{
+            padding: theme.spacing.lg,
+            backgroundColor: '#d1ecf1',
+            border: `1px solid #bee5eb`,
+            borderRadius: theme.borderRadius.md,
+            marginBottom: theme.spacing.md,
+            textAlign: 'center'
+          }}>
+            <div style={{
+              fontSize: '2rem',
+              marginBottom: theme.spacing.sm,
+              animation: 'spin 2s linear infinite'
+            }}>
+              🔄
+            </div>
+            <p style={{
+              margin: 0,
+              fontSize: theme.typography.fontSize.base,
+              fontWeight: theme.typography.fontWeight.semibold,
+              color: theme.ui.text.primary
+            }}>
+              {scanProgress.message || 'Processing...'}
+            </p>
+          </div>
+        )}
+
         {tickersWithData.length > 0 ? (
           <>
 
@@ -681,8 +779,17 @@ const TickerManagement: React.FC = () => {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onSave={handleSaveTickers}
+        onAddNew={handleAddNewTickers}
         currentTickers={tickers}
       />
+
+      {/* Add CSS for spinning animation */}
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

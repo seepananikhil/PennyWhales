@@ -232,9 +232,6 @@ app.put('/api/tickers', async (req, res) => {
     // Auto-trigger full scan after ticker list update
     console.log('🎯 Ticker list updated, triggering automatic full scan...');
     
-    // Clear processed stocks to force full scan
-    await dbService.resetProcessedStocks();
-    
     // Start scan in background
     setTimeout(async () => {
       try {
@@ -271,9 +268,6 @@ app.patch('/api/tickers', async (req, res) => {
     // Auto-trigger full scan after adding new tickers
     if (added.length > 0) {
       console.log(`🎯 ${added.length} new tickers added, triggering automatic full scan...`);
-      
-      // Clear processed stocks to force full scan
-      await dbService.resetProcessedStocks();
       
       // Start scan in background
       setTimeout(async () => {

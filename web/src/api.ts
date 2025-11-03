@@ -44,6 +44,11 @@ export const api = {
     return response.data;
   },
 
+  addNewTickers: async (tickers: string[]): Promise<{ success: boolean; added: number; tickers: string[]; message: string }> => {
+    const response = await axios.patch(`${API_BASE}/api/tickers`, { tickers });
+    return response.data;
+  },
+
   updateTickers: async (tickers: string[]): Promise<{ success: boolean; tickers: string[]; count: number }> => {
     const response = await axios.put(`${API_BASE}/api/tickers`, { tickers });
     return response.data;

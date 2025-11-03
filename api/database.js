@@ -35,10 +35,6 @@ class DatabaseService {
         timestamp: null,
         new_stocks_only: false
       },
-      processedStocks: {
-        stocks: [],
-        last_updated: null
-      },
       watchlists: [
         {
           id: 'default',
@@ -259,102 +255,8 @@ class DatabaseService {
       new_stocks_only: false
     };
     
-    // Also clear processed stocks
-    this.db.data.processedStocks = {
-      stocks: [],
-      last_updated: null
-    };
-    
     await this.db.write();
-    await this.db.write();
-        console.log('🗑️ Cleared scan results and processed stocks (tickers, holdings, and watchlists preserved)');
-  }
-
-  // Processed Stocks Management
-  async getProcessedStocks() {
-    await this.init();
-    return this.db.data.processedStocks?.stocks || [];
-  }
-
-  async addProcessedStock(ticker) {
-    await this.init();
-    const normalizedTicker = ticker.toUpperCase().trim();
-    
-    // Ensure processedStocks structure exists
-    if (!this.db.data.processedStocks) {
-      this.db.data.processedStocks = { stocks: [], last_updated: null };
-    }
-    
-    if (!this.db.data.processedStocks.stocks.includes(normalizedTicker)) {
-      this.db.data.processedStocks.stocks.push(normalizedTicker);
-      this.db.data.processedStocks.last_updated = new Date().toISOString();
-      await this.db.write();
-    }
-  }
-
-  async addProcessedStocks(tickers) {
-    await this.init();
-    const normalizedTickers = tickers.map(t => t.toUpperCase().trim());
-    
-    // Ensure processedStocks structure exists
-    if (!this.db.data.processedStocks) {
-      this.db.data.processedStocks = { stocks: [], last_updated: null };
-    }
-
-    // Add new tickers that aren't already processed
-    normalizedTickers.forEach(ticker => {
-      if (!this.db.data.processedStocks.stocks.includes(ticker)) {
-        this.db.data.processedStocks.stocks.push(ticker);
-      }
-    });
-
-    if (normalizedTickers.length > 0) {
-      this.db.data.processedStocks.last_updated = new Date().toISOString();
-      await this.db.write();
-    }
-  }
-
-  // New method to save complete processed stock data with BlackRock/Vanguard info
-  async saveProcessedStockData(stocks) {
-    await this.init();
-    
-    // Ensure processedStocks structure exists with new format
-    if (!this.db.data.processedStocksData) {
-      this.db.data.processedStocksData = { 
-        stocks: [], 
-        last_updated: null 
-      };
-    }
-
-    // Remove duplicates by ticker and add new stocks
-    const existingTickers = new Set(this.db.data.processedStocksData.stocks.map(s => s.ticker));
-    const newStocks = stocks.filter(stock => !existingTickers.has(stock.ticker));
-    
-    // Update existing stocks and add new ones
-    this.db.data.processedStocksData.stocks = [
-      ...this.db.data.processedStocksData.stocks.filter(existingStock => 
-        !stocks.some(newStock => newStock.ticker === existingStock.ticker)
-      ),
-      ...stocks
-    ];
-
-    this.db.data.processedStocksData.last_updated = new Date().toISOString();
-    await this.db.write();
-  }
-
-  async getProcessedStockData() {
-    await this.init();
-    return this.db.data.processedStocksData?.stocks || [];
-  }
-
-  async resetProcessedStocks() {
-    await this.init();
-    this.db.data.processedStocks = {
-      stocks: [],
-      last_updated: new Date().toISOString()
-    };
-    await this.db.write();
-    console.log('🔄 Reset processed stocks');
+    console.log('🗑️ Cleared scan results (tickers, holdings, and watchlists preserved)');
   }
 
   // Watchlist functions

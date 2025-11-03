@@ -53,26 +53,6 @@ class StockScanner {
     return null;
   }
 
-  // Load processed stocks
-  async loadProcessedStocks() {
-    try {
-      const processedStocks = await dbService.getProcessedStocks();
-      return new Set(processedStocks || []);
-    } catch (error) {
-      console.error('Error loading processed stocks:', error);
-    }
-    return new Set();
-  }
-
-  // Save processed stocks
-  async saveProcessedStocks(stocks) {
-    try {
-      await dbService.addProcessedStocks(Array.from(stocks));
-    } catch (error) {
-      console.error('Error saving processed stocks:', error);
-    }
-  }
-
   // Get stock price using shared utility
   async getStockPrice(ticker) {
     return await getStockPriceData(ticker);
@@ -194,49 +174,95 @@ class StockScanner {
     }
   }
 
-  // Save results to JSON
-  async saveResults(stocks, totalProcessed) {
+  // Save results - handles both full scan and daily scan
+  async saveResults(stocks, totalProcessed, isDailyScan = false) {
     try {
-      // Add rankings
+      if (!isDailyScan) {
+        // Full scan: just save all results directly
+        const ranking = stocks.map(stock => {
+          const rank = this.calculateRanking(stock);
+          return {
+            ...stock,
+            rank_category: rank.category,
+            rank_score: rank.score
+          };
+        });
+
+        ranking.sort((a, b) => {
+          if (a.rank_category !== b.rank_category) return a.rank_category - b.rank_category;
+          return a.rank_score - b.rank_score;
+        });
+
+        const results = {
+          stocks: ranking,
+          summary: {
+            total_processed: totalProcessed,
+            qualifying_count: ranking.length,
+            high_tier: ranking.filter(s => s.rank_category === 1).length,
+            medium_tier: ranking.filter(s => s.rank_category === 2).length,
+            low_tier: ranking.filter(s => s.rank_category === 3).length,
+            under_dollar: ranking.filter(s => s.price < 1.0).length,
+            premium_count: ranking.filter(s => 
+              s.rank_category === 1 && s.blackrock_pct >= 5.0 && s.vanguard_pct >= 5.0 && s.price < 1.0
+            ).length,
+            fire_level_3: ranking.filter(s => s.fire_level === 3).length,
+            fire_level_2: ranking.filter(s => s.fire_level === 2).length,
+            fire_level_1: ranking.filter(s => s.fire_level === 1).length,
+            total_fire_stocks: ranking.filter(s => s.fire_level > 0).length
+          },
+          timestamp: new Date().toISOString()
+        };
+
+        await dbService.saveScanResults(results);
+        console.log(`✅ Full scan saved: ${ranking.length} stocks`);
+        return;
+      }
+
+      // Daily scan: merge with existing results
+      const currentResults = await dbService.getScanResults();
+      
+      if (!currentResults || !currentResults.stocks) {
+        console.log('⚠️ No existing scan results found. Saving daily scan as new results.');
+        // Just save the fire stocks if no existing data
+        await dbService.saveScanResults({
+          stocks: stocks,
+          summary: { total_processed: totalProcessed, qualifying_count: stocks.length },
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      // Create a map of updated fire stocks by ticker
+      const updatedStocksMap = new Map();
       stocks.forEach(stock => {
-        const ranking = this.calculateRanking(stock);
-        stock.rank_category = ranking.category;
-        stock.rank_score = Math.round(ranking.score * 100) / 100; // Round to 2 decimals
+        updatedStocksMap.set(stock.ticker, stock);
       });
 
-      // Sort stocks
-      stocks.sort((a, b) => {
-        if (a.rank_category !== b.rank_category) {
-          return a.rank_category - b.rank_category;
+      // Merge: Update existing fire stocks, keep everything else unchanged
+      const mergedStocks = currentResults.stocks.map(existingStock => {
+        if (updatedStocksMap.has(existingStock.ticker)) {
+          return updatedStocksMap.get(existingStock.ticker); // Replace with updated data
         }
+        return existingStock; // Keep unchanged
+      });
+
+      // Sort and save merged results
+      mergedStocks.sort((a, b) => {
+        if (a.rank_category !== b.rank_category) return a.rank_category - b.rank_category;
         return a.rank_score - b.rank_score;
       });
 
-      // Calculate summary
-      const highTier = stocks.filter(s => s.rank_category === 1);
-      const mediumTier = stocks.filter(s => s.rank_category === 2);
-      const lowTier = stocks.filter(s => s.rank_category === 3);
-      const underDollar = stocks.filter(s => s.price < 1.0);
-      const premium = highTier.filter(s => 
-        s.blackrock_pct >= 5.0 && s.vanguard_pct >= 5.0 && s.price < 1.0
-      );
-
       const results = {
-        stocks,
+        stocks: mergedStocks,
         summary: {
-          total_processed: totalProcessed,
-          qualifying_count: stocks.length,
-          high_tier: highTier.length,
-          medium_tier: mediumTier.length,
-          low_tier: lowTier.length,
-          under_dollar: underDollar.length,
-          premium_count: premium.length
+          ...currentResults.summary, // Keep original summary
+          qualifying_count: mergedStocks.length
         },
         timestamp: new Date().toISOString()
       };
 
       await dbService.saveScanResults(results);
-      console.log('✅ Results saved to database');
+      console.log(`✅ Daily scan merged: Updated ${stocks.length} fire stocks, total ${mergedStocks.length} stocks`);
     } catch (error) {
       console.error('Error saving results:', error);
     }
@@ -359,8 +385,8 @@ class StockScanner {
       await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_REQUESTS));
     }
 
-    // Save results
-    await this.saveResults(this.results, tickers.length);
+    // Save results using daily scan merge logic
+    await this.saveResults(this.results, tickers.length, true);
 
     const changeCount = this.results.filter(s => s.fire_level_changed).length;
     
