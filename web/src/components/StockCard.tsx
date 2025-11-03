@@ -31,22 +31,22 @@ const StockCard: React.FC<StockCardProps> = ({
     <div
       onClick={() => onOpenChart(stock.ticker)}
       style={{
-        padding: theme.spacing.md,
-        backgroundColor: fireLevel > 0 ? fireStyle.background : theme.ui.surface,
+        padding: "12px",
+        backgroundColor: fireLevel > 0 ? fireStyle.background : "#f8f9fa",
         border: `2px solid ${cardBorderColor}`,
         borderRadius: theme.borderRadius.md,
         cursor: "pointer",
-        transition: `all ${theme.transition.normal}`,
-        boxShadow: theme.ui.shadow.sm,
+        transition: "all 0.2s ease",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
         fontFamily: theme.typography.fontFamily,
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = "translateY(-2px)";
-        e.currentTarget.style.boxShadow = theme.ui.shadow.lg;
+        e.currentTarget.style.boxShadow = "0 3px 6px rgba(0,0,0,0.15)";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+        e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
       }}
     >
       <div
@@ -54,14 +54,14 @@ const StockCard: React.FC<StockCardProps> = ({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: theme.spacing.sm,
+          marginBottom: "6px",
         }}
       >
         <span
           style={{
-            fontWeight: theme.typography.fontWeight.bold,
-            fontSize: theme.typography.fontSize.lg,
-            color: theme.ui.text.primary,
+            fontWeight: "bold",
+            fontSize: "1rem",
+            color: "#333",
             textTransform: "uppercase",
           }}
         >
@@ -135,14 +135,7 @@ const StockCard: React.FC<StockCardProps> = ({
             </span>
           )}
           {stock.is_new && (
-            <span 
-              style={{ 
-                color: theme.status.new, 
-                marginLeft: theme.spacing.xs,
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.semibold
-              }}
-            >
+            <span style={{ color: "#28a745", marginLeft: "4px" }}>
               NEW
             </span>
           )}
@@ -151,23 +144,23 @@ const StockCard: React.FC<StockCardProps> = ({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: theme.spacing.xs,
+            gap: "4px",
           }}
         >
           {stock.fire_level_changed && (
             <span
               style={{
-                fontSize: theme.typography.fontSize.sm,
+                fontSize: "0.75rem",
                 color: stock.fire_level! > (stock.previous_fire_level || 0)
-                  ? theme.status.success
-                  : theme.status.danger,
-                fontWeight: theme.typography.fontWeight.bold,
+                  ? "#28a745"
+                  : "#dc3545",
+                fontWeight: "bold",
               }}
             >
               {stock.fire_level! > (stock.previous_fire_level || 0) ? "▲" : "▼"}
             </span>
           )}
-          <span style={{ fontSize: theme.typography.fontSize.lg }}>
+          <span style={{ fontSize: "1rem" }}>
             {getFireEmoji(fireLevel)}
           </span>
         </div>
@@ -175,22 +168,22 @@ const StockCard: React.FC<StockCardProps> = ({
       
       <div
         style={{
-          fontWeight: theme.typography.fontWeight.bold,
-          fontSize: theme.typography.fontSize.lg,
+          fontWeight: "bold",
+          fontSize: "1rem",
           color: "#4F46E5",
-          marginBottom: theme.spacing.sm,
+          marginBottom: "6px",
           display: "flex",
           alignItems: "center",
-          gap: theme.spacing.xs,
+          gap: "4px",
         }}
       >
         ${stock.price.toFixed(2)}
         {stock.price_change !== undefined && stock.price_change !== 0 && (
           <span
             style={{
-              fontSize: theme.typography.fontSize.sm,
-              color: stock.price_change > 0 ? theme.status.danger : theme.status.success,
-              fontWeight: theme.typography.fontWeight.normal,
+              fontSize: "0.75rem",
+              color: stock.price_change > 0 ? "#dc3545" : "#28a745",
+              fontWeight: "normal",
             }}
           >
             ({stock.price_change > 0 ? "+" : ""}${stock.price_change.toFixed(2)})
@@ -200,13 +193,15 @@ const StockCard: React.FC<StockCardProps> = ({
       
       <div
         style={{
-          fontSize: theme.typography.fontSize.sm,
-          color: theme.ui.text.secondary,
+          fontSize: theme.typography.fontSize.xl,
+          color: "#666",
           lineHeight: "1.2",
+          display: "flex",
+          justifyContent: "space-between",
         }}
       >
-        <div>BR: {stock.blackrock_pct.toFixed(1)}%</div>
-        <div>VG: {stock.vanguard_pct.toFixed(1)}%</div>
+        <span>BR: {stock.blackrock_pct.toFixed(1)}%</span>
+        <span>VG: {stock.vanguard_pct.toFixed(1)}%</span>
       </div>
     </div>
   );

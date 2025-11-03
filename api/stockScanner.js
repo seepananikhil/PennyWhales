@@ -25,8 +25,8 @@ class StockScanner {
       return 3; // Excellent: Both funds ≥5%
     } else if (hasBlackrock || hasVanguard) {
       return 2; // Strong: One fund ≥5%
-    } else if (stock.blackrock_pct >= 3 || stock.vanguard_pct >= 3) {
-      return 1; // Moderate: One fund ≥3%
+    } else if (stock.blackrock_pct >= 4 || stock.vanguard_pct >= 4) {
+      return 1; // Moderate: One fund ≥4%
     }
     
     return 0; // No fire rating

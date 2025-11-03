@@ -5,6 +5,7 @@ import { theme, getFireLevelStyle, getPriceFilterStyle } from "./theme";
 import FilterButton from "./components/FilterButton";
 import StockGrid from "./components/StockGrid";
 import SectionHeader from "./components/SectionHeader";
+import StockCard from "./components/StockCard";
 
 const FireDashboard: React.FC = () => {
   const [results, setResults] = useState<ScanResult | null>(null);
@@ -15,6 +16,7 @@ const FireDashboard: React.FC = () => {
     "under1"
   );
   const [showOnlyHoldings, setShowOnlyHoldings] = useState<boolean>(false);
+  const [selectedFireFilter, setSelectedFireFilter] = useState<number | null>(null);
 
   useEffect(() => {
     loadData();
@@ -244,7 +246,7 @@ const FireDashboard: React.FC = () => {
           }}
           style={{
             flex: 1,
-            padding: theme.spacing.lg,
+            padding: theme.spacing.xl,
             backgroundColor:
               selectedPriceFilter === "under1"
                 ? theme.price.under1.primary
@@ -278,20 +280,11 @@ const FireDashboard: React.FC = () => {
           </div>
           <div
             style={{
-              fontSize: theme.typography.fontSize.sm,
+              fontSize: theme.typography.fontSize.lg,
               fontWeight: theme.typography.fontWeight.semibold,
             }}
           >
             💰 Under $1
-          </div>
-          <div
-            style={{
-              fontSize: theme.typography.fontSize.xs,
-              opacity: 0.8,
-              marginTop: theme.spacing.xs,
-            }}
-          >
-            Price &lt; $1.00
           </div>
         </button>
 
@@ -306,7 +299,7 @@ const FireDashboard: React.FC = () => {
           }}
           style={{
             flex: 1,
-            padding: theme.spacing.lg,
+            padding: theme.spacing.xl,
             backgroundColor:
               selectedPriceFilter === "1to2"
                 ? theme.price.range1to2.primary
@@ -340,20 +333,11 @@ const FireDashboard: React.FC = () => {
           </div>
           <div
             style={{
-              fontSize: theme.typography.fontSize.sm,
+              fontSize: theme.typography.fontSize.lg,
               fontWeight: theme.typography.fontWeight.semibold,
             }}
           >
             💎 $1 - $2
-          </div>
-          <div
-            style={{
-              fontSize: theme.typography.fontSize.xs,
-              opacity: 0.8,
-              marginTop: theme.spacing.xs,
-            }}
-          >
-            Price $1.00 - $2.00
           </div>
         </button>
 
@@ -368,7 +352,7 @@ const FireDashboard: React.FC = () => {
           }}
           style={{
             flex: 1,
-            padding: theme.spacing.lg,
+            padding: theme.spacing.xl,
             backgroundColor:
               selectedPriceFilter === "over2"
                 ? theme.price.over2.primary
@@ -402,20 +386,11 @@ const FireDashboard: React.FC = () => {
           </div>
           <div
             style={{
-              fontSize: theme.typography.fontSize.sm,
+              fontSize: theme.typography.fontSize.lg,
               fontWeight: theme.typography.fontWeight.semibold,
             }}
           >
             🏆 Over $2
-          </div>
-          <div
-            style={{
-              fontSize: theme.typography.fontSize.xs,
-              opacity: 0.8,
-              marginTop: theme.spacing.xs,
-            }}
-          >
-            Price &gt; $2.00
           </div>
         </button>
 
@@ -430,7 +405,7 @@ const FireDashboard: React.FC = () => {
           }}
           style={{
             flex: 1,
-            padding: theme.spacing.lg,
+            padding: theme.spacing.xl,
             backgroundColor: showOnlyHoldings
               ? theme.holdings.primary
               : theme.ui.surface,
@@ -460,20 +435,11 @@ const FireDashboard: React.FC = () => {
           </div>
           <div
             style={{
-              fontSize: theme.typography.fontSize.sm,
+              fontSize: theme.typography.fontSize.lg,
               fontWeight: theme.typography.fontWeight.semibold,
             }}
           >
             ⭐ Only Holdings
-          </div>
-          <div
-            style={{
-              fontSize: theme.typography.fontSize.xs,
-              opacity: 0.8,
-              marginTop: theme.spacing.xs,
-            }}
-          >
-            Your Portfolio
           </div>
         </button>
       </div>
@@ -527,200 +493,22 @@ const FireDashboard: React.FC = () => {
               }}
             >
               {displayStocks.map((stock) => {
-                const fireLevel = getFireLevel(stock);
-                const fireStyle = getFireLevelStyle(fireLevel);
                 const borderColor = showOnlyHoldings
                   ? theme.holdings.primary
+                  : selectedFireFilter
+                  ? getFireLevelStyle(selectedFireFilter).primary
                   : getPriceFilterStyle(selectedPriceFilter || "under1")
                       .primary;
 
                 return (
-                  <div
+                  <StockCard
                     key={stock.ticker}
-                    onClick={() => openChart(stock.ticker)}
-                    style={{
-                      padding: theme.spacing.md,
-                      backgroundColor:
-                        fireLevel > 0 ? fireStyle.background : theme.ui.surface,
-                      border: `2px solid ${
-                        fireLevel > 0 ? fireStyle.border : borderColor
-                      }`,
-                      borderRadius: theme.borderRadius.md,
-                      cursor: "pointer",
-                      transition: `all ${theme.transition.normal}`,
-                      boxShadow: theme.ui.shadow.sm,
-                      fontFamily: theme.typography.fontFamily,
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                      e.currentTarget.style.boxShadow = theme.ui.shadow.lg;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "6px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontWeight: "bold",
-                          fontSize: "1rem",
-                          color: "#333",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        {stock.ticker}
-                        {holdings.has(stock.ticker) && (
-                          <span
-                            style={{
-                              color: "#ffd700",
-                              marginLeft: "6px",
-                              cursor: "pointer",
-                              fontSize: "1.3rem",
-                              backgroundColor: "#fff3cd",
-                              padding: "2px 6px",
-                              borderRadius: "12px",
-                              border: "1px solid #ffeaa7",
-                              boxShadow: "0 1px 3px rgba(255,215,0,0.3)",
-                              display: "inline-block",
-                              transition: "all 0.2s ease",
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleHolding(stock.ticker);
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = "scale(1.1)";
-                              e.currentTarget.style.boxShadow =
-                                "0 2px 6px rgba(255,215,0,0.4)";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = "scale(1)";
-                              e.currentTarget.style.boxShadow =
-                                "0 1px 3px rgba(255,215,0,0.3)";
-                            }}
-                            title="Currently holding (click to remove)"
-                          >
-                            ⭐
-                          </span>
-                        )}
-                        {!holdings.has(stock.ticker) && (
-                          <span
-                            style={{
-                              color: "#999",
-                              marginLeft: "6px",
-                              cursor: "pointer",
-                              fontSize: "1.3rem",
-                              backgroundColor: "#f8f9fa",
-                              padding: "2px 6px",
-                              borderRadius: "12px",
-                              border: "1px solid #e9ecef",
-                              boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-                              display: "inline-block",
-                              transition: "all 0.2s ease",
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleHolding(stock.ticker);
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = "scale(1.1)";
-                              e.currentTarget.style.backgroundColor = "#fff3cd";
-                              e.currentTarget.style.borderColor = "#ffeaa7";
-                              e.currentTarget.style.color = "#ffd700";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = "scale(1)";
-                              e.currentTarget.style.backgroundColor = "#f8f9fa";
-                              e.currentTarget.style.borderColor = "#e9ecef";
-                              e.currentTarget.style.color = "#999";
-                            }}
-                            title="Click to mark as holding"
-                          >
-                            ☆
-                          </span>
-                        )}
-                        {stock.is_new && (
-                          <span style={{ color: "#28a745", marginLeft: "4px" }}>
-                            NEW
-                          </span>
-                        )}
-                      </span>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "4px",
-                        }}
-                      >
-                        {stock.fire_level_changed && (
-                          <span
-                            style={{
-                              fontSize: "0.75rem",
-                              color:
-                                stock.fire_level! >
-                                (stock.previous_fire_level || 0)
-                                  ? "#28a745"
-                                  : "#dc3545",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {stock.fire_level! >
-                            (stock.previous_fire_level || 0)
-                              ? "▲"
-                              : "▼"}
-                          </span>
-                        )}
-                        <span style={{ fontSize: "1rem" }}>
-                          {getFireEmoji(getFireLevel(stock))}
-                        </span>
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: "bold",
-                        fontSize: "1rem",
-                        color: "#4F46E5",
-                        marginBottom: "6px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
-                    >
-                      ${stock.price.toFixed(2)}
-                      {stock.price_change !== undefined &&
-                        stock.price_change !== 0 && (
-                          <span
-                            style={{
-                              fontSize: "0.75rem",
-                              color:
-                                stock.price_change > 0 ? "#dc3545" : "#28a745",
-                              fontWeight: "normal",
-                            }}
-                          >
-                            ({stock.price_change > 0 ? "+" : ""}$
-                            {stock.price_change.toFixed(2)})
-                          </span>
-                        )}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "#666",
-                        lineHeight: "1.2",
-                      }}
-                    >
-                      <div>BR: {stock.blackrock_pct.toFixed(1)}%</div>
-                      <div>VG: {stock.vanguard_pct.toFixed(1)}%</div>
-                    </div>
-                  </div>
+                    stock={stock}
+                    isHolding={holdings.has(stock.ticker)}
+                    onToggleHolding={toggleHolding}
+                    onOpenChart={openChart}
+                    borderColor={borderColor}
+                  />
                 );
               })}
             </div>
@@ -820,189 +608,13 @@ const FireDashboard: React.FC = () => {
                 return a.price - b.price;
               })
               .map((stock) => (
-                <div
+                <StockCard
                   key={stock.ticker}
-                  onClick={() => openChart(stock.ticker)}
-                  style={{
-                    padding: "12px",
-                    backgroundColor: "#f8f9fa",
-                    border: "1px solid #dee2e6",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 3px 6px rgba(0,0,0,0.15)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow =
-                      "0 1px 3px rgba(0,0,0,0.1)";
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: "6px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontWeight: "bold",
-                        fontSize: "1rem",
-                        color: "#333",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {stock.ticker}
-                      {holdings.has(stock.ticker) && (
-                        <span
-                          style={{
-                            color: "#ffd700",
-                            marginLeft: "6px",
-                            cursor: "pointer",
-                            fontSize: "1.3rem",
-                            backgroundColor: "#fff3cd",
-                            padding: "2px 6px",
-                            borderRadius: "12px",
-                            border: "1px solid #ffeaa7",
-                            boxShadow: "0 1px 3px rgba(255,215,0,0.3)",
-                            display: "inline-block",
-                            transition: "all 0.2s ease",
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleHolding(stock.ticker);
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = "scale(1.1)";
-                            e.currentTarget.style.boxShadow =
-                              "0 2px 6px rgba(255,215,0,0.4)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "scale(1)";
-                            e.currentTarget.style.boxShadow =
-                              "0 1px 3px rgba(255,215,0,0.3)";
-                          }}
-                          title="Currently holding (click to remove)"
-                        >
-                          ⭐
-                        </span>
-                      )}
-                      {!holdings.has(stock.ticker) && (
-                        <span
-                          style={{
-                            color: "#999",
-                            marginLeft: "6px",
-                            cursor: "pointer",
-                            fontSize: "1.3rem",
-                            backgroundColor: "#f8f9fa",
-                            padding: "2px 6px",
-                            borderRadius: "12px",
-                            border: "1px solid #e9ecef",
-                            boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-                            display: "inline-block",
-                            transition: "all 0.2s ease",
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleHolding(stock.ticker);
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = "scale(1.1)";
-                            e.currentTarget.style.backgroundColor = "#fff3cd";
-                            e.currentTarget.style.borderColor = "#ffeaa7";
-                            e.currentTarget.style.color = "#ffd700";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "scale(1)";
-                            e.currentTarget.style.backgroundColor = "#f8f9fa";
-                            e.currentTarget.style.borderColor = "#e9ecef";
-                            e.currentTarget.style.color = "#999";
-                          }}
-                          title="Click to mark as holding"
-                        >
-                          ☆
-                        </span>
-                      )}
-                      {stock.is_new && (
-                        <span style={{ color: "#28a745", marginLeft: "4px" }}>
-                          NEW
-                        </span>
-                      )}
-                    </span>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
-                    >
-                      {stock.fire_level_changed && (
-                        <span
-                          style={{
-                            fontSize: "0.75rem",
-                            color:
-                              stock.fire_level! >
-                              (stock.previous_fire_level || 0)
-                                ? "#28a745"
-                                : "#dc3545",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          {stock.fire_level! > (stock.previous_fire_level || 0)
-                            ? "▲"
-                            : "▼"}
-                        </span>
-                      )}
-                      <span style={{ fontSize: "1rem" }}>
-                        {getFireEmoji(getFireLevel(stock))}
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      fontWeight: "bold",
-                      fontSize: "1rem",
-                      color: "#4F46E5",
-                      marginBottom: "6px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    ${stock.price.toFixed(2)}
-                    {stock.price_change !== undefined &&
-                      stock.price_change !== 0 && (
-                        <span
-                          style={{
-                            fontSize: "0.75rem",
-                            color:
-                              stock.price_change > 0 ? "#dc3545" : "#28a745",
-                            fontWeight: "normal",
-                          }}
-                        >
-                          ({stock.price_change > 0 ? "+" : ""}$
-                          {stock.price_change.toFixed(2)})
-                        </span>
-                      )}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "0.75rem",
-                      color: "#666",
-                      lineHeight: "1.2",
-                    }}
-                  >
-                    <div>BR: {stock.blackrock_pct.toFixed(1)}%</div>
-                    <div>VG: {stock.vanguard_pct.toFixed(1)}%</div>
-                  </div>
-                </div>
+                  stock={stock}
+                  isHolding={holdings.has(stock.ticker)}
+                  onToggleHolding={toggleHolding}
+                  onOpenChart={openChart}
+                />
               ))}
           </div>
         </section>
