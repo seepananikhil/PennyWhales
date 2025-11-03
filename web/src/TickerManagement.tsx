@@ -24,6 +24,7 @@ const TickerManagement: React.FC = () => {
   }>({ scanning: false, progress: null, message: null });
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('combined-desc');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
     loadData();
@@ -83,7 +84,22 @@ const TickerManagement: React.FC = () => {
   const loadHoldings = async () => {
     try {
       const holdingsData = await api.getHoldings();
-      setHoldings(new Set(holdingsData.holdings?.map((holding: any) => holding.ticker) || []));
+      
+      // Handle both possible response formats
+      let holdingsArray = [];
+      if (holdingsData.holdings) {
+        if (Array.isArray(holdingsData.holdings)) {
+          // If holdings is already an array of strings
+          if (typeof holdingsData.holdings[0] === 'string') {
+            holdingsArray = holdingsData.holdings;
+          } else {
+            // If holdings is an array of objects with ticker property
+            holdingsArray = holdingsData.holdings.map((holding: any) => holding.ticker).filter(Boolean);
+          }
+        }
+      }
+      
+      setHoldings(new Set(holdingsArray));
     } catch (err) {
       console.error('Error loading holdings:', err);
     }
@@ -234,7 +250,7 @@ const TickerManagement: React.FC = () => {
   const noFireTickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 0);
   const holdingTickers = tickers.filter(ticker => holdings.has(ticker));
 
-  // Filter stocks based on active filter
+  // Filter stocks based on active filter and search query
   const getFilteredStocks = () => {
     let stocks;
     switch (activeFilter) {
@@ -257,10 +273,25 @@ const TickerManagement: React.FC = () => {
         stocks = tickersWithData;
     }
     
+    // Filter by search query if provided
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      stocks = stocks.filter(ticker => 
+        ticker.toLowerCase().includes(query)
+      );
+    }
+    
     // Sort stocks based on selected sort option
     return stocks.sort((a, b) => {
       const stockA = stockData.get(a);
       const stockB = stockData.get(b);
+      
+      // For holdings filter, some tickers might not have stock data
+      if (activeFilter === 'holdings') {
+        if (!stockA && !stockB) return a.localeCompare(b); // Sort alphabetically if neither has data
+        if (!stockA) return 1; // Put tickers without data at the end
+        if (!stockB) return -1; // Put tickers without data at the end
+      }
       
       if (!stockA || !stockB) return 0;
       
@@ -362,6 +393,33 @@ const TickerManagement: React.FC = () => {
             🎯 Ticker Management
           </h1>
           <div style={{ display: 'flex', gap: theme.spacing.md, alignItems: 'center' }}>
+            {/* Search Input */}
+            <input
+              type="text"
+              placeholder="🔍 Search tickers..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                border: `1px solid ${theme.ui.border}`,
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: theme.ui.surface,
+                color: theme.ui.text.primary,
+                fontSize: theme.typography.fontSize.sm,
+                fontFamily: theme.typography.fontFamily,
+                width: '200px',
+                outline: 'none',
+                transition: `all ${theme.transition.normal}`
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = theme.status.info;
+                e.currentTarget.style.boxShadow = `0 0 0 2px ${theme.status.info}20`;
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = theme.ui.border;
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            />
             {/* Sort Dropdown */}
             <select
               value={sortBy}
@@ -725,7 +783,7 @@ const TickerManagement: React.FC = () => {
           </div>
         )}
 
-        {tickersWithData.length > 0 ? (
+        {tickersWithData.length > 0 || (activeFilter === 'holdings' && holdingTickers.length > 0) ? (
           <>
 
             <div style={{
@@ -735,18 +793,100 @@ const TickerManagement: React.FC = () => {
               height: 'fit-content'
             }}>
               {filteredStocks.map(ticker => {
-                const stock = stockData.get(ticker)!;
+                const stock = stockData.get(ticker);
                 const livePrice = livePriceData.get(ticker);
-                return (
-                  <StockCard
-                    key={ticker}
-                    stock={stock}
-                    livePrice={livePrice}
-                    isHolding={holdings.has(ticker)}
-                    onToggleHolding={handleToggleHolding}
-                    onOpenChart={handleOpenChart}
-                  />
-                );
+                
+                // For holdings without stock data, show a placeholder card
+                if (!stock && activeFilter === 'holdings') {
+                  return (
+                    <div
+                      key={ticker}
+                      style={{
+                        padding: theme.spacing.md,
+                        backgroundColor: theme.ui.surface,
+                        borderRadius: theme.borderRadius.lg,
+                        border: `1px solid ${theme.ui.border}`,
+                        boxShadow: theme.ui.shadow.sm,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: theme.spacing.sm
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <h3 style={{
+                          margin: 0,
+                          fontSize: theme.typography.fontSize.lg,
+                          fontWeight: theme.typography.fontWeight.bold,
+                          color: theme.ui.text.primary
+                        }}>
+                          {ticker}
+                        </h3>
+                        <button
+                          onClick={() => handleToggleHolding(ticker)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            fontSize: '1.2rem',
+                            cursor: 'pointer',
+                            padding: theme.spacing.xs
+                          }}
+                          title="Remove from holdings"
+                        >
+                          ⭐
+                        </button>
+                      </div>
+                      <div style={{
+                        fontSize: theme.typography.fontSize.sm,
+                        color: theme.ui.text.secondary,
+                        fontStyle: 'italic'
+                      }}>
+                        No scan data available
+                      </div>
+                      <button
+                        onClick={() => handleOpenChart(ticker)}
+                        style={{
+                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                          border: `1px solid ${theme.ui.border}`,
+                          borderRadius: theme.borderRadius.md,
+                          backgroundColor: theme.ui.surface,
+                          color: theme.ui.text.primary,
+                          cursor: 'pointer',
+                          fontSize: theme.typography.fontSize.sm,
+                          fontWeight: theme.typography.fontWeight.medium,
+                          transition: `all ${theme.transition.normal}`
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = theme.ui.background;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = theme.ui.surface;
+                        }}
+                      >
+                        📈 View Chart
+                      </button>
+                    </div>
+                  );
+                }
+                
+                // For stocks with data, show the regular StockCard
+                if (stock) {
+                  return (
+                    <StockCard
+                      key={ticker}
+                      stock={stock}
+                      livePrice={livePrice}
+                      isHolding={holdings.has(ticker)}
+                      onToggleHolding={handleToggleHolding}
+                      onOpenChart={handleOpenChart}
+                    />
+                  );
+                }
+                
+                return null;
               })}
             </div>
           </>

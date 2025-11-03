@@ -265,18 +265,20 @@ app.patch('/api/tickers', async (req, res) => {
     
     const added = await dbService.addTickers(tickers);
     
-    // Auto-trigger full scan after adding new tickers
+    // Auto-trigger scan for only the new tickers
     if (added.length > 0) {
-      console.log(`🎯 ${added.length} new tickers added, triggering automatic full scan...`);
+      console.log(`🎯 ${added.length} new tickers added, scanning and adding to results...`);
       
-      // Start scan in background
+      // Start scan in background for new tickers only
       setTimeout(async () => {
         try {
           const scanner = new StockScanner();
-          await scanner.scan();
-          console.log('✅ Auto-triggered full scan completed');
+          
+          // Scan new tickers and add them to existing results
+          await scanner.scanNewTickers(added);
+          console.log(`✅ Successfully scanned and added ${added.length} new tickers to results`);
         } catch (error) {
-          console.error('❌ Auto-triggered full scan failed:', error);
+          console.error('❌ Failed to scan new tickers:', error);
         }
       }, 1000);
     }
@@ -285,7 +287,7 @@ app.patch('/api/tickers', async (req, res) => {
       success: true, 
       added: added.length, 
       tickers: added,
-      message: added.length > 0 ? 'New tickers added and full scan triggered automatically' : 'No new tickers to add'
+      message: added.length > 0 ? 'New tickers added and scanned successfully' : 'No new tickers to add'
     });
   } catch (error) {
     console.error('Error adding tickers:', error);

@@ -9,8 +9,6 @@ export interface Stock {
   sources_count: number;
   discrepancy: boolean;
   notes: string;
-  rank_category: number;
-  rank_score: number | [number, number];
   fire_level?: number; // 0-3, calculated by API
   previous_fire_level?: number; // Previous fire level for change tracking
   fire_level_changed?: boolean; // True if fire level changed from previous scan
@@ -22,11 +20,7 @@ export interface ScanResult {
   summary: {
     total_processed: number;
     qualifying_count: number;
-    high_tier: number;
-    medium_tier: number;
-    low_tier: number;
     under_dollar: number;
-    premium_count: number;
     fire_level_3?: number;
     fire_level_2?: number;
     fire_level_1?: number;

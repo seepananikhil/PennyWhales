@@ -39,8 +39,23 @@ const FireDashboard: React.FC = () => {
 
   const loadHoldings = async () => {
     try {
-      const data = await api.getHoldings();
-      setHoldings(new Set(data.holdings || []));
+      const holdingsData = await api.getHoldings();
+      
+      // Handle both possible response formats
+      let holdingsArray = [];
+      if (holdingsData.holdings) {
+        if (Array.isArray(holdingsData.holdings)) {
+          // If holdings is already an array of strings
+          if (typeof holdingsData.holdings[0] === 'string') {
+            holdingsArray = holdingsData.holdings;
+          } else {
+            // If holdings is an array of objects with ticker property
+            holdingsArray = holdingsData.holdings.map((holding: any) => holding.ticker).filter(Boolean);
+          }
+        }
+      }
+      
+      setHoldings(new Set(holdingsArray));
     } catch (error) {
       console.error("Error loading holdings:", error);
     }
