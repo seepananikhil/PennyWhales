@@ -8,6 +8,11 @@ import TickerModal from './components/TickerModal';
 const TickerManagement: React.FC = () => {
   const [tickers, setTickers] = useState<string[]>([]);
   const [stockData, setStockData] = useState<Map<string, Stock>>(new Map());
+  const [livePriceData, setLivePriceData] = useState<Map<string, {
+    price: number;
+    priceChange: number;
+    timestamp: string;
+  }>>(new Map());
   const [holdings, setHoldings] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +22,25 @@ const TickerManagement: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    
+    // Set up auto-refresh for live prices every 5 minutes
+    const priceRefreshInterval = setInterval(() => {
+      if (tickers.length > 0) {
+        loadLivePrices();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => {
+      clearInterval(priceRefreshInterval);
+    };
   }, []);
+
+  // Load live prices when tickers change
+  useEffect(() => {
+    if (tickers.length > 0) {
+      loadLivePrices();
+    }
+  }, [tickers]);
 
   const loadData = async () => {
     await Promise.all([loadTickers(), loadStockData(), loadHoldings()]);
@@ -61,6 +84,42 @@ const TickerManagement: React.FC = () => {
     }
   };
 
+  const loadLivePrices = async () => {
+    try {
+      // Load live prices for all tickers with data
+      const tickersWithData = tickers.filter(ticker => stockData.has(ticker));
+      const pricePromises = tickersWithData.map(async (ticker) => {
+        try {
+          const livePrice = await api.getLivePrice(ticker);
+          return {
+            ticker,
+            data: {
+              price: livePrice.price,
+              priceChange: livePrice.priceChange,
+              timestamp: livePrice.timestamp
+            }
+          };
+        } catch (err) {
+          console.error(`Error fetching live price for ${ticker}:`, err);
+          return null;
+        }
+      });
+
+      const results = await Promise.all(pricePromises);
+      const newLivePriceData = new Map(livePriceData);
+      
+      results.forEach(result => {
+        if (result) {
+          newLivePriceData.set(result.ticker, result.data);
+        }
+      });
+      
+      setLivePriceData(newLivePriceData);
+    } catch (err) {
+      console.error('Error loading live prices:', err);
+    }
+  };
+
   const handleSaveTickers = async (newTickers: string[]) => {
     try {
       await api.updateTickers(newTickers);
@@ -92,7 +151,7 @@ const TickerManagement: React.FC = () => {
   };
 
   const handleOpenChart = (ticker: string) => {
-    window.open(`https://finance.yahoo.com/quote/${ticker}`, '_blank');
+    window.open(`https://www.tradingview.com/chart/?symbol=${ticker}`, '_blank');
   };
 
   // Calculate stats
@@ -165,6 +224,16 @@ const TickerManagement: React.FC = () => {
           return stockB.price - stockA.price;
         case 'price-asc':
           return stockA.price - stockB.price;
+        case 'price-change-desc':
+          // Sort by price change percentage (highest first)
+          const priceChangeA = livePriceData.get(a)?.priceChange || 0;
+          const priceChangeB = livePriceData.get(b)?.priceChange || 0;
+          return priceChangeB - priceChangeA;
+        case 'price-change-asc':
+          // Sort by price change percentage (lowest first)
+          const priceChangeAscA = livePriceData.get(a)?.priceChange || 0;
+          const priceChangeAscB = livePriceData.get(b)?.priceChange || 0;
+          return priceChangeAscA - priceChangeAscB;
         default:
           // Default to combined VG + BR (highest first)
           const defaultA = stockA.vanguard_pct + stockA.blackrock_pct;
@@ -247,6 +316,8 @@ const TickerManagement: React.FC = () => {
               <option value="fire-desc">🔥 Fire Level (High to Low)</option>
               <option value="price-desc">💰 Price (High to Low)</option>
               <option value="price-asc">💰 Price (Low to High)</option>
+              <option value="price-change-desc">📈 Price Change % (High to Low)</option>
+              <option value="price-change-asc">📉 Price Change % (Low to High)</option>
             </select>
             <button
               onClick={() => setShowModal(true)}
@@ -567,10 +638,12 @@ const TickerManagement: React.FC = () => {
             }}>
               {filteredStocks.map(ticker => {
                 const stock = stockData.get(ticker)!;
+                const livePrice = livePriceData.get(ticker);
                 return (
                   <StockCard
                     key={ticker}
                     stock={stock}
+                    livePrice={livePrice}
                     isHolding={holdings.has(ticker)}
                     onToggleHolding={handleToggleHolding}
                     onOpenChart={handleOpenChart}

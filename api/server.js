@@ -5,6 +5,12 @@ const path = require('path');
 const cron = require('node-cron');
 const StockScanner = require('./stockScanner');
 const dbService = require('./database');
+const { getStockPriceData } = require('./priceUtils');
+
+// Make fetch available for Node.js if not available
+if (typeof fetch === 'undefined') {
+  global.fetch = require('node-fetch');
+}
 
 const app = express();
 const PORT = process.env.PORT || 9000;
@@ -149,6 +155,32 @@ app.post('/api/scan/clear', async (req, res) => {
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Live price proxy endpoint
+app.get('/api/price/:ticker', async (req, res) => {
+  try {
+    const { ticker } = req.params;
+    
+    const priceData = await getStockPriceData(ticker);
+    
+    if (priceData) {
+      const response = {
+        ticker: ticker.toUpperCase(),
+        price: priceData.price,
+        previousClose: priceData.previousClose,
+        priceChange: priceData.priceChange,
+        timestamp: new Date().toISOString()
+      };
+      
+      res.json(response);
+    } else {
+      res.status(404).json({ error: 'Price data not available' });
+    }
+  } catch (error) {
+    console.error(`Error fetching price for ${req.params.ticker}:`, error);
+    res.status(500).json({ error: 'Failed to fetch price data' });
+  }
 });
 
 // Ticker Management Endpoints
@@ -517,9 +549,9 @@ const startAutomatedDailyScan = async () => {
 };
 
 // Schedule automated daily scans
-// 7PM IST (1:30 PM UTC) on weekdays (Monday-Friday)
-cron.schedule('30 13 * * 1-5', () => {
-  console.log('🕒 Triggering automated daily scan at 7:00 PM IST');
+// 8PM IST (2:30 PM UTC) on weekdays (Monday-Friday)
+cron.schedule('30 14 * * 1-5', () => {
+  console.log('🕒 Triggering automated daily scan at 8:00 PM IST');
   startAutomatedDailyScan();
 }, {
   timezone: "UTC"

@@ -114,6 +114,18 @@ export const api = {
   removeFromWatchlist: async (id: string, stocks: string[]): Promise<{ success: boolean; removed: number; total: number }> => {
     const response = await axios.delete(`${API_BASE}/api/watchlists/${id}/stocks`, { data: { stocks } });
     return response.data;
+  },
+
+  // Live Price Data
+  getLivePrice: async (ticker: string): Promise<{
+    ticker: string;
+    price: number;
+    previousClose: number;
+    priceChange: number;
+    timestamp: string;
+  }> => {
+    const response = await axios.get(`${API_BASE}/api/price/${ticker}`);
+    return response.data;
   }
 };
 

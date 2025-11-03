@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const dbService = require('./database');
+const { getStockPriceData } = require('./priceUtils');
 
 // Configuration
 const HOLD_THRESHOLD = 3.0; // 3% minimum holding
@@ -72,31 +73,9 @@ class StockScanner {
     }
   }
 
-  // Get stock price from Yahoo Finance API
+  // Get stock price using shared utility
   async getStockPrice(ticker) {
-    try {
-      const response = await fetch(
-        `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}`,
-        {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          }
-        }
-      );
-      
-      if (!response.ok) return null;
-      
-      const data = await response.json();
-      const result = data?.chart?.result?.[0];
-      
-      if (result?.meta?.regularMarketPrice) {
-        return result.meta.regularMarketPrice;
-      }
-      
-      return null;
-    } catch (error) {
-      return null;
-    }
+    return await getStockPriceData(ticker);
   }
 
   // Get institutional holdings from Nasdaq
@@ -168,8 +147,8 @@ class StockScanner {
   async analyzeTicker(ticker) {
     try {
       // Get stock price
-      const price = await this.getStockPrice(ticker);
-      if (!price) {
+      const priceData = await this.getStockPrice(ticker);
+      if (!priceData) {
         return null;
       }
 
@@ -185,15 +164,10 @@ class StockScanner {
       // The fire level calculation will handle the rating (including 0 for no fire)
       return {
         ticker,
-        price,
+        price: Math.round(priceData.price * 100) / 100, // Round to 2 decimals
+        previous_close: Math.round(priceData.previousClose * 100) / 100, // Round to 2 decimals
         blackrock_pct: blackrock,
-        vanguard_pct: vanguard,
-        blackrock_source: 'Nasdaq',
-        vanguard_source: 'Nasdaq',
-        data_quality: '🔥 High',
-        sources_count: 1,
-        discrepancy: false,
-        notes: ''
+        vanguard_pct: vanguard
       };
     } catch (error) {
       console.error(`Error analyzing ${ticker}:`, error);
@@ -227,7 +201,7 @@ class StockScanner {
       stocks.forEach(stock => {
         const ranking = this.calculateRanking(stock);
         stock.rank_category = ranking.category;
-        stock.rank_score = ranking.score;
+        stock.rank_score = Math.round(ranking.score * 100) / 100; // Round to 2 decimals
       });
 
       // Sort stocks
@@ -302,11 +276,9 @@ class StockScanner {
         // Calculate fire level for consistency with daily scan
         result.fire_level = this.calculateFireLevel(result);
         
-        // Add default change tracking fields for consistency
+        // Add change tracking fields for consistency with daily scan
         result.previous_fire_level = result.fire_level; // Same as current since it's a fresh scan
         result.fire_level_changed = false; // No change in full scan
-        result.price_change = 0; // No previous price to compare
-        result.is_new = false; // All stocks in full scan are considered existing
         
         this.results.push(result);
         console.log(`✅ ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}% | Fire:${result.fire_level}🔥`);
@@ -370,10 +342,7 @@ class StockScanner {
         if (previousStock) {
           result.previous_fire_level = previousStock.fire_level;
           result.fire_level_changed = result.fire_level !== previousStock.fire_level;
-          result.price_change = result.price - previousStock.price;
-          result.is_new = false;
         } else {
-          result.is_new = true;
           result.fire_level_changed = false;
         }
 
@@ -383,10 +352,6 @@ class StockScanner {
         if (result.fire_level_changed) {
           const changeDirection = result.fire_level > result.previous_fire_level ? '📈' : '📉';
           console.log(`${changeDirection} ${ticker} fire level changed: ${result.previous_fire_level}🔥 → ${result.fire_level}🔥`);
-        }
-        if (result.price_change && Math.abs(result.price_change) > 0.01) {
-          const priceDirection = result.price_change > 0 ? '📈' : '📉';
-          console.log(`${priceDirection} ${ticker} price changed: $${(result.price - result.price_change).toFixed(2)} → $${result.price.toFixed(2)} (${result.price_change > 0 ? '+' : ''}${result.price_change.toFixed(2)})`);
         }
       }
 
@@ -398,17 +363,15 @@ class StockScanner {
     await this.saveResults(this.results, tickers.length);
 
     const changeCount = this.results.filter(s => s.fire_level_changed).length;
-    const newCount = this.results.filter(s => s.is_new).length;
     
-    console.log(`🔥 Daily scan complete: ${this.results.length} fire stocks scanned, ${changeCount} changed, ${newCount} new`);
+    console.log(`🔥 Daily scan complete: ${this.results.length} fire stocks scanned, ${changeCount} changed`);
     
     return {
       stocks: this.results,
       summary: {
         total_processed: tickers.length,
         qualifying_count: this.results.length,
-        changed_count: changeCount,
-        new_count: newCount
+        changed_count: changeCount
       }
     };
   }
