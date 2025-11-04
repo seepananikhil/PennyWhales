@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const cron = require('node-cron');
 const StockScanner = require('./stockScanner');
 const dbService = require('./database');
 const { getStockPriceData } = require('./priceUtils');
@@ -482,85 +481,6 @@ app.delete('/api/watchlists/:id/stocks', async (req, res) => {
   }
 });
 
-// Database stats endpoint
-app.get('/api/stats', async (req, res) => {
-  try {
-    const stats = await dbService.getStats();
-    res.json(stats);
-  } catch (error) {
-    console.error('Error getting stats:', error);
-    res.status(500).json({ error: 'Failed to get stats' });
-  }
-});
-
-// Automated Daily Scan Scheduling
-const startAutomatedDailyScan = async () => {
-  if (scanState.scanning) {
-    console.log('⏭️ Skipping automated daily scan - scan already in progress');
-    return;
-  }
-
-  try {
-    console.log('🕐 Starting automated daily scan...');
-    scanState.scanning = true;
-    scanState.error = null;
-    scanState.progress = { current: 0, total: 0, percentage: 0 };
-
-    // Get previous fire stocks
-    const previousResults = await dbService.getScanResults();
-    const previousFireStocks = previousResults?.stocks?.filter(s => s.fire_level && s.fire_level > 0) || [];
-    
-    if (previousFireStocks.length === 0) {
-      console.log('⚠️ No previous fire stocks found. Automated scan skipped. Run a full scan first.');
-      scanState.scanning = false;
-      return;
-    }
-
-    const fireStockTickers = previousFireStocks.map(s => s.ticker);
-    console.log(`🔥 Automated daily scan for ${fireStockTickers.length} fire stocks: ${fireStockTickers.join(', ')}`);
-
-    // Create new scanner instance with fire stocks only
-    currentScanner = new StockScanner();
-    
-    // Set up progress callback
-    currentScanner.onProgress = (progress) => {
-      scanState.progress = progress;
-      console.log(`Automated scan progress: ${progress.current}/${progress.total} (${progress.percentage}%)`);
-    };
-
-    // Run scan for fire stocks only
-    const results = await currentScanner.scanTickers(fireStockTickers, previousFireStocks);
-    
-    scanState.scanning = false;
-    scanState.last_scan = new Date().toISOString();
-    scanState.progress = { current: results.length, total: fireStockTickers.length, percentage: 100 };
-    
-    console.log(`✅ Automated daily scan completed: ${results.length} fire stocks updated`);
-    
-  } catch (error) {
-    console.error('❌ Automated daily scan failed:', error);
-    scanState.scanning = false;
-    scanState.error = error.message;
-  }
-};
-
-// Schedule automated daily scans
-// 8PM IST (2:30 PM UTC) on weekdays (Monday-Friday)
-cron.schedule('30 14 * * 1-5', () => {
-  console.log('🕒 Triggering automated daily scan at 8:00 PM IST');
-  startAutomatedDailyScan();
-}, {
-  timezone: "UTC"
-});
-
-// 2AM IST (8:30 PM UTC previous day) on weekdays (Sunday-Thursday for IST Monday-Friday)
-cron.schedule('30 20 * * 0-4', () => {
-  console.log('🕐 Triggering automated daily scan at 2:00 AM IST');
-  startAutomatedDailyScan();
-}, {
-  timezone: "UTC"
-});
-
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Stock Scanner API running on port ${PORT}`);
@@ -568,10 +488,6 @@ app.listen(PORT, () => {
   console.log(`📅 Using LowDB for data storage`);
   console.log(`🎯 Ticker management available at /api/tickers`);
   console.log(`⭐ Holdings management available at /api/holdings`);
-  console.log(`⏰ Automated daily scans scheduled:`);
-  console.log(`   📅 Weekdays at 7:00 PM IST (1:30 PM UTC)`);
-  console.log(`   📅 Weekdays at 2:00 AM IST (8:30 PM UTC previous day)`);
-  console.log(`🔄 Automated scans will update fire stocks only`);
 });
 
 module.exports = app;
