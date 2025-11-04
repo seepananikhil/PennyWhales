@@ -383,7 +383,7 @@
         "previous_close": 0.69,
         "blackrock_pct": 4.147384745762712,
         "vanguard_pct": 4.2326169491525425,
-        "fire_level": 1,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -393,7 +393,7 @@
         "previous_close": 0.87,
         "blackrock_pct": 5.9006459183673465,
         "vanguard_pct": 4.750048979591837,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -423,7 +423,7 @@
         "previous_close": 1.05,
         "blackrock_pct": 4.995541666666667,
         "vanguard_pct": 4.824789814814815,
-        "fire_level": 1,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -453,7 +453,7 @@
         "previous_close": 1.16,
         "blackrock_pct": 5.520062841530055,
         "vanguard_pct": 4.629213114754099,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -463,7 +463,7 @@
         "previous_close": 1.24,
         "blackrock_pct": 8.061891891891893,
         "vanguard_pct": 3.720327927927928,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -493,7 +493,7 @@
         "previous_close": 1.94,
         "blackrock_pct": 4.935623076923077,
         "vanguard_pct": 4.133415384615384,
-        "fire_level": 1,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -503,7 +503,7 @@
         "previous_close": 1.2,
         "blackrock_pct": 6.498628272251309,
         "vanguard_pct": 4.445481151832461,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -523,7 +523,7 @@
         "previous_close": 1.43,
         "blackrock_pct": 5.717342519685039,
         "vanguard_pct": 4.473872440944882,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -543,7 +543,7 @@
         "previous_close": 1.41,
         "blackrock_pct": 8.00145221238938,
         "vanguard_pct": 4.752734513274336,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -553,7 +553,7 @@
         "previous_close": 1.36,
         "blackrock_pct": 4.094984635416667,
         "vanguard_pct": 4.97899921875,
-        "fire_level": 1,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -583,7 +583,7 @@
         "previous_close": 1.6,
         "blackrock_pct": 5.3185726495726495,
         "vanguard_pct": 4.429865811965812,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -603,7 +603,7 @@
         "previous_close": 1.63,
         "blackrock_pct": 4.944366666666666,
         "vanguard_pct": 5.365354320987654,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -623,7 +623,7 @@
         "previous_close": 1.9,
         "blackrock_pct": 6.24588813559322,
         "vanguard_pct": 4.964529661016949,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -673,7 +673,7 @@
         "previous_close": 2.15,
         "blackrock_pct": 5.9279464480874315,
         "vanguard_pct": 4.737519672131148,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -713,7 +713,7 @@
         "previous_close": 2.16,
         "blackrock_pct": 4.8774999999999995,
         "vanguard_pct": 4.0387849056603775,
-        "fire_level": 1,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -723,7 +723,7 @@
         "previous_close": 2.2,
         "blackrock_pct": 7.846444943820225,
         "vanguard_pct": 4.940696629213483,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -793,7 +793,7 @@
         "previous_close": 2.42,
         "blackrock_pct": 5.340210563380281,
         "vanguard_pct": 4.470280633802816,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -843,7 +843,7 @@
         "previous_close": 2.87,
         "blackrock_pct": 5.333048484848485,
         "vanguard_pct": 4.313887878787879,
-        "fire_level": 2,
+        "fire_level": 3,
         "previous_fire_level": 3,
         "fire_level_changed": false
       },
@@ -893,7 +893,7 @@
         "previous_close": 0.52,
         "blackrock_pct": 2.4768333333333334,
         "vanguard_pct": 4.119757777777778,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -903,7 +903,7 @@
         "previous_close": 0.65,
         "blackrock_pct": 1.1287760869565218,
         "vanguard_pct": 4.59955,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -913,7 +913,7 @@
         "previous_close": 0.77,
         "blackrock_pct": 0.5833272727272727,
         "vanguard_pct": 4.139410389610389,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -923,7 +923,7 @@
         "previous_close": 0.74,
         "blackrock_pct": 1.4319385416666668,
         "vanguard_pct": 4.566886458333333,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -933,7 +933,7 @@
         "previous_close": 0.78,
         "blackrock_pct": 0.7057969696969697,
         "vanguard_pct": 4.166816161616162,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -943,7 +943,7 @@
         "previous_close": 0.89,
         "blackrock_pct": 1.665124031007752,
         "vanguard_pct": 4.521803875968993,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -953,7 +953,7 @@
         "previous_close": 0.94,
         "blackrock_pct": 1.0944489361702128,
         "vanguard_pct": 4.151793617021276,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -963,7 +963,7 @@
         "previous_close": 1,
         "blackrock_pct": 1.6088833333333334,
         "vanguard_pct": 4.639801851851852,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -973,7 +973,7 @@
         "previous_close": 1.01,
         "blackrock_pct": 3.0680233766233767,
         "vanguard_pct": 4.556249350649351,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -983,7 +983,7 @@
         "previous_close": 1.15,
         "blackrock_pct": 3.624781944444445,
         "vanguard_pct": 3.2875090277777774,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -993,7 +993,7 @@
         "previous_close": 1.11,
         "blackrock_pct": 0,
         "vanguard_pct": 4.496102702702703,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1003,7 +1003,7 @@
         "previous_close": 1.12,
         "blackrock_pct": 2.4788329411764707,
         "vanguard_pct": 4.841470588235294,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1013,7 +1013,7 @@
         "previous_close": 1.12,
         "blackrock_pct": 0.7380423076923077,
         "vanguard_pct": 4.258764102564102,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1023,7 +1023,7 @@
         "previous_close": 1.15,
         "blackrock_pct": 2.0315866666666667,
         "vanguard_pct": 3.159066666666667,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1033,7 +1033,7 @@
         "previous_close": 1.21,
         "blackrock_pct": 2.6411116788321167,
         "vanguard_pct": 3.0126116788321164,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1043,7 +1043,7 @@
         "previous_close": 1.33,
         "blackrock_pct": 0.6258411764705882,
         "vanguard_pct": 4.070141176470588,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1053,7 +1053,7 @@
         "previous_close": 1.38,
         "blackrock_pct": 3.663442176870748,
         "vanguard_pct": 3.5651632653061225,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1063,7 +1063,7 @@
         "previous_close": 1.39,
         "blackrock_pct": 1.2331761904761904,
         "vanguard_pct": 4.026683333333334,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1073,7 +1073,7 @@
         "previous_close": 1.16,
         "blackrock_pct": 4.341815625,
         "vanguard_pct": 2.956246875,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1083,7 +1083,7 @@
         "previous_close": 1.23,
         "blackrock_pct": 1.1462649999999999,
         "vanguard_pct": 4.778944999999999,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1093,7 +1093,7 @@
         "previous_close": 1.41,
         "blackrock_pct": 2.1520603773584908,
         "vanguard_pct": 4.063396226415095,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1113,7 +1113,7 @@
         "previous_close": 1.52,
         "blackrock_pct": 2.987546666666667,
         "vanguard_pct": 4.8472349999999995,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1123,7 +1123,7 @@
         "previous_close": 1.5,
         "blackrock_pct": 2.4190930555555554,
         "vanguard_pct": 4.006433333333334,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1133,7 +1133,7 @@
         "previous_close": 1.48,
         "blackrock_pct": 2.894265263157895,
         "vanguard_pct": 2.248123157894737,
-        "fire_level": 0,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1143,7 +1143,7 @@
         "previous_close": 1.55,
         "blackrock_pct": 4.861929861111111,
         "vanguard_pct": 3.658552083333334,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1153,7 +1153,7 @@
         "previous_close": 1.55,
         "blackrock_pct": 3.7099688311688315,
         "vanguard_pct": 3.20192987012987,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1163,7 +1163,7 @@
         "previous_close": 1.56,
         "blackrock_pct": 1.7919647435897437,
         "vanguard_pct": 4.734833653846153,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1173,7 +1173,7 @@
         "previous_close": 1.6,
         "blackrock_pct": 2.375705439330544,
         "vanguard_pct": 2.4810857740585774,
-        "fire_level": 0,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1203,7 +1203,7 @@
         "previous_close": 1.47,
         "blackrock_pct": 3.6375573333333335,
         "vanguard_pct": 4.29916,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1213,7 +1213,7 @@
         "previous_close": 1.76,
         "blackrock_pct": 2.826842105263158,
         "vanguard_pct": 2.7112298245614035,
-        "fire_level": 0,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1223,7 +1223,7 @@
         "previous_close": 1.68,
         "blackrock_pct": 3.4926540983606555,
         "vanguard_pct": 4.921881967213115,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1233,7 +1233,7 @@
         "previous_close": 1.8,
         "blackrock_pct": 3.9443168674698796,
         "vanguard_pct": 3.624832530120482,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1253,7 +1253,7 @@
         "previous_close": 1.83,
         "blackrock_pct": 4.342374074074074,
         "vanguard_pct": 3.1398185185185183,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1273,7 +1273,7 @@
         "previous_close": 1.71,
         "blackrock_pct": 1.47326,
         "vanguard_pct": 4.364664,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1293,7 +1293,7 @@
         "previous_close": 1.94,
         "blackrock_pct": 2.0848075471698113,
         "vanguard_pct": 4.560205660377358,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1303,7 +1303,7 @@
         "previous_close": 2.05,
         "blackrock_pct": 3.098828,
         "vanguard_pct": 2.538358,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1313,7 +1313,7 @@
         "previous_close": 2.03,
         "blackrock_pct": 3.0818408450704227,
         "vanguard_pct": 2.799291549295775,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1333,7 +1333,7 @@
         "previous_close": 2.08,
         "blackrock_pct": 1.5546925925925925,
         "vanguard_pct": 4.103496296296296,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1353,7 +1353,7 @@
         "previous_close": 2.09,
         "blackrock_pct": 1.6847117647058825,
         "vanguard_pct": 4.546182352941177,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1363,7 +1363,7 @@
         "previous_close": 2.12,
         "blackrock_pct": 0,
         "vanguard_pct": 4.433104999999999,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1373,7 +1373,7 @@
         "previous_close": 2.21,
         "blackrock_pct": 3.6045057692307694,
         "vanguard_pct": 4.235853846153846,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1383,7 +1383,7 @@
         "previous_close": 2.41,
         "blackrock_pct": 3.841651724137931,
         "vanguard_pct": 3.955279310344827,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1393,7 +1393,7 @@
         "previous_close": 2.34,
         "blackrock_pct": 1.5810391304347824,
         "vanguard_pct": 4.701995652173913,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1403,7 +1403,7 @@
         "previous_close": 2.34,
         "blackrock_pct": 1.4424888888888887,
         "vanguard_pct": 4.684926666666667,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1413,7 +1413,7 @@
         "previous_close": 2.47,
         "blackrock_pct": 1.8516394736842106,
         "vanguard_pct": 4.530399999999999,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1423,7 +1423,7 @@
         "previous_close": 2.35,
         "blackrock_pct": 1.6811285714285713,
         "vanguard_pct": 4.052996428571428,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1433,7 +1433,7 @@
         "previous_close": 2.42,
         "blackrock_pct": 2.025243010752688,
         "vanguard_pct": 4.397705376344086,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1443,7 +1443,7 @@
         "previous_close": 2.57,
         "blackrock_pct": 2.5942285714285713,
         "vanguard_pct": 4.590723809523809,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1463,7 +1463,7 @@
         "previous_close": 2.45,
         "blackrock_pct": 2.110069444444444,
         "vanguard_pct": 4.334797222222223,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1483,7 +1483,7 @@
         "previous_close": 2.55,
         "blackrock_pct": 2.623972549019608,
         "vanguard_pct": 4.38086274509804,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1493,7 +1493,7 @@
         "previous_close": 2.95,
         "blackrock_pct": 1.0252125,
         "vanguard_pct": 4.0043125,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1503,7 +1503,7 @@
         "previous_close": 2.73,
         "blackrock_pct": 0,
         "vanguard_pct": 4.051033333333334,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1513,7 +1513,7 @@
         "previous_close": 2.65,
         "blackrock_pct": 3.392763636363636,
         "vanguard_pct": 4.155475757575758,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1523,7 +1523,7 @@
         "previous_close": 2.77,
         "blackrock_pct": 2.9957384615384615,
         "vanguard_pct": 2.812123076923077,
-        "fire_level": 0,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1533,7 +1533,7 @@
         "previous_close": 2.88,
         "blackrock_pct": 0,
         "vanguard_pct": 4.589172727272727,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1553,7 +1553,7 @@
         "previous_close": 2.84,
         "blackrock_pct": 2.671289655172414,
         "vanguard_pct": 4.63741724137931,
-        "fire_level": 1,
+        "fire_level": 2,
         "previous_fire_level": 2,
         "fire_level_changed": false
       },
@@ -1563,7 +1563,7 @@
         "previous_close": 0.39,
         "blackrock_pct": 0.5808307692307693,
         "vanguard_pct": 2.6055230769230766,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1573,7 +1573,7 @@
         "previous_close": 0.39,
         "blackrock_pct": 1.4723490196078433,
         "vanguard_pct": 2.4191784313725493,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1583,7 +1583,7 @@
         "previous_close": 0.46,
         "blackrock_pct": 0.7124,
         "vanguard_pct": 2.8887416666666663,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1593,7 +1593,7 @@
         "previous_close": 0.45,
         "blackrock_pct": 0.21970877192982455,
         "vanguard_pct": 2.036280701754386,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1603,7 +1603,7 @@
         "previous_close": 0.6,
         "blackrock_pct": 1.4303205882352943,
         "vanguard_pct": 2.1763764705882354,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1623,7 +1623,7 @@
         "previous_close": 0.49,
         "blackrock_pct": 0.35444545454545456,
         "vanguard_pct": 2.7343236363636363,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1643,7 +1643,7 @@
         "previous_close": 0.58,
         "blackrock_pct": 1.0752127906976745,
         "vanguard_pct": 2.4535837209302325,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1663,7 +1663,7 @@
         "previous_close": 0.64,
         "blackrock_pct": 0.22579534883720928,
         "vanguard_pct": 2.2136441860465115,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1683,7 +1683,7 @@
         "previous_close": 0.7,
         "blackrock_pct": 0,
         "vanguard_pct": 2.1665261904761905,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1693,7 +1693,7 @@
         "previous_close": 0.68,
         "blackrock_pct": 0,
         "vanguard_pct": 2.2520610169491526,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1703,7 +1703,7 @@
         "previous_close": 0.73,
         "blackrock_pct": 0.0195,
         "vanguard_pct": 2.748026086956522,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1723,7 +1723,7 @@
         "previous_close": 0.75,
         "blackrock_pct": 0,
         "vanguard_pct": 2.1389032679738564,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1743,7 +1743,7 @@
         "previous_close": 0.78,
         "blackrock_pct": 0.3050857142857143,
         "vanguard_pct": 2.4339285714285714,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1753,7 +1753,7 @@
         "previous_close": 0.79,
         "blackrock_pct": 0,
         "vanguard_pct": 2.405196,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1773,7 +1773,7 @@
         "previous_close": 0.79,
         "blackrock_pct": 1.6527527777777777,
         "vanguard_pct": 2.4362055555555555,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1783,7 +1783,7 @@
         "previous_close": 0.8,
         "blackrock_pct": 0,
         "vanguard_pct": 2.2135057692307694,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1793,7 +1793,7 @@
         "previous_close": 0.87,
         "blackrock_pct": 0.38327692307692307,
         "vanguard_pct": 2.2411865384615384,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1803,7 +1803,7 @@
         "previous_close": 0.87,
         "blackrock_pct": 1.1731,
         "vanguard_pct": 2.1411434782608696,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1813,7 +1813,7 @@
         "previous_close": 0.88,
         "blackrock_pct": 1.3782166666666666,
         "vanguard_pct": 1.2845499999999999,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1833,7 +1833,7 @@
         "previous_close": 0.99,
         "blackrock_pct": 0,
         "vanguard_pct": 2.1180384615384615,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1843,7 +1843,7 @@
         "previous_close": 1.04,
         "blackrock_pct": 1.5897086956521738,
         "vanguard_pct": 1.7378404797601201,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1873,7 +1873,7 @@
         "previous_close": 1.13,
         "blackrock_pct": 0.7026638888888889,
         "vanguard_pct": 2.390725,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1913,7 +1913,7 @@
         "previous_close": 1.26,
         "blackrock_pct": 0.6581166666666667,
         "vanguard_pct": 2.5513999999999997,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1923,7 +1923,7 @@
         "previous_close": 1.26,
         "blackrock_pct": 0.7724909090909091,
         "vanguard_pct": 2.844540909090909,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1933,7 +1933,7 @@
         "previous_close": 1.31,
         "blackrock_pct": 0.7869195652173913,
         "vanguard_pct": 2.822284782608696,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1943,7 +1943,7 @@
         "previous_close": 1.36,
         "blackrock_pct": 1.0613394366197184,
         "vanguard_pct": 2.6474507042253523,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1953,7 +1953,7 @@
         "previous_close": 1.33,
         "blackrock_pct": 0.5233675925925927,
         "vanguard_pct": 2.465599074074074,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1963,7 +1963,7 @@
         "previous_close": 1.38,
         "blackrock_pct": 0.9241512396694215,
         "vanguard_pct": 2.4383019283746554,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -1973,7 +1973,7 @@
         "previous_close": 1.4,
         "blackrock_pct": 0,
         "vanguard_pct": 2.1875772727272724,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2013,7 +2013,7 @@
         "previous_close": 1.4,
         "blackrock_pct": 0.14173333333333335,
         "vanguard_pct": 2.8973666666666666,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2023,7 +2023,7 @@
         "previous_close": 1.51,
         "blackrock_pct": 0.3617,
         "vanguard_pct": 2.4021636363636363,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2033,7 +2033,7 @@
         "previous_close": 1.44,
         "blackrock_pct": 1.6765644171779144,
         "vanguard_pct": 2.917378527607362,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2063,7 +2063,7 @@
         "previous_close": 1.49,
         "blackrock_pct": 0.4457,
         "vanguard_pct": 2.5265916666666666,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2073,7 +2073,7 @@
         "previous_close": 1.51,
         "blackrock_pct": 0.45843636363636364,
         "vanguard_pct": 2.8258772727272725,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2083,7 +2083,7 @@
         "previous_close": 1.55,
         "blackrock_pct": 1.3310225806451612,
         "vanguard_pct": 2.7031,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2093,7 +2093,7 @@
         "previous_close": 1.66,
         "blackrock_pct": 1.4198265306122448,
         "vanguard_pct": 1.401177551020408,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2113,7 +2113,7 @@
         "previous_close": 1.54,
         "blackrock_pct": 1.326475925925926,
         "vanguard_pct": 2.9644592592592596,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2123,7 +2123,7 @@
         "previous_close": 1.58,
         "blackrock_pct": 0.14651904761904763,
         "vanguard_pct": 2.9857142857142858,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2143,7 +2143,7 @@
         "previous_close": 1.63,
         "blackrock_pct": 0.41283055555555553,
         "vanguard_pct": 2.493402777777778,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2153,7 +2153,7 @@
         "previous_close": 1.65,
         "blackrock_pct": 0.6217370370370371,
         "vanguard_pct": 2.692662962962963,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2163,7 +2163,7 @@
         "previous_close": 1.72,
         "blackrock_pct": 0,
         "vanguard_pct": 2.4757875,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2223,7 +2223,7 @@
         "previous_close": 1.94,
         "blackrock_pct": 1.7659264705882354,
         "vanguard_pct": 1.8386147058823528,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2233,7 +2233,7 @@
         "previous_close": 1.91,
         "blackrock_pct": 2.9013544715447157,
         "vanguard_pct": 1.837248780487805,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2243,7 +2243,7 @@
         "previous_close": 2.1,
         "blackrock_pct": 1.4689537313432837,
         "vanguard_pct": 1.2361283582089553,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2253,7 +2253,7 @@
         "previous_close": 1.97,
         "blackrock_pct": 0,
         "vanguard_pct": 2.693788888888889,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2263,7 +2263,7 @@
         "previous_close": 2.13,
         "blackrock_pct": 0.13033870967741934,
         "vanguard_pct": 2.009851612903226,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2283,7 +2283,7 @@
         "previous_close": 2.05,
         "blackrock_pct": 1.291130882352941,
         "vanguard_pct": 1.9577205882352942,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2293,7 +2293,7 @@
         "previous_close": 1.99,
         "blackrock_pct": 0.26820434782608693,
         "vanguard_pct": 2.5619478260869566,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2303,7 +2303,7 @@
         "previous_close": 1.99,
         "blackrock_pct": 1.5877124999999999,
         "vanguard_pct": 1.3092475,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2323,7 +2323,7 @@
         "previous_close": 2.16,
         "blackrock_pct": 1.2309999999999999,
         "vanguard_pct": 1.9169749999999999,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2333,7 +2333,7 @@
         "previous_close": 2.28,
         "blackrock_pct": 0,
         "vanguard_pct": 2.2307035714285712,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2363,7 +2363,7 @@
         "previous_close": 2.21,
         "blackrock_pct": 0,
         "vanguard_pct": 2.769427868852459,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2383,7 +2383,7 @@
         "previous_close": 2.26,
         "blackrock_pct": 1.5393939393939393,
         "vanguard_pct": 1.1032636363636363,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2393,7 +2393,7 @@
         "previous_close": 2.4,
         "blackrock_pct": 0.6347234042553191,
         "vanguard_pct": 2.7984787234042554,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2403,7 +2403,7 @@
         "previous_close": 2.24,
         "blackrock_pct": 0.2582935483870968,
         "vanguard_pct": 2.500451612903226,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2413,7 +2413,7 @@
         "previous_close": 2.4,
         "blackrock_pct": 0,
         "vanguard_pct": 2.94424,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2423,7 +2423,7 @@
         "previous_close": 2.4,
         "blackrock_pct": 1.8801283597883598,
         "vanguard_pct": 2.3087097354497357,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2453,7 +2453,7 @@
         "previous_close": 1.99,
         "blackrock_pct": 1.314909677419355,
         "vanguard_pct": 1.9137000000000002,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2493,7 +2493,7 @@
         "previous_close": 2.56,
         "blackrock_pct": 0.44028666666666666,
         "vanguard_pct": 2.8430733333333333,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2573,7 +2573,7 @@
         "previous_close": 2.81,
         "blackrock_pct": 1.488975,
         "vanguard_pct": 2.2452416666666664,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2603,7 +2603,7 @@
         "previous_close": 2.99,
         "blackrock_pct": 1.1920425000000001,
         "vanguard_pct": 2.2609075,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2613,7 +2613,7 @@
         "previous_close": 2.96,
         "blackrock_pct": 0.34112000000000003,
         "vanguard_pct": 2.74524,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2623,7 +2623,7 @@
         "previous_close": 2.98,
         "blackrock_pct": 0,
         "vanguard_pct": 2.673425,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2633,7 +2633,7 @@
         "previous_close": 2.75,
         "blackrock_pct": 1.1626030303030304,
         "vanguard_pct": 2.424309090909091,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2653,7 +2653,7 @@
         "previous_close": 2.93,
         "blackrock_pct": 0,
         "vanguard_pct": 2.1630818181818183,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2663,7 +2663,7 @@
         "previous_close": 2.96,
         "blackrock_pct": 0,
         "vanguard_pct": 2.422485714285714,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2673,7 +2673,7 @@
         "previous_close": 2.9,
         "blackrock_pct": 0.5900051724137931,
         "vanguard_pct": 2.53773275862069,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -2683,7 +2683,7 @@
         "previous_close": 1.59,
         "blackrock_pct": 0.9830886363636363,
         "vanguard_pct": 2.119477272727273,
-        "fire_level": 0,
+        "fire_level": 1,
         "previous_fire_level": 1,
         "fire_level_changed": false
       },
@@ -4102,14 +4102,14 @@
       "total_processed": 374,
       "qualifying_count": 372,
       "under_dollar": 61,
-      "fire_level_3": 33,
-      "fire_level_2": 24,
-      "fire_level_1": 102,
-      "total_fire_stocks": 159,
-      "fire_level_0": 213,
+      "fire_level_3": 51,
+      "fire_level_2": 67,
+      "fire_level_1": 113,
+      "total_fire_stocks": 231,
+      "fire_level_0": 141,
       "total_scanned_stocks": 372
     },
-    "timestamp": "2025-11-04T10:09:54.332Z"
+    "timestamp": "2025-11-04T10:31:53.105Z"
   },
   "processedStocks": {
     "stocks": [],

@@ -169,23 +169,6 @@ class DatabaseService {
     return this.db.data.holdings.stocks.includes(normalizedTicker);
   }
 
-  // Calculate fire level for a stock - based purely on shareholding
-  calculateFireLevel(stock) {
-    const hasBlackrock = stock.blackrock_pct >= 5;
-    const hasVanguard = stock.vanguard_pct >= 5;
-    const hasBothFunds = hasBlackrock && hasVanguard;
-    
-    if (hasBothFunds) {
-      return 3; // Excellent: Both funds ≥5%
-    } else if (hasBlackrock || hasVanguard) {
-      return 2; // Strong: One fund ≥5%
-    } else if (stock.blackrock_pct >= 3 || stock.vanguard_pct >= 3) {
-      return 1; // Moderate: One fund ≥3%
-    }
-    
-    return 0; // No fire rating
-  }
-
   // Scan Results Management
   async getScanResults() {
     await this.init();
@@ -195,68 +178,46 @@ class DatabaseService {
   async saveScanResults(results) {
     await this.init();
     
-    // Add fire level to each stock and remove duplicates by ticker
-    const stocksWithFireLevel = results.stocks?.map(stock => ({
-      ...stock,
-      fire_level: this.calculateFireLevel(stock)
-    })) || [];
+    // Use the stocks and summary as they come from the scanner
+    const stocks = results.stocks || [];
     
-    // Remove duplicates by ticker, keeping the last occurrence
-    const uniqueStocks = stocksWithFireLevel.filter((stock, index, arr) => 
+    // Remove duplicates by ticker, keeping the last occurrence (defensive coding)
+    const uniqueStocks = stocks.filter((stock, index, arr) => 
       arr.findIndex(s => s.ticker === stock.ticker) === index
     );
     
-    // Update summary with fire level counts
-    const fireLevel3 = uniqueStocks.filter(s => s.fire_level === 3).length;
-    const fireLevel2 = uniqueStocks.filter(s => s.fire_level === 2).length;
-    const fireLevel1 = uniqueStocks.filter(s => s.fire_level === 1).length;
-    const fireLevel0 = uniqueStocks.filter(s => s.fire_level === 0).length;
-    
+    // Save results with minimal processing
     this.db.data.scanResults = {
       ...results,
       stocks: uniqueStocks,
       summary: {
         ...results.summary,
-        fire_level_3: fireLevel3,
-        fire_level_2: fireLevel2,
-        fire_level_1: fireLevel1,
-        fire_level_0: fireLevel0,
-        total_fire_stocks: fireLevel3 + fireLevel2 + fireLevel1,
         total_scanned_stocks: uniqueStocks.length
       },
       timestamp: new Date().toISOString()
     };
     
     await this.db.write();
-    console.log(`💾 Saved scan results (${stocksWithFireLevel.length} stocks, ${fireLevel3 + fireLevel2 + fireLevel1} fire stocks)`);
+    console.log(`💾 Saved scan results (${uniqueStocks.length} stocks)`);
     return this.db.data.scanResults;
   }
 
   async clearScanResults() {
     await this.init();
     
-    // Clear scan results
+    // Clear scan results with minimal structure
     this.db.data.scanResults = {
       stocks: [],
       summary: {
         total_processed: 0,
         qualifying_count: 0,
-        high_tier: 0,
-        medium_tier: 0,
-        low_tier: 0,
-        under_dollar: 0,
-        premium_count: 0,
-        fire_level_3: 0,
-        fire_level_2: 0,
-        fire_level_1: 0,
-        total_fire_stocks: 0
+        total_scanned_stocks: 0
       },
-      timestamp: null,
-      new_stocks_only: false
+      timestamp: null
     };
     
     await this.db.write();
-    console.log('🗑️ Cleared scan results (tickers, holdings, and watchlists preserved)');
+    console.log('🗑️ Cleared scan results');
   }
 
   // Watchlist functions
@@ -362,7 +323,7 @@ class DatabaseService {
     return { removed: watchlist.stocks.length - filteredStocks.length, total: filteredStocks.length };
   }
 
-  // Migration: Add fire levels to existing data
+  // Migration: Add fire levels to existing data (legacy function)
   async migrateAddFireLevels() {
     await this.init();
     
@@ -371,12 +332,15 @@ class DatabaseService {
       return { migrated: 0 };
     }
 
+    // Import calculateFireLevel only for this legacy migration
+    const { calculateFireLevel } = require('./fireUtils');
+    
     let migrated = 0;
     const stocks = this.db.data.scanResults.stocks;
 
     for (let stock of stocks) {
       if (stock.fire_level === undefined) {
-        stock.fire_level = this.calculateFireLevel(stock);
+        stock.fire_level = calculateFireLevel(stock);
         migrated++;
       }
     }

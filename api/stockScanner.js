@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const dbService = require('./database');
 const { getStockPriceData } = require('./priceUtils');
+const { calculateFireLevel } = require('./fireUtils');
 
 // C  // Parse BlackRock and Vanguard holdingsOLD_THRESHOLD = 3.0; // 3% minimum holding
 const DELAY_BETWEEN_REQUESTS = 500; // ms
@@ -13,35 +14,6 @@ class StockScanner {
     this.processed = 0;
     this.total = 0;
     this.onProgress = null;
-  }
-
-    // Calculate fire level for a stock with improved nuanced thresholds
-  calculateFireLevel(stock) {
-    const blackrockPct = stock.blackrock_pct || 0;
-    const vanguardPct = stock.vanguard_pct || 0;
-    const combinedPct = blackrockPct + vanguardPct;
-    
-    // Fire Level 3 (Blazing 🔥🔥🔥): Highest confidence
-    if ((blackrockPct >= 4 && vanguardPct >= 4) || // Both funds ≥4%
-        blackrockPct >= 7 || vanguardPct >= 7) {   // OR one fund ≥7%
-      return 3;
-    }
-    
-    // Fire Level 2 (Strong 🔥🔥): Strong institutional interest
-    if (blackrockPct >= 4 || vanguardPct >= 4 ||     // One fund ≥4%
-        (blackrockPct >= 2 && vanguardPct >= 2) ||   // Both funds ≥2%
-        combinedPct >= 6) {                          // Combined ≥6%
-      return 2;
-    }
-    
-    // Fire Level 1 (Warm 🔥): Meaningful but moderate interest
-    if (blackrockPct >= 2 || vanguardPct >= 2 ||     // One fund ≥2%
-        (blackrockPct >= 1 && vanguardPct >= 1) ||   // Both funds ≥1%
-        combinedPct >= 3) {                          // Combined ≥3%
-      return 1;
-    }
-    
-    return 0; // No fire rating
   }
 
   // Load tickers from file
@@ -300,7 +272,7 @@ class StockScanner {
       const result = await this.analyzeTicker(ticker);
       if (result) {
         // Calculate fire level for consistency with daily scan
-        result.fire_level = this.calculateFireLevel(result);
+        result.fire_level = calculateFireLevel(result);
         
         // Add change tracking fields for consistency with daily scan
         result.previous_fire_level = result.fire_level; // Same as current since it's a fresh scan
@@ -354,7 +326,7 @@ class StockScanner {
       const result = await this.analyzeTicker(ticker);
       if (result) {
         // Calculate fire level for the new ticker
-        result.fire_level = this.calculateFireLevel(result);
+        result.fire_level = calculateFireLevel(result);
         
         // For new tickers, no previous fire level
         result.previous_fire_level = 0;
@@ -466,7 +438,7 @@ class StockScanner {
       const result = await this.analyzeTicker(ticker);
       if (result) {
         // Calculate fire level using the same logic as database service
-        result.fire_level = this.calculateFireLevel(result);
+        result.fire_level = calculateFireLevel(result);
         
         const previousStock = previousStockMap.get(ticker);
         
