@@ -37,6 +37,8 @@ app.post('/api/scan/start', async (req, res) => {
   }
 
   try {
+    const { fireStocksOnly = false } = req.body;
+    
     scanState.scanning = true;
     scanState.error = null;
     scanState.progress = { current: 0, total: 0, percentage: 0 };
@@ -47,74 +49,51 @@ app.post('/api/scan/start', async (req, res) => {
     // Set up progress callback
     currentScanner.onProgress = (progress) => {
       scanState.progress = progress;
-      console.log(`Progress: ${progress.current}/${progress.total} (${progress.percentage}%)`);
+      const scanType = fireStocksOnly ? 'Fire stocks' : 'Full scan';
+      console.log(`${scanType} progress: ${progress.current}/${progress.total} (${progress.percentage}%)`);
     };
 
-    res.json({ success: true, message: 'Full scan started successfully' });
+    if (fireStocksOnly) {
+      // Fire stocks only scan
+      const previousResults = await dbService.getScanResults();
+      const previousFireStocks = previousResults?.stocks?.filter(s => s.fire_level && s.fire_level > 0) || [];
+      
+      if (previousFireStocks.length === 0) {
+        scanState.scanning = false;
+        return res.json({ success: false, message: 'No previous fire stocks found. Run a full scan first.' });
+      }
 
-    // Run scan asynchronously
-    try {
-      const results = await currentScanner.scan();
-      scanState.scanning = false;
-      scanState.last_scan = new Date().toISOString();
-      console.log('✅ Full scan completed successfully');
-    } catch (error) {
-      scanState.scanning = false;
-      scanState.error = error.message;
-      console.error('❌ Full scan failed:', error);
-    }
+      const fireStockTickers = previousFireStocks.map(s => s.ticker);
+      console.log(`🔥 Starting fire stocks scan for ${fireStockTickers.length} fire stocks: ${fireStockTickers.join(', ')}`);
 
-  } catch (error) {
-    scanState.scanning = false;
-    scanState.error = error.message;
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
+      res.json({ success: true, message: `Fire stocks scan started for ${fireStockTickers.length} fire stocks` });
 
-// Start daily scan (fire stocks only)
-app.post('/api/scan/daily', async (req, res) => {
-  if (scanState.scanning) {
-    return res.json({ success: false, message: 'Scan already in progress' });
-  }
+      // Run fire stocks scan asynchronously
+      try {
+        const results = await currentScanner.scanTickers(fireStockTickers, previousFireStocks);
+        scanState.scanning = false;
+        scanState.last_scan = new Date().toISOString();
+        console.log('✅ Fire stocks scan completed successfully');
+      } catch (error) {
+        scanState.scanning = false;
+        scanState.error = error.message;
+        console.error('❌ Fire stocks scan failed:', error);
+      }
+    } else {
+      // Full scan
+      res.json({ success: true, message: 'Full scan started successfully' });
 
-  try {
-    scanState.scanning = true;
-    scanState.error = null;
-    scanState.progress = { current: 0, total: 0, percentage: 0 };
-
-    // Get previous fire stocks
-    const previousResults = await dbService.getScanResults();
-    const previousFireStocks = previousResults?.stocks?.filter(s => s.fire_level && s.fire_level > 0) || [];
-    
-    if (previousFireStocks.length === 0) {
-      scanState.scanning = false;
-      return res.json({ success: false, message: 'No previous fire stocks found. Run a full scan first.' });
-    }
-
-    const fireStockTickers = previousFireStocks.map(s => s.ticker);
-    console.log(`🔥 Starting daily scan for ${fireStockTickers.length} fire stocks: ${fireStockTickers.join(', ')}`);
-
-    // Create new scanner instance with fire stocks only
-    currentScanner = new StockScanner();
-    
-    // Set up progress callback
-    currentScanner.onProgress = (progress) => {
-      scanState.progress = progress;
-      console.log(`Daily scan progress: ${progress.current}/${progress.total} (${progress.percentage}%)`);
-    };
-
-    res.json({ success: true, message: `Daily scan started for ${fireStockTickers.length} fire stocks` });
-
-    // Run daily scan asynchronously
-    try {
-      const results = await currentScanner.scanTickers(fireStockTickers, previousFireStocks);
-      scanState.scanning = false;
-      scanState.last_scan = new Date().toISOString();
-      console.log('✅ Daily scan completed successfully');
-    } catch (error) {
-      scanState.scanning = false;
-      scanState.error = error.message;
-      console.error('❌ Daily scan failed:', error);
+      // Run full scan asynchronously
+      try {
+        const results = await currentScanner.scan();
+        scanState.scanning = false;
+        scanState.last_scan = new Date().toISOString();
+        console.log('✅ Full scan completed successfully');
+      } catch (error) {
+        scanState.scanning = false;
+        scanState.error = error.message;
+        console.error('❌ Full scan failed:', error);
+      }
     }
 
   } catch (error) {

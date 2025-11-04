@@ -34,7 +34,7 @@ const Scans: React.FC = () => {
     }
   };
 
-  const handleStartScan = async (scanType: "full" | "daily") => {
+  const handleStartScan = async (scanType: "full" | "fireStocksOnly") => {
     if (scanStatus?.scanning) {
       setError("A scan is already in progress");
       return;
@@ -44,10 +44,7 @@ const Scans: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const result =
-        scanType === "full"
-          ? await api.startScan()
-          : await api.startDailyScan();
+      const result = await api.startScan(scanType === "fireStocksOnly");
 
       if (result.success) {
         // Immediately refresh status to show scanning state
@@ -371,7 +368,7 @@ const Scans: React.FC = () => {
             gap: theme.spacing.lg,
           }}
         >
-          {/* Daily Scan Card */}
+          {/* Fire Stocks Only Scan Card */}
           <div
             style={{
               backgroundColor: theme.ui.surface,
@@ -390,7 +387,7 @@ const Scans: React.FC = () => {
                 marginBottom: theme.spacing.md,
               }}
             >
-              <span style={{ fontSize: "32px" }}>⚡</span>
+              <span style={{ fontSize: "32px" }}>🔥</span>
               <div>
                 <h3
                   style={{
@@ -400,7 +397,7 @@ const Scans: React.FC = () => {
                     color: theme.ui.text.primary,
                   }}
                 >
-                  Daily Scan
+                  Fire Stocks Only
                 </h3>
                 <p
                   style={{
@@ -409,7 +406,7 @@ const Scans: React.FC = () => {
                     color: theme.ui.text.secondary,
                   }}
                 >
-                  Quick update of recent changes
+                  Quick update of fire stocks
                 </p>
               </div>
             </div>
@@ -442,16 +439,16 @@ const Scans: React.FC = () => {
                   lineHeight: 1.4,
                 }}
               >
-                <li>Scans only tickers added/changed today</li>
+                <li>Scans only stocks with fire levels 1-3</li>
                 <li>Quick holdings data refresh</li>
-                <li>Updates fire levels for new data</li>
+                <li>Updates fire levels for existing fire stocks</li>
                 <li>Faster execution</li>
-                <li>Perfect for daily updates</li>
+                <li>Perfect for tracking fire stock changes</li>
               </ul>
             </div>
 
             <button
-              onClick={() => handleStartScan("daily")}
+              onClick={() => handleStartScan("fireStocksOnly")}
               disabled={loading || scanStatus?.scanning}
               style={{
                 width: "100%",
@@ -486,7 +483,7 @@ const Scans: React.FC = () => {
             >
               {scanStatus?.scanning
                 ? "⏳ Scan in Progress..."
-                : "⚡ Start Daily Scan"}
+                : "🔥 Start Fire Stocks Scan"}
             </button>
           </div>
 

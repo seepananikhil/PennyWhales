@@ -452,6 +452,9 @@ class StockScanner {
 
         this.results.push(result);
         
+        // Log detailed analysis for each ticker (like in full scan)
+        console.log(`✅ ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}% | Fire:${result.fire_level}🔥`);
+        
         // Log changes
         if (result.fire_level_changed) {
           const changeDirection = result.fire_level > result.previous_fire_level ? '📈' : '📉';

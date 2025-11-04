@@ -5,14 +5,8 @@ const API_BASE = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:
 
 export const api = {
   // Start a new scan
-  startScan: async (): Promise<{ success: boolean; message: string }> => {
-    const response = await axios.post(`${API_BASE}/api/scan/start`);
-    return response.data;
-  },
-
-  // Start a daily scan
-  startDailyScan: async (): Promise<{ success: boolean; message: string }> => {
-    const response = await axios.post(`${API_BASE}/api/scan/daily`);
+  startScan: async (fireStocksOnly: boolean = false): Promise<{ success: boolean; message: string }> => {
+    const response = await axios.post(`${API_BASE}/api/scan/start`, { fireStocksOnly });
     return response.data;
   },
 
