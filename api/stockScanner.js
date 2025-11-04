@@ -15,18 +15,30 @@ class StockScanner {
     this.onProgress = null;
   }
 
-    // Calculate fire level for a stock (same logic as database service)
+    // Calculate fire level for a stock with improved nuanced thresholds
   calculateFireLevel(stock) {
-    const hasBlackrock = stock.blackrock_pct >= 5;
-    const hasVanguard = stock.vanguard_pct >= 5;
-    const hasBothFunds = hasBlackrock && hasVanguard;
+    const blackrockPct = stock.blackrock_pct || 0;
+    const vanguardPct = stock.vanguard_pct || 0;
+    const combinedPct = blackrockPct + vanguardPct;
     
-    if (hasBothFunds) {
-      return 3; // Excellent: Both funds ≥5%
-    } else if (hasBlackrock || hasVanguard) {
-      return 2; // Strong: One fund ≥5%
-    } else if (stock.blackrock_pct >= 4 || stock.vanguard_pct >= 4) {
-      return 1; // Moderate: One fund ≥4%
+    // Fire Level 3 (Blazing 🔥🔥🔥): Highest confidence
+    if ((blackrockPct >= 4 && vanguardPct >= 4) || // Both funds ≥4%
+        blackrockPct >= 7 || vanguardPct >= 7) {   // OR one fund ≥7%
+      return 3;
+    }
+    
+    // Fire Level 2 (Strong 🔥🔥): Strong institutional interest
+    if (blackrockPct >= 4 || vanguardPct >= 4 ||     // One fund ≥4%
+        (blackrockPct >= 2 && vanguardPct >= 2) ||   // Both funds ≥2%
+        combinedPct >= 6) {                          // Combined ≥6%
+      return 2;
+    }
+    
+    // Fire Level 1 (Warm 🔥): Meaningful but moderate interest
+    if (blackrockPct >= 2 || vanguardPct >= 2 ||     // One fund ≥2%
+        (blackrockPct >= 1 && vanguardPct >= 1) ||   // Both funds ≥1%
+        combinedPct >= 3) {                          // Combined ≥3%
+      return 1;
     }
     
     return 0; // No fire rating
