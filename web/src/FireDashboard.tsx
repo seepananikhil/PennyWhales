@@ -17,10 +17,35 @@ const FireDashboard: React.FC = () => {
   );
   const [showOnlyHoldings, setShowOnlyHoldings] = useState<boolean>(false);
   const [selectedFireFilter, setSelectedFireFilter] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('fire-desc');
+  const [livePriceData, setLivePriceData] = useState<Map<string, {
+    price: number;
+    priceChange: number;
+    timestamp: string;
+  }>>(new Map());
 
   useEffect(() => {
     loadData();
+    
+    // Set up auto-refresh for live prices every 5 minutes
+    const priceRefreshInterval = setInterval(() => {
+      if (results?.stocks && results.stocks.length > 0) {
+        loadLivePrices();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => {
+      clearInterval(priceRefreshInterval);
+    };
   }, []);
+
+  // Load live prices when results change
+  useEffect(() => {
+    if (results?.stocks && results.stocks.length > 0) {
+      loadLivePrices();
+    }
+  }, [results]);
 
   const loadData = async () => {
     await Promise.all([loadResults(), loadHoldings()]);
@@ -58,6 +83,44 @@ const FireDashboard: React.FC = () => {
       setHoldings(new Set(holdingsArray));
     } catch (error) {
       console.error("Error loading holdings:", error);
+    }
+  };
+
+  const loadLivePrices = async () => {
+    try {
+      if (!results?.stocks) return;
+      
+      // Load live prices for all fire stocks
+      const fireStockTickers = results.stocks.filter(stock => getFireLevel(stock) > 0).map(stock => stock.ticker);
+      const pricePromises = fireStockTickers.map(async (ticker) => {
+        try {
+          const livePrice = await api.getLivePrice(ticker);
+          return {
+            ticker,
+            data: {
+              price: livePrice.price,
+              priceChange: livePrice.priceChange,
+              timestamp: livePrice.timestamp
+            }
+          };
+        } catch (err) {
+          console.error(`Error fetching live price for ${ticker}:`, err);
+          return null;
+        }
+      });
+
+      const priceResults = await Promise.all(pricePromises);
+      const newLivePriceData = new Map(livePriceData);
+      
+      priceResults.forEach(result => {
+        if (result) {
+          newLivePriceData.set(result.ticker, result.data);
+        }
+      });
+      
+      setLivePriceData(newLivePriceData);
+    } catch (err) {
+      console.error('Error loading live prices:', err);
     }
   };
 
@@ -210,18 +273,66 @@ const FireDashboard: React.FC = () => {
       stocks = applyPriceFilter(stocks);
     }
 
-    // Sort by fire level (highest first) then by price (lowest first)
+    // Apply search filter if provided
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      stocks = stocks.filter(stock => 
+        stock.ticker.toLowerCase().includes(query)
+      );
+    }
+
+    // Sort stocks based on selected sort option
     return stocks.sort((a, b) => {
-      const fireA = getFireLevel(a);
-      const fireB = getFireLevel(b);
-
-      // First sort by fire level (descending - highest fire first)
-      if (fireA !== fireB) {
-        return fireB - fireA;
+      switch (sortBy) {
+        case 'combined-desc':
+          // Sort by combined VG + BR percentage (highest first)
+          const combinedA = a.vanguard_pct + a.blackrock_pct;
+          const combinedB = b.vanguard_pct + b.blackrock_pct;
+          return combinedB - combinedA;
+        case 'combined-asc':
+          // Sort by combined VG + BR percentage (lowest first)
+          const combinedAsc = a.vanguard_pct + a.blackrock_pct;
+          const combinedBsc = b.vanguard_pct + b.blackrock_pct;
+          return combinedAsc - combinedBsc;
+        case 'vg-desc':
+          return b.vanguard_pct - a.vanguard_pct;
+        case 'vg-asc':
+          return a.vanguard_pct - b.vanguard_pct;
+        case 'br-desc':
+          return b.blackrock_pct - a.blackrock_pct;
+        case 'br-asc':
+          return a.blackrock_pct - b.blackrock_pct;
+        case 'fire-desc':
+          const fireA = getFireLevel(a);
+          const fireB = getFireLevel(b);
+          if (fireA !== fireB) return fireB - fireA;
+          // If fire levels are equal, sort by combined VG+BR as secondary
+          const fireComboA = a.vanguard_pct + a.blackrock_pct;
+          const fireComboB = b.vanguard_pct + b.blackrock_pct;
+          return fireComboB - fireComboA;
+        case 'price-desc':
+          return b.price - a.price;
+        case 'price-asc':
+          return a.price - b.price;
+        case 'price-change-desc':
+          // Sort by price change percentage (highest first)
+          const priceChangeA = livePriceData.get(a.ticker)?.priceChange || 0;
+          const priceChangeB = livePriceData.get(b.ticker)?.priceChange || 0;
+          return priceChangeB - priceChangeA;
+        case 'price-change-asc':
+          // Sort by price change percentage (lowest first)
+          const priceChangeAscA = livePriceData.get(a.ticker)?.priceChange || 0;
+          const priceChangeAscB = livePriceData.get(b.ticker)?.priceChange || 0;
+          return priceChangeAscA - priceChangeAscB;
+        default:
+          // Default to fire level (highest first) then by price (lowest first)
+          const defaultFireA = getFireLevel(a);
+          const defaultFireB = getFireLevel(b);
+          if (defaultFireA !== defaultFireB) {
+            return defaultFireB - defaultFireA;
+          }
+          return a.price - b.price;
       }
-
-      // Then sort by price (ascending - lowest price first)
-      return a.price - b.price;
     });
   };
 
@@ -240,6 +351,84 @@ const FireDashboard: React.FC = () => {
         fontFamily: theme.typography.fontFamily,
       }}
     >
+      {/* Header with Search and Sort Controls */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: theme.spacing.lg,
+        padding: theme.spacing.md,
+        backgroundColor: theme.ui.surface,
+        borderRadius: theme.borderRadius.md,
+        boxShadow: theme.ui.shadow.sm
+      }}>
+        <h1 style={{
+          margin: 0,
+          fontSize: theme.typography.fontSize.xxl,
+          fontWeight: theme.typography.fontWeight.bold,
+          color: theme.ui.text.primary
+        }}>
+          🔥 Fire Dashboard
+        </h1>
+        <div style={{ display: 'flex', gap: theme.spacing.md, alignItems: 'center' }}>
+          {/* Search Input */}
+          <input
+            type="text"
+            placeholder="🔍 Search fire stocks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              border: `1px solid ${theme.ui.border}`,
+              borderRadius: theme.borderRadius.md,
+              backgroundColor: theme.ui.surface,
+              color: theme.ui.text.primary,
+              fontSize: theme.typography.fontSize.sm,
+              fontFamily: theme.typography.fontFamily,
+              width: '200px',
+              outline: 'none',
+              transition: `all ${theme.transition.normal}`
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = theme.status.info;
+              e.currentTarget.style.boxShadow = `0 0 0 2px ${theme.status.info}20`;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = theme.ui.border;
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          />
+          {/* Sort Dropdown */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{
+              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              border: `1px solid ${theme.ui.border}`,
+              borderRadius: theme.borderRadius.md,
+              backgroundColor: theme.ui.surface,
+              color: theme.ui.text.primary,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.medium,
+              cursor: 'pointer',
+              fontFamily: theme.typography.fontFamily
+            }}
+          >
+            <option value="fire-desc">🔥 Fire Level (High to Low)</option>
+            <option value="combined-desc">🔥 VG + BR % (High to Low)</option>
+            <option value="combined-asc">🔥 VG + BR % (Low to High)</option>
+            <option value="vg-desc">🔄 VG % (High to Low)</option>
+            <option value="vg-asc">🔄 VG % (Low to High)</option>
+            <option value="br-desc">🔄 BR % (High to Low)</option>
+            <option value="br-asc">🔄 BR % (Low to High)</option>
+            <option value="price-desc">💰 Price (High to Low)</option>
+            <option value="price-asc">💰 Price (Low to High)</option>
+            <option value="price-change-desc">📈 Price Change % (High to Low)</option>
+            <option value="price-change-asc">📉 Price Change % (Low to High)</option>
+          </select>
+        </div>
+      </div>
+
       <div
         style={{
           display: "flex",
@@ -519,6 +708,7 @@ const FireDashboard: React.FC = () => {
                   <StockCard
                     key={stock.ticker}
                     stock={stock}
+                    livePrice={livePriceData.get(stock.ticker)}
                     isHolding={holdings.has(stock.ticker)}
                     onToggleHolding={toggleHolding}
                     onOpenChart={openChart}
@@ -591,7 +781,7 @@ const FireDashboard: React.FC = () => {
                 fontSize: "1.3rem",
               }}
             >
-              🔥 All Fire Stocks ({uniqueFireStocks.length})
+              🔥 All Fire Stocks ({getDisplayStocks().length})
             </h2>
           </div>
 
@@ -609,28 +799,16 @@ const FireDashboard: React.FC = () => {
               width: "100%",
             }}
           >
-            {uniqueFireStocks
-              .sort((a, b) => {
-                const fireA = getFireLevel(a);
-                const fireB = getFireLevel(b);
-
-                // First sort by fire level (descending - highest fire first)
-                if (fireA !== fireB) {
-                  return fireB - fireA;
-                }
-
-                // Then sort by price (ascending - lowest price first)
-                return a.price - b.price;
-              })
-              .map((stock) => (
-                <StockCard
-                  key={stock.ticker}
-                  stock={stock}
-                  isHolding={holdings.has(stock.ticker)}
-                  onToggleHolding={toggleHolding}
-                  onOpenChart={openChart}
-                />
-              ))}
+            {getDisplayStocks().map((stock) => (
+              <StockCard
+                key={stock.ticker}
+                stock={stock}
+                livePrice={livePriceData.get(stock.ticker)}
+                isHolding={holdings.has(stock.ticker)}
+                onToggleHolding={toggleHolding}
+                onOpenChart={openChart}
+              />
+            ))}
           </div>
         </section>
       )}

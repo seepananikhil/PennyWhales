@@ -31,20 +31,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         <NavLink
           to="/dashboard"
           className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
-          title="Fire Dashboard"
+          title="Dashboard"
         >
           <span className="nav-icon">🔥</span>
           <span className="nav-text">Dashboard</span>
         </NavLink>
         
-        <NavLink
-          to="/tickers"
-          className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
-          title="Ticker Management"
-        >
-          <span className="nav-icon">🎯</span>
-          <span className="nav-text">Tickers</span>
-        </NavLink>
 
         <NavLink
           to="/scans"

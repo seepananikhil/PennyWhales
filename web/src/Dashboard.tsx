@@ -5,7 +5,7 @@ import { theme, getFireLevelStyle } from './theme';
 import StockCard from './components/StockCard';
 import TickerModal from './components/TickerModal';
 
-const TickerManagement: React.FC = () => {
+const Dashboard: React.FC = () => {
   const [tickers, setTickers] = useState<string[]>([]);
   const [stockData, setStockData] = useState<Map<string, Stock>>(new Map());
   const [livePriceData, setLivePriceData] = useState<Map<string, {
@@ -25,6 +25,7 @@ const TickerManagement: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('combined-desc');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedPriceFilter, setSelectedPriceFilter] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -273,6 +274,25 @@ const TickerManagement: React.FC = () => {
         stocks = tickersWithData;
     }
     
+    // Apply price filter if selected
+    if (selectedPriceFilter) {
+      stocks = stocks.filter(ticker => {
+        const stock = stockData.get(ticker);
+        if (!stock) return false;
+        
+        switch (selectedPriceFilter) {
+          case 'under1':
+            return stock.price < 1.0;
+          case '1to2':
+            return stock.price >= 1.0 && stock.price <= 2.0;
+          case 'over2':
+            return stock.price > 2.0;
+          default:
+            return true;
+        }
+      });
+    }
+    
     // Filter by search query if provided
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
@@ -390,7 +410,7 @@ const TickerManagement: React.FC = () => {
             fontWeight: theme.typography.fontWeight.bold,
             color: theme.ui.text.primary
           }}>
-            🎯 Ticker Management
+            🎯 Dashboard
           </h1>
           <div style={{ display: 'flex', gap: theme.spacing.md, alignItems: 'center' }}>
             {/* Search Input */}
@@ -735,6 +755,131 @@ const TickerManagement: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Price Filter Row */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: theme.spacing.md,
+          marginBottom: theme.spacing.md
+        }}>
+          <button
+            onClick={() => {
+              if (selectedPriceFilter === 'under1') {
+                setSelectedPriceFilter(null);
+              } else {
+                setSelectedPriceFilter('under1');
+              }
+            }}
+            style={{
+              padding: theme.spacing.md,
+              backgroundColor: selectedPriceFilter === 'under1' ? '#28a745' : theme.ui.surface,
+              color: selectedPriceFilter === 'under1' ? 'white' : '#28a745',
+              border: `2px solid #28a745`,
+              borderRadius: theme.borderRadius.md,
+              textAlign: 'center',
+              boxShadow: selectedPriceFilter === 'under1' ? '0 4px 8px rgba(40, 167, 69, 0.3)' : theme.ui.shadow.sm,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: selectedPriceFilter === 'under1' ? 'translateY(-1px)' : 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}
+            onMouseEnter={(e) => {
+              if (selectedPriceFilter !== 'under1') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(40, 167, 69, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (selectedPriceFilter !== 'under1') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            💰 Under $1
+          </button>
+
+          <button
+            onClick={() => {
+              if (selectedPriceFilter === '1to2') {
+                setSelectedPriceFilter(null);
+              } else {
+                setSelectedPriceFilter('1to2');
+              }
+            }}
+            style={{
+              padding: theme.spacing.md,
+              backgroundColor: selectedPriceFilter === '1to2' ? '#fd7e14' : theme.ui.surface,
+              color: selectedPriceFilter === '1to2' ? 'white' : '#fd7e14',
+              border: `2px solid #fd7e14`,
+              borderRadius: theme.borderRadius.md,
+              textAlign: 'center',
+              boxShadow: selectedPriceFilter === '1to2' ? '0 4px 8px rgba(253, 126, 20, 0.3)' : theme.ui.shadow.sm,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: selectedPriceFilter === '1to2' ? 'translateY(-1px)' : 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}
+            onMouseEnter={(e) => {
+              if (selectedPriceFilter !== '1to2') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(253, 126, 20, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (selectedPriceFilter !== '1to2') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            💎 $1 - $2
+          </button>
+
+          <button
+            onClick={() => {
+              if (selectedPriceFilter === 'over2') {
+                setSelectedPriceFilter(null);
+              } else {
+                setSelectedPriceFilter('over2');
+              }
+            }}
+            style={{
+              padding: theme.spacing.md,
+              backgroundColor: selectedPriceFilter === 'over2' ? '#6f42c1' : theme.ui.surface,
+              color: selectedPriceFilter === 'over2' ? 'white' : '#6f42c1',
+              border: `2px solid #6f42c1`,
+              borderRadius: theme.borderRadius.md,
+              textAlign: 'center',
+              boxShadow: selectedPriceFilter === 'over2' ? '0 4px 8px rgba(111, 66, 193, 0.3)' : theme.ui.shadow.sm,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: selectedPriceFilter === 'over2' ? 'translateY(-1px)' : 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}
+            onMouseEnter={(e) => {
+              if (selectedPriceFilter !== 'over2') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(111, 66, 193, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (selectedPriceFilter !== 'over2') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            🏆 Over $2
+          </button>
+        </div>
       </div>
 
       {/* Content Section */}
@@ -785,7 +930,6 @@ const TickerManagement: React.FC = () => {
 
         {tickersWithData.length > 0 || (activeFilter === 'holdings' && holdingTickers.length > 0) ? (
           <>
-
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
@@ -934,4 +1078,4 @@ const TickerManagement: React.FC = () => {
   );
 };
 
-export default TickerManagement;
+export default Dashboard;

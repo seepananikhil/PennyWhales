@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import './App.css';
 import { ThemeProvider, useTheme } from './ThemeContext';
 import FireDashboard from './FireDashboard';
-import TickerManagement from './TickerManagement';
+import Dashboard from './Dashboard';
 import Scans from './Scans';
 import Sidebar from './components/Sidebar';
 
@@ -22,8 +22,7 @@ const AppContent: React.FC = () => {
           <main className="app-main">
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<FireDashboard />} />
-              <Route path="/tickers" element={<TickerManagement />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/scans" element={<Scans />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
