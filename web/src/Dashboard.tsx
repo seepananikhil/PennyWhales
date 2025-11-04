@@ -3,6 +3,7 @@ import api from './api';
 import { Stock } from './types';
 import { theme, getFireLevelStyle } from './theme';
 import StockCard from './components/StockCard';
+import LazyStockCard from './components/LazyStockCard';
 import TickerModal from './components/TickerModal';
 
 const Dashboard: React.FC = () => {
@@ -29,25 +30,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    
-    // Set up auto-refresh for live prices every 5 minutes
-    const priceRefreshInterval = setInterval(() => {
-      if (tickers.length > 0) {
-        loadLivePrices();
-      }
-    }, 5 * 60 * 1000); // 5 minutes
-
-    return () => {
-      clearInterval(priceRefreshInterval);
-    };
   }, []);
-
-  // Load live prices when tickers change
-  useEffect(() => {
-    if (tickers.length > 0) {
-      loadLivePrices();
-    }
-  }, [tickers]);
 
   const loadData = async () => {
     await Promise.all([loadTickers(), loadStockData(), loadHoldings()]);
@@ -106,39 +89,20 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const loadLivePrices = async () => {
+  const loadLivePriceForTicker = async (ticker: string) => {
     try {
-      // Load live prices for all tickers with data
-      const tickersWithData = tickers.filter(ticker => stockData.has(ticker));
-      const pricePromises = tickersWithData.map(async (ticker) => {
-        try {
-          const livePrice = await api.getLivePrice(ticker);
-          return {
-            ticker,
-            data: {
-              price: livePrice.price,
-              priceChange: livePrice.priceChange,
-              timestamp: livePrice.timestamp
-            }
-          };
-        } catch (err) {
-          console.error(`Error fetching live price for ${ticker}:`, err);
-          return null;
-        }
+      const livePrice = await api.getLivePrice(ticker);
+      setLivePriceData(prev => {
+        const newData = new Map(prev);
+        newData.set(ticker, {
+          price: livePrice.price,
+          priceChange: livePrice.priceChange,
+          timestamp: livePrice.timestamp
+        });
+        return newData;
       });
-
-      const results = await Promise.all(pricePromises);
-      const newLivePriceData = new Map(livePriceData);
-      
-      results.forEach(result => {
-        if (result) {
-          newLivePriceData.set(result.ticker, result.data);
-        }
-      });
-      
-      setLivePriceData(newLivePriceData);
     } catch (err) {
-      console.error('Error loading live prices:', err);
+      console.error(`Error loading live price for ${ticker}:`, err);
     }
   };
 
@@ -546,7 +510,13 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div 
-            onClick={() => setActiveFilter('fire3')}
+            onClick={() => {
+              if (activeFilter === 'fire3') {
+                setActiveFilter('all');
+              } else {
+                setActiveFilter('fire3');
+              }
+            }}
             style={{
               textAlign: 'center',
               padding: theme.spacing.sm,
@@ -588,7 +558,13 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div 
-            onClick={() => setActiveFilter('fire2')}
+            onClick={() => {
+              if (activeFilter === 'fire2') {
+                setActiveFilter('all');
+              } else {
+                setActiveFilter('fire2');
+              }
+            }}
             style={{
               textAlign: 'center',
               padding: theme.spacing.sm,
@@ -630,7 +606,13 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div 
-            onClick={() => setActiveFilter('fire1')}
+            onClick={() => {
+              if (activeFilter === 'fire1') {
+                setActiveFilter('all');
+              } else {
+                setActiveFilter('fire1');
+              }
+            }}
             style={{
               textAlign: 'center',
               padding: theme.spacing.sm,
@@ -672,7 +654,13 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div 
-            onClick={() => setActiveFilter('nofire')}
+            onClick={() => {
+              if (activeFilter === 'nofire') {
+                setActiveFilter('all');
+              } else {
+                setActiveFilter('nofire');
+              }
+            }}
             style={{
               textAlign: 'center',
               padding: theme.spacing.sm,
@@ -714,7 +702,13 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div 
-            onClick={() => setActiveFilter('holdings')}
+            onClick={() => {
+              if (activeFilter === 'holdings') {
+                setActiveFilter('all');
+              } else {
+                setActiveFilter('holdings');
+              }
+            }}
             style={{
               textAlign: 'center',
               padding: theme.spacing.sm,
@@ -1016,16 +1010,18 @@ const Dashboard: React.FC = () => {
                   );
                 }
                 
-                // For stocks with data, show the regular StockCard
+                // For stocks with data, show the lazy-loaded StockCard
                 if (stock) {
                   return (
-                    <StockCard
+                    <LazyStockCard
                       key={ticker}
+                      ticker={ticker}
                       stock={stock}
                       livePrice={livePrice}
                       isHolding={holdings.has(ticker)}
                       onToggleHolding={handleToggleHolding}
                       onOpenChart={handleOpenChart}
+                      onLoadLivePrice={loadLivePriceForTicker}
                     />
                   );
                 }
