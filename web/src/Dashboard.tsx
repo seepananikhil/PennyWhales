@@ -212,6 +212,7 @@ const Dashboard: React.FC = () => {
   const fire3Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 3);
   const fire2Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 2);
   const fire1Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 1);
+  const anyFireTickers = tickersWithData.filter(ticker => (stockData.get(ticker)?.fire_level || 0) > 0);
   const noFireTickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 0);
   const holdingTickers = tickers.filter(ticker => holdings.has(ticker));
 
@@ -227,6 +228,9 @@ const Dashboard: React.FC = () => {
         break;
       case 'fire1':
         stocks = fire1Tickers;
+        break;
+      case 'anyfire':
+        stocks = anyFireTickers;
         break;
       case 'nofire':
         stocks = noFireTickers;
@@ -506,6 +510,55 @@ const Dashboard: React.FC = () => {
               fontWeight: theme.typography.fontWeight.medium
             }}>
               Total Tickers
+            </div>
+          </div>
+
+
+          <div 
+            onClick={() => {
+              if (activeFilter === 'anyfire') {
+                setActiveFilter('all');
+              } else {
+                setActiveFilter('anyfire');
+              }
+            }}
+            style={{
+              textAlign: 'center',
+              padding: theme.spacing.sm,
+              backgroundColor: activeFilter === 'anyfire' ? '#ff6b35' : '#fff0e6',
+              borderRadius: theme.borderRadius.md,
+              border: `2px solid ${activeFilter === 'anyfire' ? '#ff6b35' : '#ffb380'}`,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'anyfire' ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: activeFilter === 'anyfire' ? theme.ui.shadow.md : theme.ui.shadow.sm
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'anyfire') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'anyfire') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: activeFilter === 'anyfire' ? 'white' : '#ff6b35'
+            }}>
+              {anyFireTickers.length}
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.xs,
+              color: activeFilter === 'anyfire' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              🔥 Any Fire
             </div>
           </div>
 
