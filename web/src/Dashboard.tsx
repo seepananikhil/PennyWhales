@@ -213,7 +213,9 @@ const Dashboard: React.FC = () => {
   const fire2Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 2);
   const fire1Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 1);
   const anyFireTickers = tickersWithData.filter(ticker => (stockData.get(ticker)?.fire_level || 0) > 0);
-  const noFireTickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 0);
+  const minimalTickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 0);
+  const zeroPresenceTickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === -1);
+  const noFireTickers = tickersWithData.filter(ticker => (stockData.get(ticker)?.fire_level || 0) <= 0);
   const holdingTickers = tickers.filter(ticker => holdings.has(ticker));
 
   // Filter stocks based on active filter and search query
@@ -231,6 +233,12 @@ const Dashboard: React.FC = () => {
         break;
       case 'anyfire':
         stocks = anyFireTickers;
+        break;
+      case 'minimal':
+        stocks = minimalTickers;
+        break;
+      case 'zeropresence':
+        stocks = zeroPresenceTickers;
         break;
       case 'nofire':
         stocks = noFireTickers;
@@ -751,6 +759,102 @@ const Dashboard: React.FC = () => {
               fontWeight: theme.typography.fontWeight.medium
             }}>
               No Fire
+            </div>
+          </div>
+
+          <div 
+            onClick={() => {
+              if (activeFilter === 'minimal') {
+                setActiveFilter('all');
+              } else {
+                setActiveFilter('minimal');
+              }
+            }}
+            style={{
+              textAlign: 'center',
+              padding: theme.spacing.sm,
+              backgroundColor: activeFilter === 'minimal' ? '#ffc107' : '#fff8cd',
+              borderRadius: theme.borderRadius.md,
+              border: `2px solid ${activeFilter === 'minimal' ? '#ffc107' : '#ffe69c'}`,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'minimal' ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: activeFilter === 'minimal' ? theme.ui.shadow.md : theme.ui.shadow.sm
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'minimal') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'minimal') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: activeFilter === 'minimal' ? 'white' : '#ffc107'
+            }}>
+              {minimalTickers.length}
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.xs,
+              color: activeFilter === 'minimal' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              🌡️ Minimal
+            </div>
+          </div>
+
+          <div 
+            onClick={() => {
+              if (activeFilter === 'zeropresence') {
+                setActiveFilter('all');
+              } else {
+                setActiveFilter('zeropresence');
+              }
+            }}
+            style={{
+              textAlign: 'center',
+              padding: theme.spacing.sm,
+              backgroundColor: activeFilter === 'zeropresence' ? '#6c757d' : '#f8f9fa',
+              borderRadius: theme.borderRadius.md,
+              border: `2px solid ${activeFilter === 'zeropresence' ? '#6c757d' : '#dee2e6'}`,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'zeropresence' ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: activeFilter === 'zeropresence' ? theme.ui.shadow.md : theme.ui.shadow.sm
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'zeropresence') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'zeropresence') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: activeFilter === 'zeropresence' ? 'white' : '#6c757d'
+            }}>
+              {zeroPresenceTickers.length}
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.xs,
+              color: activeFilter === 'zeropresence' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              ❄️ Zero
             </div>
           </div>
 
