@@ -378,1214 +378,268 @@
   "scanResults": {
     "stocks": [
       {
-        "ticker": "PRTS",
-        "price": 0.65,
-        "previous_close": 0.66,
-        "blackrock_pct": 4.147384745762712,
-        "vanguard_pct": 4.2326169491525425,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MYPS",
-        "price": 0.8,
-        "previous_close": 0.91,
-        "blackrock_pct": 6.296015596330275,
-        "vanguard_pct": 5.0963155963302755,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ATYR",
-        "price": 0.84,
-        "previous_close": 0.88,
-        "blackrock_pct": 5.9006459183673465,
-        "vanguard_pct": 4.750048979591837,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MAPS",
-        "price": 0.99,
-        "previous_close": 1.03,
-        "blackrock_pct": 4.995541666666667,
-        "vanguard_pct": 4.824789814814815,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "DCGO",
-        "price": 1.04,
-        "previous_close": 1.03,
-        "blackrock_pct": 6.589662244897959,
-        "vanguard_pct": 5.4246020408163265,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MVIS",
-        "price": 1.08,
-        "previous_close": 1.15,
-        "blackrock_pct": 5.743249501661129,
-        "vanguard_pct": 6.154394684385382,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "HRTX",
-        "price": 1.12,
-        "previous_close": 1.18,
-        "blackrock_pct": 5.520062841530055,
-        "vanguard_pct": 4.629213114754099,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "HAIN",
-        "price": 1.14,
-        "previous_close": 1.11,
-        "blackrock_pct": 7.403911111111111,
-        "vanguard_pct": 7.235506666666666,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "TCRX",
-        "price": 1.14,
-        "previous_close": 1.24,
-        "blackrock_pct": 4.935623076923077,
-        "vanguard_pct": 4.133415384615384,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ALLO",
-        "price": 1.14,
-        "previous_close": 1.18,
-        "blackrock_pct": 8.061891891891893,
-        "vanguard_pct": 3.720327927927928,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GERN",
-        "price": 1.18,
-        "previous_close": 1.2,
-        "blackrock_pct": 7.840671630094044,
-        "vanguard_pct": 5.582163009404389,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "LAB",
-        "price": 1.21,
-        "previous_close": 1.24,
-        "blackrock_pct": 6.498628272251309,
-        "vanguard_pct": 4.445481151832461,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "FATE",
-        "price": 1.24,
-        "previous_close": 1.26,
-        "blackrock_pct": 9.400418260869566,
-        "vanguard_pct": 7.623273043478261,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "NFE",
-        "price": 1.3,
-        "previous_close": 1.18,
-        "blackrock_pct": 6.652712982456141,
-        "vanguard_pct": 5.9559417543859645,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SKIN",
-        "price": 1.34,
-        "previous_close": 1.37,
-        "blackrock_pct": 5.717342519685039,
-        "vanguard_pct": 4.473872440944882,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ALEC",
-        "price": 1.36,
-        "previous_close": 1.44,
-        "blackrock_pct": 7.894633663366337,
-        "vanguard_pct": 5.928419801980199,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ARAY",
-        "price": 1.36,
-        "previous_close": 1.4,
-        "blackrock_pct": 8.00145221238938,
-        "vanguard_pct": 4.752734513274336,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "OPK",
-        "price": 1.38,
-        "previous_close": 1.4,
-        "blackrock_pct": 4.094984635416667,
-        "vanguard_pct": 4.97899921875,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BYND",
-        "price": 1.38,
-        "previous_close": 1.39,
-        "blackrock_pct": 6.792466233766234,
-        "vanguard_pct": 6.11769090909091,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CERS",
-        "price": 1.46,
-        "previous_close": 1.52,
-        "blackrock_pct": 10.796681770833333,
-        "vanguard_pct": 5.584022395833333,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CHRS",
-        "price": 1.55,
-        "previous_close": 1.6,
-        "blackrock_pct": 9.258370689655173,
-        "vanguard_pct": 9.112512931034484,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "EXFY",
-        "price": 1.58,
-        "previous_close": 1.61,
-        "blackrock_pct": 4.944366666666666,
-        "vanguard_pct": 5.365354320987654,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MXCT",
-        "price": 1.6,
-        "previous_close": 1.61,
-        "blackrock_pct": 9.534806542056074,
-        "vanguard_pct": 5.2352149532710275,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "POWW",
-        "price": 1.6,
-        "previous_close": 1.58,
-        "blackrock_pct": 5.3185726495726495,
-        "vanguard_pct": 4.429865811965812,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "LUNG",
-        "price": 1.7,
-        "previous_close": 1.83,
-        "blackrock_pct": 6.562921951219512,
-        "vanguard_pct": 5.595092682926829,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "LPRO",
-        "price": 1.74,
-        "previous_close": 1.81,
-        "blackrock_pct": 6.24588813559322,
-        "vanguard_pct": 4.964529661016949,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "EGHT",
-        "price": 1.78,
-        "previous_close": 1.86,
-        "blackrock_pct": 8.223075,
-        "vanguard_pct": 9.982183823529411,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IRWD",
-        "price": 1.81,
-        "previous_close": 1.86,
-        "blackrock_pct": 7.4216037037037035,
-        "vanguard_pct": 10.001314197530863,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IOVA",
-        "price": 1.82,
-        "previous_close": 1.95,
-        "blackrock_pct": 6.419008839779005,
-        "vanguard_pct": 6.927202209944751,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "QSI",
-        "price": 1.88,
-        "previous_close": 2,
-        "blackrock_pct": 5.9279464480874315,
-        "vanguard_pct": 4.737519672131148,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SVC",
-        "price": 1.99,
-        "previous_close": 2.08,
-        "blackrock_pct": 8.16627005988024,
-        "vanguard_pct": 9.61962874251497,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SABR",
-        "price": 2,
-        "previous_close": 2.01,
-        "blackrock_pct": 13.82433063291139,
-        "vanguard_pct": 10.657791392405064,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "AKBA",
-        "price": 2.08,
-        "previous_close": 2.12,
-        "blackrock_pct": 6.933570188679246,
-        "vanguard_pct": 5.513760754716982,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PACB",
-        "price": 2.09,
-        "previous_close": 2.24,
-        "blackrock_pct": 7.5509580000000005,
-        "vanguard_pct": 5.339058333333333,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GEVO",
-        "price": 2.16,
-        "previous_close": 2.27,
-        "blackrock_pct": 6.6213962809917355,
-        "vanguard_pct": 6.210394214876033,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CDXS",
-        "price": 2.17,
-        "previous_close": 2.26,
-        "blackrock_pct": 7.92882,
-        "vanguard_pct": 5.099125555555555,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SSP",
-        "price": 2.17,
-        "previous_close": 2.35,
-        "blackrock_pct": 6.62745,
-        "vanguard_pct": 5.703365789473684,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "HFFG",
-        "price": 2.19,
-        "previous_close": 2.15,
-        "blackrock_pct": 4.8774999999999995,
-        "vanguard_pct": 4.0387849056603775,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "TRUE",
-        "price": 2.19,
-        "previous_close": 2.19,
-        "blackrock_pct": 7.846444943820225,
-        "vanguard_pct": 4.940696629213483,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CRDF",
-        "price": 2.22,
-        "previous_close": 2.31,
-        "blackrock_pct": 5.875367164179105,
-        "vanguard_pct": 5.564677611940298,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ERAS",
-        "price": 2.31,
-        "previous_close": 2.38,
-        "blackrock_pct": 5.340210563380281,
-        "vanguard_pct": 4.470280633802816,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CNDT",
-        "price": 2.32,
-        "previous_close": 2.36,
-        "blackrock_pct": 9.153960126582279,
-        "vanguard_pct": 5.406089873417722,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GOSS",
-        "price": 2.34,
-        "previous_close": 2.39,
-        "blackrock_pct": 5.349161233480176,
-        "vanguard_pct": 5.026780616740088,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ACRS",
-        "price": 2.46,
-        "previous_close": 2.56,
-        "blackrock_pct": 5.106369444444445,
-        "vanguard_pct": 6.168576851851852,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "OSUR",
-        "price": 2.64,
-        "previous_close": 2.67,
-        "blackrock_pct": 8.99751506849315,
-        "vanguard_pct": 5.825246575342466,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PLUG",
-        "price": 2.66,
-        "previous_close": 2.75,
-        "blackrock_pct": 6.779058766233765,
-        "vanguard_pct": 8.266470535714285,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CLNE",
-        "price": 2.81,
-        "previous_close": 2.89,
-        "blackrock_pct": 7.216061187214612,
-        "vanguard_pct": 5.050783561643836,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BTMD",
-        "price": 2.82,
-        "previous_close": 2.83,
-        "blackrock_pct": 5.333048484848485,
-        "vanguard_pct": 4.313887878787879,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ESPR",
-        "price": 2.88,
-        "previous_close": 2.95,
-        "blackrock_pct": 6.341838362068966,
-        "vanguard_pct": 5.050357327586207,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IHRT",
-        "price": 3.87,
-        "previous_close": 2.91,
-        "blackrock_pct": 6.18461472868217,
-        "vanguard_pct": 5.371005426356589,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "KSS",
-        "price": 16.23,
-        "previous_close": 16.4,
-        "blackrock_pct": 16.418024107142855,
-        "vanguard_pct": 11.089495535714287,
-        "fire_level": 3,
-        "previous_fire_level": 3,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "HBIO",
-        "price": 0.58,
-        "previous_close": 0.57,
-        "blackrock_pct": 2.4768333333333334,
-        "vanguard_pct": 4.119757777777778,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "NDLS",
-        "price": 0.69,
-        "previous_close": 0.69,
-        "blackrock_pct": 1.1287760869565218,
-        "vanguard_pct": 4.59955,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IMUX",
-        "price": 0.71,
-        "previous_close": 0.75,
-        "blackrock_pct": 0.7057969696969697,
-        "vanguard_pct": 4.166816161616162,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ASRT",
-        "price": 0.73,
-        "previous_close": 0.75,
-        "blackrock_pct": 1.4319385416666668,
-        "vanguard_pct": 4.566886458333333,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CUE",
-        "price": 0.76,
-        "previous_close": 0.72,
-        "blackrock_pct": 0.5833272727272727,
-        "vanguard_pct": 4.139410389610389,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ATOS",
-        "price": 0.86,
-        "previous_close": 0.86,
-        "blackrock_pct": 1.665124031007752,
-        "vanguard_pct": 4.521803875968993,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PDSB",
-        "price": 0.9,
-        "previous_close": 0.93,
-        "blackrock_pct": 1.0944489361702128,
-        "vanguard_pct": 4.151793617021276,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "DXLG",
-        "price": 0.96,
-        "previous_close": 0.94,
-        "blackrock_pct": 1.6088833333333334,
-        "vanguard_pct": 4.639801851851852,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "APLT",
-        "price": 1.02,
-        "previous_close": 1.04,
-        "blackrock_pct": 3.624781944444445,
-        "vanguard_pct": 3.2875090277777774,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "RNXT",
-        "price": 1.03,
-        "previous_close": 1.09,
+        "ticker": "ULY",
+        "price": 2.42,
+        "previous_close": 2.53,
         "blackrock_pct": 0,
-        "vanguard_pct": 4.496102702702703,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "HYPR",
-        "price": 1.04,
-        "previous_close": 1.13,
-        "blackrock_pct": 0.7380423076923077,
-        "vanguard_pct": 4.258764102564102,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ALTO",
-        "price": 1.05,
-        "previous_close": 1.04,
-        "blackrock_pct": 3.0680233766233767,
-        "vanguard_pct": 4.556249350649351,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "STRO",
-        "price": 1.06,
-        "previous_close": 1.1,
-        "blackrock_pct": 2.4788329411764707,
-        "vanguard_pct": 4.841470588235294,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "LUCD",
-        "price": 1.09,
-        "previous_close": 1.21,
-        "blackrock_pct": 2.6411116788321167,
-        "vanguard_pct": 3.0126116788321164,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ZYXI",
-        "price": 1.15,
-        "previous_close": 1.16,
-        "blackrock_pct": 2.0315866666666667,
-        "vanguard_pct": 3.159066666666667,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "NOTV",
-        "price": 1.16,
-        "previous_close": 1.24,
-        "blackrock_pct": 0.6258411764705882,
-        "vanguard_pct": 4.070141176470588,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "FFAI",
-        "price": 1.25,
-        "previous_close": 1.31,
-        "blackrock_pct": 3.663442176870748,
-        "vanguard_pct": 3.5651632653061225,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MESA",
-        "price": 1.29,
-        "previous_close": 1.33,
-        "blackrock_pct": 1.2331761904761904,
-        "vanguard_pct": 4.026683333333334,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "TELA",
-        "price": 1.33,
-        "previous_close": 1.37,
-        "blackrock_pct": 1.1462649999999999,
-        "vanguard_pct": 4.778944999999999,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "LAZR",
-        "price": 1.34,
-        "previous_close": 1.36,
-        "blackrock_pct": 4.341815625,
-        "vanguard_pct": 2.956246875,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ZNTL",
-        "price": 1.36,
-        "previous_close": 1.44,
-        "blackrock_pct": 2.4190930555555554,
-        "vanguard_pct": 4.006433333333334,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "TEAD",
-        "price": 1.4,
-        "previous_close": 1.44,
-        "blackrock_pct": 2.894265263157895,
-        "vanguard_pct": 2.248123157894737,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PMVP",
-        "price": 1.43,
-        "previous_close": 1.4,
-        "blackrock_pct": 2.1520603773584908,
-        "vanguard_pct": 4.063396226415095,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "HGBL",
-        "price": 1.45,
-        "previous_close": 1.43,
-        "blackrock_pct": 0.37866571428571427,
-        "vanguard_pct": 5.352077142857143,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "OCGN",
-        "price": 1.48,
-        "previous_close": 1.54,
-        "blackrock_pct": 1.7919647435897437,
-        "vanguard_pct": 4.734833653846153,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GRWG",
-        "price": 1.49,
-        "previous_close": 1.44,
-        "blackrock_pct": 2.987546666666667,
-        "vanguard_pct": 4.8472349999999995,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MGNX",
-        "price": 1.49,
-        "previous_close": 1.58,
-        "blackrock_pct": 2.8849666666666667,
-        "vanguard_pct": 6.687482539682539,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "OABI",
-        "price": 1.5,
-        "previous_close": 1.48,
-        "blackrock_pct": 4.861929861111111,
-        "vanguard_pct": 3.658552083333334,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "HUMA",
-        "price": 1.5,
-        "previous_close": 1.59,
-        "blackrock_pct": 5.318421390374332,
-        "vanguard_pct": 3.743114438502674,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "KLTR",
-        "price": 1.51,
-        "previous_close": 1.52,
-        "blackrock_pct": 3.7099688311688315,
-        "vanguard_pct": 3.20192987012987,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "RXT",
-        "price": 1.52,
-        "previous_close": 1.57,
-        "blackrock_pct": 2.375705439330544,
-        "vanguard_pct": 2.4810857740585774,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SKYX",
-        "price": 1.53,
-        "previous_close": 1.65,
-        "blackrock_pct": 2.826842105263158,
-        "vanguard_pct": 2.7112298245614035,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PLRX",
-        "price": 1.61,
-        "previous_close": 1.67,
-        "blackrock_pct": 3.4926540983606555,
-        "vanguard_pct": 4.921881967213115,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IKT",
-        "price": 1.62,
-        "previous_close": 1.6,
-        "blackrock_pct": 3.6375573333333335,
-        "vanguard_pct": 4.29916,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SPWR",
-        "price": 1.67,
-        "previous_close": 1.75,
-        "blackrock_pct": 3.9443168674698796,
-        "vanguard_pct": 3.624832530120482,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GPRO",
-        "price": 1.72,
-        "previous_close": 1.84,
-        "blackrock_pct": 2.0655886363636364,
-        "vanguard_pct": 5.100379545454546,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SLS",
-        "price": 1.74,
-        "previous_close": 1.79,
-        "blackrock_pct": 3.6722183999999998,
-        "vanguard_pct": 5.3238392,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CDLX",
-        "price": 1.78,
-        "previous_close": 1.9,
-        "blackrock_pct": 2.0848075471698113,
-        "vanguard_pct": 4.560205660377358,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "INMB",
-        "price": 1.79,
-        "previous_close": 1.8,
-        "blackrock_pct": 4.342374074074074,
-        "vanguard_pct": 3.1398185185185183,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "NNBR",
-        "price": 1.82,
-        "previous_close": 1.85,
-        "blackrock_pct": 1.47326,
-        "vanguard_pct": 4.364664,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PROP",
-        "price": 1.86,
-        "previous_close": 1.91,
-        "blackrock_pct": 3.098828,
-        "vanguard_pct": 2.538358,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CNTY",
-        "price": 1.88,
-        "previous_close": 1.9,
-        "blackrock_pct": 1.54118,
-        "vanguard_pct": 5.05076,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "UPLD",
-        "price": 1.97,
-        "previous_close": 2.05,
-        "blackrock_pct": 2.656555172413793,
-        "vanguard_pct": 6.39381724137931,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "FOSL",
-        "price": 1.97,
-        "previous_close": 2.06,
-        "blackrock_pct": 1.5546925925925925,
-        "vanguard_pct": 4.103496296296296,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "NKTX",
-        "price": 1.99,
-        "previous_close": 2.07,
-        "blackrock_pct": 5.850485915492958,
-        "vanguard_pct": 3.5975802816901408,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MNTK",
-        "price": 2.02,
-        "previous_close": 2.03,
-        "blackrock_pct": 3.0818408450704227,
-        "vanguard_pct": 2.799291549295775,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MURA",
-        "price": 2.09,
-        "previous_close": 2.09,
-        "blackrock_pct": 1.6847117647058825,
-        "vanguard_pct": 4.546182352941177,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SOHO",
-        "price": 2.15,
-        "previous_close": 2.13,
-        "blackrock_pct": 0,
-        "vanguard_pct": 4.433104999999999,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BWEN",
-        "price": 2.17,
-        "previous_close": 2.29,
-        "blackrock_pct": 1.5810391304347824,
-        "vanguard_pct": 4.701995652173913,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SEER",
-        "price": 2.21,
-        "previous_close": 2.27,
-        "blackrock_pct": 3.6045057692307694,
-        "vanguard_pct": 4.235853846153846,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PHUN",
-        "price": 2.3,
-        "previous_close": 2.45,
-        "blackrock_pct": 2.78382,
-        "vanguard_pct": 5.10829,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SPWH",
-        "price": 2.3,
-        "previous_close": 2.37,
-        "blackrock_pct": 1.8516394736842106,
-        "vanguard_pct": 4.530399999999999,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "OPAL",
-        "price": 2.3,
-        "previous_close": 2.27,
-        "blackrock_pct": 3.841651724137931,
-        "vanguard_pct": 3.955279310344827,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "FLL",
-        "price": 2.34,
-        "previous_close": 2.45,
-        "blackrock_pct": 2.110069444444444,
-        "vanguard_pct": 4.334797222222223,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GNSS",
-        "price": 2.37,
-        "previous_close": 2.35,
-        "blackrock_pct": 1.4424888888888887,
-        "vanguard_pct": 4.684926666666667,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "VRA",
-        "price": 2.38,
-        "previous_close": 2.4,
-        "blackrock_pct": 1.6811285714285713,
-        "vanguard_pct": 4.052996428571428,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CRBU",
-        "price": 2.4,
-        "previous_close": 2.43,
-        "blackrock_pct": 2.025243010752688,
-        "vanguard_pct": 4.397705376344086,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PETS",
-        "price": 2.43,
-        "previous_close": 2.44,
-        "blackrock_pct": 2.5942285714285713,
-        "vanguard_pct": 4.590723809523809,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GROW",
-        "price": 2.47,
-        "previous_close": 2.5,
-        "blackrock_pct": 2.8185272727272728,
-        "vanguard_pct": 5.623936363636363,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "HURA",
-        "price": 2.47,
-        "previous_close": 2.54,
-        "blackrock_pct": 2.623972549019608,
-        "vanguard_pct": 4.38086274509804,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "VERU",
-        "price": 2.55,
-        "previous_close": 2.6,
-        "blackrock_pct": 1.0252125,
-        "vanguard_pct": 4.0043125,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "DH",
-        "price": 2.73,
-        "previous_close": 2.86,
-        "blackrock_pct": 2.9957384615384615,
-        "vanguard_pct": 2.812123076923077,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "NAII",
-        "price": 2.81,
-        "previous_close": 2.73,
-        "blackrock_pct": 0,
-        "vanguard_pct": 4.051033333333334,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CRWS",
-        "price": 2.84,
-        "previous_close": 2.88,
-        "blackrock_pct": 0,
-        "vanguard_pct": 4.589172727272727,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CCLD",
-        "price": 2.88,
-        "previous_close": 3.01,
-        "blackrock_pct": 0.4456595238095238,
-        "vanguard_pct": 6.155452380952381,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CMTL",
-        "price": 2.94,
-        "previous_close": 3.04,
-        "blackrock_pct": 2.671289655172414,
-        "vanguard_pct": 4.63741724137931,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "STIM",
-        "price": 2.98,
-        "previous_close": 2.77,
-        "blackrock_pct": 3.392763636363636,
-        "vanguard_pct": 4.155475757575758,
-        "fire_level": 2,
-        "previous_fire_level": 2,
-        "fire_level_changed": false
+        "vanguard_pct": 1.9504000000000001,
+        "fire_level": 0
       },
       {
         "ticker": "UGRO",
-        "price": 0.37,
-        "previous_close": 0.37,
+        "price": 0.34,
+        "previous_close": 0.36,
         "blackrock_pct": 0.5808307692307693,
         "vanguard_pct": 2.6055230769230766,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "fire_level": 1
       },
       {
-        "ticker": "CODX",
-        "price": 0.38,
-        "previous_close": 0.4,
-        "blackrock_pct": 0.7124,
-        "vanguard_pct": 2.8887416666666663,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "ticker": "XWEL",
+        "price": 0.89,
+        "previous_close": 0.9,
+        "blackrock_pct": 1.3782166666666666,
+        "vanguard_pct": 1.2845499999999999,
+        "fire_level": 1
+      },
+      {
+        "ticker": "KALA",
+        "price": 0.76,
+        "previous_close": 0.75,
+        "blackrock_pct": 0.3050857142857143,
+        "vanguard_pct": 2.4339285714285714,
+        "fire_level": 1
+      },
+      {
+        "ticker": "GORV",
+        "price": 1.74,
+        "previous_close": 1.89,
+        "blackrock_pct": 1.2309999999999999,
+        "vanguard_pct": 1.9169749999999999,
+        "fire_level": 1
+      },
+      {
+        "ticker": "APRE",
+        "price": 1.37,
+        "previous_close": 1.37,
+        "blackrock_pct": 0.14173333333333335,
+        "vanguard_pct": 2.8973666666666666,
+        "fire_level": 1
+      },
+      {
+        "ticker": "INAB",
+        "price": 1.61,
+        "previous_close": 1.65,
+        "blackrock_pct": 0.0016799999999999999,
+        "vanguard_pct": 1.20194,
+        "fire_level": 0
+      },
+      {
+        "ticker": "VYNE",
+        "price": 0.34,
+        "previous_close": 0.33,
+        "blackrock_pct": 0,
+        "vanguard_pct": 1.985188,
+        "fire_level": 0
+      },
+      {
+        "ticker": "SSKN",
+        "price": 1.7,
+        "previous_close": 1.7,
+        "blackrock_pct": 0.07441666666666666,
+        "vanguard_pct": 1.4105333333333332,
+        "fire_level": 0
+      },
+      {
+        "ticker": "HYFM",
+        "price": 2.33,
+        "previous_close": 2.32,
+        "blackrock_pct": 1.0092999999999999,
+        "vanguard_pct": 3.75232,
+        "fire_level": 1
+      },
+      {
+        "ticker": "JCTC",
+        "price": 2.82,
+        "previous_close": 2.62,
+        "blackrock_pct": 0,
+        "vanguard_pct": 2.673425,
+        "fire_level": 1
+      },
+      {
+        "ticker": "SOND",
+        "price": 0.67,
+        "previous_close": 0.67,
+        "blackrock_pct": 0.5030615384615384,
+        "vanguard_pct": 3.6422923076923075,
+        "fire_level": 1
+      },
+      {
+        "ticker": "KIDZ",
+        "price": 0.66,
+        "previous_close": 0.55,
+        "blackrock_pct": 0.24125555555555553,
+        "vanguard_pct": 1.1424555555555556,
+        "fire_level": 0
+      },
+      {
+        "ticker": "OXBR",
+        "price": 1.44,
+        "previous_close": 1.47,
+        "blackrock_pct": 0,
+        "vanguard_pct": 1.06415,
+        "fire_level": 0
+      },
+      {
+        "ticker": "MRKR",
+        "price": 0.92,
+        "previous_close": 0.9,
+        "blackrock_pct": 0,
+        "vanguard_pct": 2.1180384615384615,
+        "fire_level": 1
+      },
+      {
+        "ticker": "EDUC",
+        "price": 1.41,
+        "previous_close": 1.36,
+        "blackrock_pct": 0,
+        "vanguard_pct": 1.0854444444444444,
+        "fire_level": 0
+      },
+      {
+        "ticker": "RMCF",
+        "price": 1.69,
+        "previous_close": 1.62,
+        "blackrock_pct": 0,
+        "vanguard_pct": 2.4757875,
+        "fire_level": 1
+      },
+      {
+        "ticker": "NVNO",
+        "price": 0.69,
+        "previous_close": 0.65,
+        "blackrock_pct": 0.28702,
+        "vanguard_pct": 3.491695,
+        "fire_level": 1
+      },
+      {
+        "ticker": "TXMD",
+        "price": 1.2,
+        "previous_close": 1.17,
+        "blackrock_pct": 0.9677666666666666,
+        "vanguard_pct": 3.158341666666667,
+        "fire_level": 1
+      },
+      {
+        "ticker": "CARV",
+        "price": 3.15,
+        "previous_close": 3.14,
+        "blackrock_pct": 0,
+        "vanguard_pct": 1.4257600000000001,
+        "fire_level": 0
+      },
+      {
+        "ticker": "TAIT",
+        "price": 2.24,
+        "previous_close": 2.18,
+        "blackrock_pct": 0,
+        "vanguard_pct": 2.94424,
+        "fire_level": 1
+      },
+      {
+        "ticker": "GTIM",
+        "price": 1.36,
+        "previous_close": 1.34,
+        "blackrock_pct": 0.2896,
+        "vanguard_pct": 3.7945545454545453,
+        "fire_level": 1
       },
       {
         "ticker": "FBLG",
         "price": 0.38,
-        "previous_close": 0.39,
+        "previous_close": 0.33,
         "blackrock_pct": 1.4723490196078433,
         "vanguard_pct": 2.4191784313725493,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "fire_level": 1
+      },
+      {
+        "ticker": "NAII",
+        "price": 2.87,
+        "previous_close": 2.73,
+        "blackrock_pct": 0,
+        "vanguard_pct": 4.051033333333334,
+        "fire_level": 2
+      },
+      {
+        "ticker": "IRIX",
+        "price": 1.05,
+        "previous_close": 1.04,
+        "blackrock_pct": 0.11917647058823529,
+        "vanguard_pct": 3.445958823529412,
+        "fire_level": 1
+      },
+      {
+        "ticker": "CXAI",
+        "price": 0.65,
+        "previous_close": 0.64,
+        "blackrock_pct": 0.0195,
+        "vanguard_pct": 2.748026086956522,
+        "fire_level": 1
+      },
+      {
+        "ticker": "CRIS",
+        "price": 1.46,
+        "previous_close": 1.46,
+        "blackrock_pct": 0.4457,
+        "vanguard_pct": 2.5265916666666666,
+        "fire_level": 1
+      },
+      {
+        "ticker": "SYBX",
+        "price": 1.6,
+        "previous_close": 1.6,
+        "blackrock_pct": 0.16464166666666666,
+        "vanguard_pct": 1.5250166666666667,
+        "fire_level": 0
+      },
+      {
+        "ticker": "ANY",
+        "price": 0.59,
+        "previous_close": 0.63,
+        "blackrock_pct": 0,
+        "vanguard_pct": 1.6072678571428571,
+        "fire_level": 0
+      },
+      {
+        "ticker": "LNAI",
+        "price": 1.3,
+        "previous_close": 0.83,
+        "blackrock_pct": 1.1731,
+        "vanguard_pct": 2.1411434782608696,
+        "fire_level": 1
+      },
+      {
+        "ticker": "CODX",
+        "price": 0.4,
+        "previous_close": 0.38,
+        "blackrock_pct": 0.7124,
+        "vanguard_pct": 2.8887416666666663,
+        "fire_level": 1
+      },
+      {
+        "ticker": "HBIO",
+        "price": 0.6,
+        "previous_close": 0.62,
+        "blackrock_pct": 2.4768333333333334,
+        "vanguard_pct": 4.119757777777778,
+        "fire_level": 2
+      },
+      {
+        "ticker": "COCH",
+        "price": 0.73,
+        "previous_close": 0.73,
+        "blackrock_pct": 0,
+        "vanguard_pct": 1.3619344827586206,
+        "fire_level": 0
       },
       {
         "ticker": "LPTX",
@@ -1593,2522 +647,1916 @@
         "previous_close": 0.42,
         "blackrock_pct": 0.21970877192982455,
         "vanguard_pct": 2.036280701754386,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "UONEK",
-        "price": 0.53,
-        "previous_close": 0.53,
-        "blackrock_pct": 1.4303205882352943,
-        "vanguard_pct": 2.1763764705882354,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MODD",
-        "price": 0.54,
-        "previous_close": 0.56,
-        "blackrock_pct": 0.35444545454545456,
-        "vanguard_pct": 2.7343236363636363,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ORGN",
-        "price": 0.54,
-        "previous_close": 0.55,
-        "blackrock_pct": 1.2818526666666668,
-        "vanguard_pct": 3.554959333333333,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SGMO",
-        "price": 0.57,
-        "previous_close": 0.58,
-        "blackrock_pct": 1.5922874172185428,
-        "vanguard_pct": 3.104214569536424,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IPSC",
-        "price": 0.59,
-        "previous_close": 0.6,
-        "blackrock_pct": 1.0752127906976745,
-        "vanguard_pct": 2.4535837209302325,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BCAB",
-        "price": 0.63,
-        "previous_close": 0.66,
-        "blackrock_pct": 0.8151406779661017,
-        "vanguard_pct": 3.0222847457627116,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SCYX",
-        "price": 0.64,
-        "previous_close": 0.64,
-        "blackrock_pct": 0.7967809523809525,
-        "vanguard_pct": 3.944576190476191,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "RLYB",
-        "price": 0.64,
-        "previous_close": 0.67,
-        "blackrock_pct": 0,
-        "vanguard_pct": 2.1665261904761905,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CXAI",
-        "price": 0.65,
-        "previous_close": 0.69,
-        "blackrock_pct": 0.0195,
-        "vanguard_pct": 2.748026086956522,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "NVNO",
-        "price": 0.67,
-        "previous_close": 0.71,
-        "blackrock_pct": 0.28702,
-        "vanguard_pct": 3.491695,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "FEMY",
-        "price": 0.67,
-        "previous_close": 0.66,
-        "blackrock_pct": 0.22579534883720928,
-        "vanguard_pct": 2.2136441860465115,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ACET",
-        "price": 0.69,
-        "previous_close": 0.73,
-        "blackrock_pct": 0,
-        "vanguard_pct": 2.1389032679738564,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SOND",
-        "price": 0.7,
-        "previous_close": 0.74,
-        "blackrock_pct": 0.5030615384615384,
-        "vanguard_pct": 3.6422923076923075,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MOBX",
-        "price": 0.73,
-        "previous_close": 0.68,
-        "blackrock_pct": 0,
-        "vanguard_pct": 2.2520610169491526,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "NMTC",
-        "price": 0.74,
-        "previous_close": 0.76,
-        "blackrock_pct": 0,
-        "vanguard_pct": 2.405196,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "KALA",
-        "price": 0.76,
-        "previous_close": 0.76,
-        "blackrock_pct": 0.3050857142857143,
-        "vanguard_pct": 2.4339285714285714,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CTSO",
-        "price": 0.78,
-        "previous_close": 0.78,
-        "blackrock_pct": 1.1835126984126985,
-        "vanguard_pct": 3.372633333333333,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "XLO",
-        "price": 0.81,
-        "previous_close": 0.85,
-        "blackrock_pct": 0,
-        "vanguard_pct": 2.2135057692307694,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PRPL",
-        "price": 0.82,
-        "previous_close": 0.8,
-        "blackrock_pct": 1.6527527777777777,
-        "vanguard_pct": 2.4362055555555555,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CLIR",
-        "price": 0.89,
-        "previous_close": 0.85,
-        "blackrock_pct": 0.38327692307692307,
-        "vanguard_pct": 2.2411865384615384,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "XWEL",
-        "price": 0.89,
-        "previous_close": 0.89,
-        "blackrock_pct": 1.3782166666666666,
-        "vanguard_pct": 1.2845499999999999,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "LNAI",
-        "price": 0.89,
-        "previous_close": 0.87,
-        "blackrock_pct": 1.1731,
-        "vanguard_pct": 2.1411434782608696,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MRKR",
-        "price": 0.91,
-        "previous_close": 0.96,
-        "blackrock_pct": 0,
-        "vanguard_pct": 2.1180384615384615,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ELUT",
-        "price": 0.92,
-        "previous_close": 0.94,
-        "blackrock_pct": 0.25254736842105263,
-        "vanguard_pct": 3.1065921052631578,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "RMTI",
-        "price": 1.03,
-        "previous_close": 1.08,
-        "blackrock_pct": 0.6579823529411765,
-        "vanguard_pct": 3.545323529411765,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "OLPX",
-        "price": 1.03,
-        "previous_close": 1.06,
-        "blackrock_pct": 1.5897086956521738,
-        "vanguard_pct": 1.7378404797601201,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IRIX",
-        "price": 1.05,
-        "previous_close": 1.07,
-        "blackrock_pct": 0.11917647058823529,
-        "vanguard_pct": 3.445958823529412,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "DYAI",
-        "price": 1.07,
-        "previous_close": 1.08,
-        "blackrock_pct": 0.7026638888888889,
-        "vanguard_pct": 2.390725,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CNTX",
-        "price": 1.09,
-        "previous_close": 1.08,
-        "blackrock_pct": 0.9433,
-        "vanguard_pct": 3.73398,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ANTX",
-        "price": 1.14,
-        "previous_close": 1.15,
-        "blackrock_pct": 1.182574074074074,
-        "vanguard_pct": 3.8368407407407408,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "TXMD",
-        "price": 1.19,
-        "previous_close": 1.15,
-        "blackrock_pct": 0.9677666666666666,
-        "vanguard_pct": 3.158341666666667,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "HOWL",
-        "price": 1.21,
-        "previous_close": 1.31,
-        "blackrock_pct": 0.7869195652173913,
-        "vanguard_pct": 2.822284782608696,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "OTLK",
-        "price": 1.25,
-        "previous_close": 1.3,
-        "blackrock_pct": 0.7724909090909091,
-        "vanguard_pct": 2.844540909090909,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "UONE",
-        "price": 1.26,
-        "previous_close": 1.28,
-        "blackrock_pct": 0.6581166666666667,
-        "vanguard_pct": 2.5513999999999997,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BMEA",
-        "price": 1.26,
-        "previous_close": 1.32,
-        "blackrock_pct": 1.0613394366197184,
-        "vanguard_pct": 2.6474507042253523,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PLBY",
-        "price": 1.29,
-        "previous_close": 1.33,
-        "blackrock_pct": 0.5233675925925927,
-        "vanguard_pct": 2.465599074074074,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "OVID",
-        "price": 1.31,
-        "previous_close": 1.38,
-        "blackrock_pct": 1.9281830985915491,
-        "vanguard_pct": 3.712838028169014,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BOLD",
-        "price": 1.33,
-        "previous_close": 1.37,
-        "blackrock_pct": 0,
-        "vanguard_pct": 2.1875772727272724,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GTIM",
-        "price": 1.36,
-        "previous_close": 1.39,
-        "blackrock_pct": 0.2896,
-        "vanguard_pct": 3.7945545454545453,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "LXRX",
-        "price": 1.36,
-        "previous_close": 1.36,
-        "blackrock_pct": 0.9241512396694215,
-        "vanguard_pct": 2.4383019283746554,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "APRE",
-        "price": 1.37,
-        "previous_close": 1.4,
-        "blackrock_pct": 0.14173333333333335,
-        "vanguard_pct": 2.8973666666666666,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "RDI",
-        "price": 1.38,
-        "previous_close": 1.37,
-        "blackrock_pct": 0.28044761904761906,
-        "vanguard_pct": 3.7948476190476192,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "QRHC",
-        "price": 1.43,
-        "previous_close": 1.44,
-        "blackrock_pct": 0.6503666666666666,
-        "vanguard_pct": 3.7405190476190473,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "VRAR",
-        "price": 1.45,
-        "previous_close": 1.59,
-        "blackrock_pct": 0.14651904761904763,
-        "vanguard_pct": 2.9857142857142858,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SKYE",
-        "price": 1.45,
-        "previous_close": 1.5,
-        "blackrock_pct": 1.3310225806451612,
-        "vanguard_pct": 2.7031,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MNOV",
-        "price": 1.45,
-        "previous_close": 1.5,
-        "blackrock_pct": 1.4198265306122448,
-        "vanguard_pct": 1.401177551020408,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "TBHC",
-        "price": 1.46,
-        "previous_close": 1.49,
-        "blackrock_pct": 0.45843636363636364,
-        "vanguard_pct": 2.8258772727272725,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "UHG",
-        "price": 1.46,
-        "previous_close": 1.42,
-        "blackrock_pct": 0.3617,
-        "vanguard_pct": 2.4021636363636363,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CRIS",
-        "price": 1.47,
-        "previous_close": 1.48,
-        "blackrock_pct": 0.4457,
-        "vanguard_pct": 2.5265916666666666,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "USIO",
-        "price": 1.47,
-        "previous_close": 1.47,
-        "blackrock_pct": 0.32287692307692306,
-        "vanguard_pct": 3.8927653846153847,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "TNYA",
-        "price": 1.47,
-        "previous_close": 1.43,
-        "blackrock_pct": 1.6765644171779144,
-        "vanguard_pct": 2.917378527607362,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BLNK",
-        "price": 1.5,
-        "previous_close": 1.56,
-        "blackrock_pct": 1.815355652173913,
-        "vanguard_pct": 3.848820869565217,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CVGI",
-        "price": 1.53,
-        "previous_close": 1.59,
-        "blackrock_pct": 1.5245945945945945,
-        "vanguard_pct": 3.9830594594594593,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "RNTX",
-        "price": 1.53,
-        "previous_close": 1.75,
-        "blackrock_pct": 0.21431666666666666,
-        "vanguard_pct": 3.6837791666666666,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BZFD",
-        "price": 1.56,
-        "previous_close": 1.62,
-        "blackrock_pct": 0.41283055555555553,
-        "vanguard_pct": 2.493402777777778,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ALXO",
-        "price": 1.59,
-        "previous_close": 1.57,
-        "blackrock_pct": 1.326475925925926,
-        "vanguard_pct": 2.9644592592592596,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "QNCX",
-        "price": 1.61,
-        "previous_close": 1.63,
-        "blackrock_pct": 0.6217370370370371,
-        "vanguard_pct": 2.692662962962963,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "RMCF",
-        "price": 1.66,
-        "previous_close": 1.67,
-        "blackrock_pct": 0,
-        "vanguard_pct": 2.4757875,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BEAT",
-        "price": 1.7,
-        "previous_close": 1.75,
-        "blackrock_pct": 0.25943529411764704,
-        "vanguard_pct": 3.2893882352941177,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PRLD",
-        "price": 1.7,
-        "previous_close": 3.98,
-        "blackrock_pct": 0.9830886363636363,
-        "vanguard_pct": 2.119477272727273,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MCHX",
-        "price": 1.71,
-        "previous_close": 1.78,
-        "blackrock_pct": 1.57854,
-        "vanguard_pct": 3.2368875,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "FARM",
-        "price": 1.74,
-        "previous_close": 1.77,
-        "blackrock_pct": 1.0641727272727273,
-        "vanguard_pct": 3.7486045454545454,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "KLXE",
-        "price": 1.75,
-        "previous_close": 1.82,
-        "blackrock_pct": 0.9997,
-        "vanguard_pct": 3.5927666666666664,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SATL",
-        "price": 1.76,
-        "previous_close": 1.88,
-        "blackrock_pct": 2.9013544715447157,
-        "vanguard_pct": 1.837248780487805,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "REFR",
-        "price": 1.82,
-        "previous_close": 1.88,
-        "blackrock_pct": 1.7659264705882354,
-        "vanguard_pct": 1.8386147058823528,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GORV",
-        "price": 1.91,
-        "previous_close": 2.1,
-        "blackrock_pct": 1.2309999999999999,
-        "vanguard_pct": 1.9169749999999999,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CLYM",
-        "price": 1.91,
-        "previous_close": 2,
-        "blackrock_pct": 1.291130882352941,
-        "vanguard_pct": 1.9577205882352942,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "JSPR",
-        "price": 1.91,
-        "previous_close": 2.1,
-        "blackrock_pct": 0,
-        "vanguard_pct": 2.2307035714285712,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "fire_level": 1
       },
       {
         "ticker": "IPM",
         "price": 1.95,
-        "previous_close": 1.97,
+        "previous_close": 1.93,
         "blackrock_pct": 0,
         "vanguard_pct": 2.693788888888889,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "fire_level": 1
       },
       {
-        "ticker": "MERC",
-        "price": 1.96,
-        "previous_close": 1.91,
-        "blackrock_pct": 1.4689537313432837,
-        "vanguard_pct": 1.2361283582089553,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "ticker": "MODD",
+        "price": 0.5,
+        "previous_close": 0.57,
+        "blackrock_pct": 0.35444545454545456,
+        "vanguard_pct": 2.7343236363636363,
+        "fire_level": 1
       },
       {
-        "ticker": "MDAI",
-        "price": 2,
-        "previous_close": 1.98,
-        "blackrock_pct": 0.13033870967741934,
-        "vanguard_pct": 2.009851612903226,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "ticker": "FEMY",
+        "price": 0.81,
+        "previous_close": 0.68,
+        "blackrock_pct": 0.22579534883720928,
+        "vanguard_pct": 2.2136441860465115,
+        "fire_level": 1
       },
       {
-        "ticker": "BYSI",
-        "price": 2.01,
-        "previous_close": 2.07,
-        "blackrock_pct": 1.5877124999999999,
-        "vanguard_pct": 1.3092475,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "ticker": "SCYX",
+        "price": 0.63,
+        "previous_close": 0.63,
+        "blackrock_pct": 0.7967809523809525,
+        "vanguard_pct": 3.944576190476191,
+        "fire_level": 1
       },
       {
-        "ticker": "SYPR",
-        "price": 2.04,
-        "previous_close": 2.06,
-        "blackrock_pct": 0.26820434782608693,
-        "vanguard_pct": 2.5619478260869566,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "STTK",
-        "price": 2.05,
-        "previous_close": 1.99,
-        "blackrock_pct": 1.3990285714285713,
-        "vanguard_pct": 3.4098,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ABOS",
-        "price": 2.05,
-        "previous_close": 2.18,
+        "ticker": "RLYB",
+        "price": 0.62,
+        "previous_close": 0.63,
         "blackrock_pct": 0,
-        "vanguard_pct": 2.769427868852459,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "vanguard_pct": 2.1665261904761905,
+        "fire_level": 1
       },
       {
-        "ticker": "TUSK",
-        "price": 2.07,
-        "previous_close": 2.15,
-        "blackrock_pct": 3.0606229166666665,
-        "vanguard_pct": 1.9942520833333335,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "ticker": "NDLS",
+        "price": 0.69,
+        "previous_close": 0.68,
+        "blackrock_pct": 1.1287760869565218,
+        "vanguard_pct": 4.59955,
+        "fire_level": 2
       },
       {
-        "ticker": "AMTX",
-        "price": 2.09,
-        "previous_close": 2.08,
-        "blackrock_pct": 0.9607523809523809,
-        "vanguard_pct": 3.411750793650794,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IBRX",
-        "price": 2.13,
-        "previous_close": 2.26,
-        "blackrock_pct": 1.8801283597883598,
-        "vanguard_pct": 2.3087097354497357,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SND",
-        "price": 2.14,
-        "previous_close": 2.15,
-        "blackrock_pct": 1.0809795454545454,
-        "vanguard_pct": 3.3777613636363633,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "XBIT",
-        "price": 2.17,
-        "previous_close": 2.29,
-        "blackrock_pct": 1.2453533333333333,
-        "vanguard_pct": 3.15135,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ACRV",
-        "price": 2.19,
-        "previous_close": 2.33,
-        "blackrock_pct": 1.314909677419355,
-        "vanguard_pct": 1.9137000000000002,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "STKS",
-        "price": 2.19,
-        "previous_close": 2.2,
-        "blackrock_pct": 1.7135322580645163,
-        "vanguard_pct": 3.912858064516129,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "FORA",
-        "price": 2.2,
-        "previous_close": 2.23,
-        "blackrock_pct": 0.2582935483870968,
-        "vanguard_pct": 2.500451612903226,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "TAIT",
-        "price": 2.21,
-        "previous_close": 2.24,
+        "ticker": "CRWS",
+        "price": 2.84,
+        "previous_close": 2.82,
         "blackrock_pct": 0,
-        "vanguard_pct": 2.94424,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "FLUX",
-        "price": 2.21,
-        "previous_close": 2.66,
-        "blackrock_pct": 0.9127117647058823,
-        "vanguard_pct": 3.076764705882353,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "WHWK",
-        "price": 2.23,
-        "previous_close": 2.22,
-        "blackrock_pct": 0.6347234042553191,
-        "vanguard_pct": 2.7984787234042554,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "AWRE",
-        "price": 2.26,
-        "previous_close": 2.3,
-        "blackrock_pct": 1.8247809523809524,
-        "vanguard_pct": 3.9408571428571433,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MGX",
-        "price": 2.33,
-        "previous_close": 2.42,
-        "blackrock_pct": 0.7799052631578947,
-        "vanguard_pct": 3.309576315789474,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BEEM",
-        "price": 2.35,
-        "previous_close": 2.46,
-        "blackrock_pct": 0.8350055555555556,
-        "vanguard_pct": 3.3721055555555552,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CCCC",
-        "price": 2.35,
-        "previous_close": 2.48,
-        "blackrock_pct": 1.966251612903226,
-        "vanguard_pct": 3.245184946236559,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "REKR",
-        "price": 2.35,
-        "previous_close": 2.51,
-        "blackrock_pct": 1.097361111111111,
-        "vanguard_pct": 3.592048412698413,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SPRO",
-        "price": 2.39,
-        "previous_close": 2.38,
-        "blackrock_pct": 0.7763714285714286,
-        "vanguard_pct": 3.4828232142857143,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "HYFM",
-        "price": 2.41,
-        "previous_close": 2.47,
-        "blackrock_pct": 1.0092999999999999,
-        "vanguard_pct": 3.75232,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BRLT",
-        "price": 2.41,
-        "previous_close": 2.42,
-        "blackrock_pct": 0.99224,
-        "vanguard_pct": 3.5662466666666672,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "AUID",
-        "price": 2.42,
-        "previous_close": 2.47,
-        "blackrock_pct": 0.23175384615384617,
-        "vanguard_pct": 3.281246153846154,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "RLMD",
-        "price": 2.46,
-        "previous_close": 2.2,
-        "blackrock_pct": 1.5393939393939393,
-        "vanguard_pct": 1.1032636363636363,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GEG",
-        "price": 2.47,
-        "previous_close": 2.49,
-        "blackrock_pct": 1.1467310344827586,
-        "vanguard_pct": 3.456455172413793,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "QTTB",
-        "price": 2.5,
-        "previous_close": 2.57,
-        "blackrock_pct": 1.488975,
-        "vanguard_pct": 2.2452416666666664,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "FBIO",
-        "price": 2.51,
-        "previous_close": 2.44,
-        "blackrock_pct": 0.44028666666666666,
-        "vanguard_pct": 2.8430733333333333,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "INO",
-        "price": 2.53,
-        "previous_close": 2.5,
-        "blackrock_pct": 1.0143924528301886,
-        "vanguard_pct": 3.790839622641509,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "FTEK",
-        "price": 2.57,
-        "previous_close": 2.64,
-        "blackrock_pct": 1.3258645161290323,
-        "vanguard_pct": 3.035383870967742,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "vanguard_pct": 4.589172727272727,
+        "fire_level": 2
       },
       {
         "ticker": "CREX",
-        "price": 2.72,
-        "previous_close": 2.87,
+        "price": 2.86,
+        "previous_close": 2.74,
         "blackrock_pct": 0,
         "vanguard_pct": 2.1630818181818183,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "fire_level": 1
       },
       {
-        "ticker": "RPID",
-        "price": 2.75,
-        "previous_close": 2.75,
-        "blackrock_pct": 1.1920425000000001,
-        "vanguard_pct": 2.2609075,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CPIX",
-        "price": 2.76,
-        "previous_close": 2.76,
-        "blackrock_pct": 0.34112000000000003,
-        "vanguard_pct": 2.74524,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "DLTH",
-        "price": 2.76,
-        "previous_close": 2.8,
-        "blackrock_pct": 1.1626030303030304,
-        "vanguard_pct": 2.424309090909091,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "JCTC",
-        "price": 2.78,
-        "previous_close": 2.78,
+        "ticker": "BOLD",
+        "price": 1.28,
+        "previous_close": 1.3,
         "blackrock_pct": 0,
-        "vanguard_pct": 2.673425,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "vanguard_pct": 2.1875772727272724,
+        "fire_level": 1
       },
       {
-        "ticker": "GENK",
-        "price": 2.82,
-        "previous_close": 2.84,
-        "blackrock_pct": 0.20868000000000003,
-        "vanguard_pct": 3.40032,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "ticker": "QRHC",
+        "price": 1.41,
+        "previous_close": 1.4,
+        "blackrock_pct": 0.6503666666666666,
+        "vanguard_pct": 3.7405190476190473,
+        "fire_level": 1
       },
       {
-        "ticker": "CALC",
-        "price": 3.05,
-        "previous_close": 2.99,
-        "blackrock_pct": 0,
-        "vanguard_pct": 2.422485714285714,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "ticker": "GROW",
+        "price": 2.42,
+        "previous_close": 2.42,
+        "blackrock_pct": 2.8185272727272728,
+        "vanguard_pct": 5.623936363636363,
+        "fire_level": 2
       },
       {
-        "ticker": "INV",
-        "price": 3.4,
-        "previous_close": 3.15,
-        "blackrock_pct": 0.5900051724137931,
-        "vanguard_pct": 2.53773275862069,
-        "fire_level": 1,
-        "previous_fire_level": 1,
-        "fire_level_changed": false
+        "ticker": "VRAR",
+        "price": 1.5,
+        "previous_close": 1.4,
+        "blackrock_pct": 0.14651904761904763,
+        "vanguard_pct": 2.9857142857142858,
+        "fire_level": 1
       },
       {
-        "ticker": "VYNE",
-        "price": 0.33,
-        "previous_close": 0.35,
-        "blackrock_pct": 0,
-        "vanguard_pct": 1.985188,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "KLXE",
+        "price": 1.76,
+        "previous_close": 1.74,
+        "blackrock_pct": 0.9997,
+        "vanguard_pct": 3.5927666666666664,
+        "fire_level": 1
       },
       {
-        "ticker": "SCWO",
-        "price": 0.38,
-        "previous_close": 0.41,
-        "blackrock_pct": 0.8541579881656806,
-        "vanguard_pct": 1.8957171597633136,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "ANTX",
+        "price": 1.14,
+        "previous_close": 1.14,
+        "blackrock_pct": 1.182574074074074,
+        "vanguard_pct": 3.8368407407407408,
+        "fire_level": 1
       },
       {
-        "ticker": "KIDZ",
-        "price": 0.55,
-        "previous_close": 0.6,
-        "blackrock_pct": 0.24125555555555553,
-        "vanguard_pct": 1.1424555555555556,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "TBHC",
+        "price": 1.51,
+        "previous_close": 1.48,
+        "blackrock_pct": 0.45843636363636364,
+        "vanguard_pct": 2.8258772727272725,
+        "fire_level": 1
       },
       {
-        "ticker": "RVPH",
-        "price": 0.57,
-        "previous_close": 0.59,
-        "blackrock_pct": 0,
-        "vanguard_pct": 1.8792625,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "QTTB",
+        "price": 2.4,
+        "previous_close": 2.37,
+        "blackrock_pct": 1.488975,
+        "vanguard_pct": 2.2452416666666664,
+        "fire_level": 1
       },
       {
-        "ticker": "ANY",
-        "price": 0.63,
-        "previous_close": 0.68,
-        "blackrock_pct": 0,
-        "vanguard_pct": 1.6072678571428571,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "UONE",
+        "price": 1.29,
+        "previous_close": 1.27,
+        "blackrock_pct": 0.6581166666666667,
+        "vanguard_pct": 2.5513999999999997,
+        "fire_level": 1
       },
       {
-        "ticker": "COCH",
-        "price": 0.73,
-        "previous_close": 0.76,
-        "blackrock_pct": 0,
-        "vanguard_pct": 1.3619344827586206,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "UONEK",
+        "price": 0.53,
+        "previous_close": 0.51,
+        "blackrock_pct": 1.4303205882352943,
+        "vanguard_pct": 2.1763764705882354,
+        "fire_level": 1
+      },
+      {
+        "ticker": "ZYXI",
+        "price": 1.15,
+        "previous_close": 1.14,
+        "blackrock_pct": 2.0315866666666667,
+        "vanguard_pct": 3.159066666666667,
+        "fire_level": 2
       },
       {
         "ticker": "GIFT",
         "price": 1.08,
-        "previous_close": 1.12,
+        "previous_close": 1.08,
         "blackrock_pct": 0.1626677419354839,
         "vanguard_pct": 1.543806451612903,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "fire_level": 0
+      },
+      {
+        "ticker": "AUID",
+        "price": 2.38,
+        "previous_close": 2.41,
+        "blackrock_pct": 0.23175384615384617,
+        "vanguard_pct": 3.281246153846154,
+        "fire_level": 1
+      },
+      {
+        "ticker": "MURA",
+        "price": 2.09,
+        "previous_close": 2.08,
+        "blackrock_pct": 1.6847117647058825,
+        "vanguard_pct": 4.546182352941177,
+        "fire_level": 2
+      },
+      {
+        "ticker": "RAVE",
+        "price": 2.46,
+        "previous_close": 2.34,
+        "blackrock_pct": 0.36617142857142854,
+        "vanguard_pct": 1.9252142857142855,
+        "fire_level": 0
+      },
+      {
+        "ticker": "FARM",
+        "price": 1.73,
+        "previous_close": 1.73,
+        "blackrock_pct": 1.0641727272727273,
+        "vanguard_pct": 3.7486045454545454,
+        "fire_level": 1
+      },
+      {
+        "ticker": "PRTS",
+        "price": 0.65,
+        "previous_close": 0.63,
+        "blackrock_pct": 4.147384745762712,
+        "vanguard_pct": 4.2326169491525425,
+        "fire_level": 3
+      },
+      {
+        "ticker": "RMTI",
+        "price": 1.04,
+        "previous_close": 1.04,
+        "blackrock_pct": 0.6579823529411765,
+        "vanguard_pct": 3.545323529411765,
+        "fire_level": 1
+      },
+      {
+        "ticker": "ELUT",
+        "price": 0.96,
+        "previous_close": 0.92,
+        "blackrock_pct": 0.25254736842105263,
+        "vanguard_pct": 3.1065921052631578,
+        "fire_level": 1
+      },
+      {
+        "ticker": "USIO",
+        "price": 1.5,
+        "previous_close": 1.48,
+        "blackrock_pct": 0.32287692307692306,
+        "vanguard_pct": 3.8927653846153847,
+        "fire_level": 1
       },
       {
         "ticker": "CSTE",
-        "price": 1.08,
-        "previous_close": 1.15,
+        "price": 1.06,
+        "previous_close": 1.05,
         "blackrock_pct": 1.160737142857143,
         "vanguard_pct": 0,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "fire_level": 0
+      },
+      {
+        "ticker": "NMTC",
+        "price": 0.75,
+        "previous_close": 0.72,
+        "blackrock_pct": 0,
+        "vanguard_pct": 2.405196,
+        "fire_level": 1
+      },
+      {
+        "ticker": "FLUX",
+        "price": 2.33,
+        "previous_close": 2.22,
+        "blackrock_pct": 0.9127117647058823,
+        "vanguard_pct": 3.076764705882353,
+        "fire_level": 1
+      },
+      {
+        "ticker": "RNTX",
+        "price": 1.63,
+        "previous_close": 1.42,
+        "blackrock_pct": 0.21431666666666666,
+        "vanguard_pct": 3.6837791666666666,
+        "fire_level": 1
+      },
+      {
+        "ticker": "RNXT",
+        "price": 1.02,
+        "previous_close": 1.02,
+        "blackrock_pct": 0,
+        "vanguard_pct": 4.496102702702703,
+        "fire_level": 2
+      },
+      {
+        "ticker": "DYAI",
+        "price": 1.03,
+        "previous_close": 1.05,
+        "blackrock_pct": 0.7026638888888889,
+        "vanguard_pct": 2.390725,
+        "fire_level": 1
+      },
+      {
+        "ticker": "BCAB",
+        "price": 0.64,
+        "previous_close": 0.67,
+        "blackrock_pct": 0.8151406779661017,
+        "vanguard_pct": 3.0222847457627116,
+        "fire_level": 1
+      },
+      {
+        "ticker": "XLO",
+        "price": 0.81,
+        "previous_close": 0.8,
+        "blackrock_pct": 0,
+        "vanguard_pct": 2.2135057692307694,
+        "fire_level": 1
+      },
+      {
+        "ticker": "CALC",
+        "price": 2.99,
+        "previous_close": 3.05,
+        "blackrock_pct": 0,
+        "vanguard_pct": 2.422485714285714,
+        "fire_level": 1
+      },
+      {
+        "ticker": "MOBX",
+        "price": 0.72,
+        "previous_close": 0.77,
+        "blackrock_pct": 0,
+        "vanguard_pct": 2.2520610169491526,
+        "fire_level": 1
+      },
+      {
+        "ticker": "PDSB",
+        "price": 0.9,
+        "previous_close": 0.89,
+        "blackrock_pct": 1.0944489361702128,
+        "vanguard_pct": 4.151793617021276,
+        "fire_level": 2
       },
       {
         "ticker": "USEG",
-        "price": 1.15,
-        "previous_close": 1.17,
+        "price": 1.13,
+        "previous_close": 1.12,
         "blackrock_pct": 0.05591666666666667,
         "vanguard_pct": 1.6212305555555555,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "fire_level": 0
       },
       {
-        "ticker": "PNBK",
-        "price": 1.19,
-        "previous_close": 1.23,
-        "blackrock_pct": 1.8862895652173912,
-        "vanguard_pct": 0.9227113043478261,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "CPIX",
+        "price": 2.39,
+        "previous_close": 2.66,
+        "blackrock_pct": 0.34112000000000003,
+        "vanguard_pct": 2.74524,
+        "fire_level": 1
       },
       {
-        "ticker": "ADV",
-        "price": 1.25,
-        "previous_close": 1.27,
-        "blackrock_pct": 1.8860070552147241,
-        "vanguard_pct": 0.5834993865030674,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "CLIR",
+        "price": 0.93,
+        "previous_close": 0.87,
+        "blackrock_pct": 0.38327692307692307,
+        "vanguard_pct": 2.2411865384615384,
+        "fire_level": 1
       },
       {
-        "ticker": "MSAI",
-        "price": 1.31,
-        "previous_close": 1.98,
-        "blackrock_pct": 0,
-        "vanguard_pct": 1.48274,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "NOTV",
+        "price": 1.16,
+        "previous_close": 1.14,
+        "blackrock_pct": 0.6258411764705882,
+        "vanguard_pct": 4.070141176470588,
+        "fire_level": 2
       },
       {
-        "ticker": "CBUS",
-        "price": 1.44,
+        "ticker": "SYPR",
+        "price": 2.11,
+        "previous_close": 2.09,
+        "blackrock_pct": 0.26820434782608693,
+        "vanguard_pct": 2.5619478260869566,
+        "fire_level": 1
+      },
+      {
+        "ticker": "BEEM",
+        "price": 2.3,
+        "previous_close": 2.26,
+        "blackrock_pct": 0.8350055555555556,
+        "vanguard_pct": 3.3721055555555552,
+        "fire_level": 1
+      },
+      {
+        "ticker": "AWRE",
+        "price": 2.21,
+        "previous_close": 2.22,
+        "blackrock_pct": 1.8247809523809524,
+        "vanguard_pct": 3.9408571428571433,
+        "fire_level": 1
+      },
+      {
+        "ticker": "VERU",
+        "price": 2.56,
+        "previous_close": 2.56,
+        "blackrock_pct": 1.0252125,
+        "vanguard_pct": 4.0043125,
+        "fire_level": 2
+      },
+      {
+        "ticker": "SKYE",
+        "price": 1.5,
+        "previous_close": 1.42,
+        "blackrock_pct": 1.3310225806451612,
+        "vanguard_pct": 2.7031,
+        "fire_level": 1
+      },
+      {
+        "ticker": "INMB",
+        "price": 1.72,
+        "previous_close": 1.72,
+        "blackrock_pct": 4.342374074074074,
+        "vanguard_pct": 3.1398185185185183,
+        "fire_level": 2
+      },
+      {
+        "ticker": "TELA",
+        "price": 1.21,
+        "previous_close": 1.29,
+        "blackrock_pct": 1.1462649999999999,
+        "vanguard_pct": 4.778944999999999,
+        "fire_level": 2
+      },
+      {
+        "ticker": "RDI",
+        "price": 1.37,
+        "previous_close": 1.36,
+        "blackrock_pct": 0.28044761904761906,
+        "vanguard_pct": 3.7948476190476192,
+        "fire_level": 1
+      },
+      {
+        "ticker": "CTSO",
+        "price": 0.75,
+        "previous_close": 0.79,
+        "blackrock_pct": 1.1835126984126985,
+        "vanguard_pct": 3.372633333333333,
+        "fire_level": 1
+      },
+      {
+        "ticker": "IPSC",
+        "price": 0.57,
+        "previous_close": 0.57,
+        "blackrock_pct": 1.0752127906976745,
+        "vanguard_pct": 2.4535837209302325,
+        "fire_level": 1
+      },
+      {
+        "ticker": "HGBL",
+        "price": 1.45,
         "previous_close": 1.45,
-        "blackrock_pct": 0.9079886792452829,
-        "vanguard_pct": 1.6153735849056605,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "blackrock_pct": 0.37866571428571427,
+        "vanguard_pct": 5.352077142857143,
+        "fire_level": 2
       },
       {
-        "ticker": "EDUC",
-        "price": 1.46,
-        "previous_close": 1.5,
-        "blackrock_pct": 0,
-        "vanguard_pct": 1.0854444444444444,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IVVD",
-        "price": 1.48,
-        "previous_close": 1.61,
-        "blackrock_pct": 0.7881140186915887,
-        "vanguard_pct": 1.8354785046728974,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "AUTL",
-        "price": 1.48,
-        "previous_close": 1.56,
-        "blackrock_pct": 1.3124571428571428,
-        "vanguard_pct": 0,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "OXBR",
-        "price": 1.49,
-        "previous_close": 1.54,
-        "blackrock_pct": 0,
-        "vanguard_pct": 1.06415,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "EQ",
-        "price": 1.53,
-        "previous_close": 1.55,
-        "blackrock_pct": 0,
-        "vanguard_pct": 1.373485,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ZEO",
-        "price": 1.53,
-        "previous_close": 1.65,
-        "blackrock_pct": 0.036851612903225806,
-        "vanguard_pct": 1.1562193548387096,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "NAUT",
-        "price": 1.57,
-        "previous_close": 1.85,
-        "blackrock_pct": 0.4991277777777778,
-        "vanguard_pct": 1.972286507936508,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CGTX",
-        "price": 1.58,
-        "previous_close": 1.64,
-        "blackrock_pct": 0.08733522727272727,
-        "vanguard_pct": 1.482215909090909,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BAER",
-        "price": 1.65,
-        "previous_close": 1.61,
-        "blackrock_pct": 0.4033446428571429,
-        "vanguard_pct": 1.3395232142857143,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "PHUN",
+        "price": 2.33,
+        "previous_close": 2.3,
+        "blackrock_pct": 2.78382,
+        "vanguard_pct": 5.10829,
+        "fire_level": 2
       },
       {
         "ticker": "CELU",
-        "price": 1.66,
-        "previous_close": 1.71,
+        "price": 1.74,
+        "previous_close": 1.69,
         "blackrock_pct": 0.38172222222222224,
         "vanguard_pct": 1.8523407407407408,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SYBX",
-        "price": 1.67,
-        "previous_close": 1.7,
-        "blackrock_pct": 0.16464166666666666,
-        "vanguard_pct": 1.5250166666666667,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SSKN",
-        "price": 1.72,
-        "previous_close": 1.72,
-        "blackrock_pct": 0.07441666666666666,
-        "vanguard_pct": 1.4105333333333332,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ONMD",
-        "price": 1.75,
-        "previous_close": 1.77,
-        "blackrock_pct": 0,
-        "vanguard_pct": 1.625,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GANX",
-        "price": 1.76,
-        "previous_close": 1.84,
-        "blackrock_pct": 0.31251944444444446,
-        "vanguard_pct": 1.4843111111111111,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "WALD",
-        "price": 1.83,
-        "previous_close": 1.77,
-        "blackrock_pct": 1.6854026785714287,
-        "vanguard_pct": 0.2355267857142857,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "INAB",
-        "price": 1.84,
-        "previous_close": 1.88,
-        "blackrock_pct": 0.0016799999999999999,
-        "vanguard_pct": 1.20194,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "OMEX",
-        "price": 1.84,
-        "previous_close": 1.93,
-        "blackrock_pct": 0.5587555555555556,
-        "vanguard_pct": 1.0251044444444444,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "fire_level": 0
       },
       {
         "ticker": "SNTI",
-        "price": 1.99,
-        "previous_close": 2,
+        "price": 1.96,
+        "previous_close": 1.81,
         "blackrock_pct": 0.08493846153846153,
         "vanguard_pct": 1.3881192307692307,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "fire_level": 0
+      },
+      {
+        "ticker": "DXLG",
+        "price": 0.94,
+        "previous_close": 0.92,
+        "blackrock_pct": 1.6088833333333334,
+        "vanguard_pct": 4.639801851851852,
+        "fire_level": 2
+      },
+      {
+        "ticker": "BWEN",
+        "price": 2.13,
+        "previous_close": 2.11,
+        "blackrock_pct": 1.5810391304347824,
+        "vanguard_pct": 4.701995652173913,
+        "fire_level": 2
+      },
+      {
+        "ticker": "MSAI",
+        "price": 1.23,
+        "previous_close": 1.34,
+        "blackrock_pct": 0,
+        "vanguard_pct": 1.48274,
+        "fire_level": 0
+      },
+      {
+        "ticker": "PETS",
+        "price": 2.51,
+        "previous_close": 2.47,
+        "blackrock_pct": 2.5942285714285713,
+        "vanguard_pct": 4.590723809523809,
+        "fire_level": 2
+      },
+      {
+        "ticker": "OTLK",
+        "price": 1.25,
+        "previous_close": 1.21,
+        "blackrock_pct": 0.7724909090909091,
+        "vanguard_pct": 2.844540909090909,
+        "fire_level": 1
+      },
+      {
+        "ticker": "CVGI",
+        "price": 1.54,
+        "previous_close": 1.52,
+        "blackrock_pct": 1.5245945945945945,
+        "vanguard_pct": 3.9830594594594593,
+        "fire_level": 1
+      },
+      {
+        "ticker": "CNTY",
+        "price": 2.03,
+        "previous_close": 1.86,
+        "blackrock_pct": 1.54118,
+        "vanguard_pct": 5.05076,
+        "fire_level": 2
+      },
+      {
+        "ticker": "SCWO",
+        "price": 0.41,
+        "previous_close": 0.39,
+        "blackrock_pct": 0.8541579881656806,
+        "vanguard_pct": 1.8957171597633136,
+        "fire_level": 0
+      },
+      {
+        "ticker": "RVPH",
+        "price": 0.57,
+        "previous_close": 0.55,
+        "blackrock_pct": 0,
+        "vanguard_pct": 1.8792625,
+        "fire_level": 0
+      },
+      {
+        "ticker": "MESA",
+        "price": 1.39,
+        "previous_close": 1.32,
+        "blackrock_pct": 1.2331761904761904,
+        "vanguard_pct": 4.026683333333334,
+        "fire_level": 2
+      },
+      {
+        "ticker": "CUE",
+        "price": 0.77,
+        "previous_close": 0.72,
+        "blackrock_pct": 0.5833272727272727,
+        "vanguard_pct": 4.139410389610389,
+        "fire_level": 2
+      },
+      {
+        "ticker": "UPLD",
+        "price": 1.9,
+        "previous_close": 1.91,
+        "blackrock_pct": 2.656555172413793,
+        "vanguard_pct": 6.39381724137931,
+        "fire_level": 2
+      },
+      {
+        "ticker": "HOWL",
+        "price": 1.22,
+        "previous_close": 1.21,
+        "blackrock_pct": 0.7869195652173913,
+        "vanguard_pct": 2.822284782608696,
+        "fire_level": 1
+      },
+      {
+        "ticker": "BZFD",
+        "price": 1.61,
+        "previous_close": 1.59,
+        "blackrock_pct": 0.41283055555555553,
+        "vanguard_pct": 2.493402777777778,
+        "fire_level": 1
       },
       {
         "ticker": "FLNT",
         "price": 2.02,
-        "previous_close": 2.09,
+        "previous_close": 2,
         "blackrock_pct": 0.5086142857142857,
         "vanguard_pct": 1.0608464285714285,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "fire_level": 0
       },
       {
-        "ticker": "IRD",
-        "price": 2.12,
-        "previous_close": 2.14,
+        "ticker": "ACRV",
+        "price": 2.07,
+        "previous_close": 2.15,
+        "blackrock_pct": 1.314909677419355,
+        "vanguard_pct": 1.9137000000000002,
+        "fire_level": 1
+      },
+      {
+        "ticker": "BEAT",
+        "price": 1.64,
+        "previous_close": 1.65,
+        "blackrock_pct": 0.25943529411764704,
+        "vanguard_pct": 3.2893882352941177,
+        "fire_level": 1
+      },
+      {
+        "ticker": "JSPR",
+        "price": 1.95,
+        "previous_close": 1.81,
         "blackrock_pct": 0,
-        "vanguard_pct": 1.6536666666666668,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "vanguard_pct": 2.2307035714285712,
+        "fire_level": 1
+      },
+      {
+        "ticker": "REFR",
+        "price": 1.76,
+        "previous_close": 1.75,
+        "blackrock_pct": 1.7659264705882354,
+        "vanguard_pct": 1.8386147058823528,
+        "fire_level": 1
+      },
+      {
+        "ticker": "MDAI",
+        "price": 1.97,
+        "previous_close": 1.97,
+        "blackrock_pct": 0.13033870967741934,
+        "vanguard_pct": 2.009851612903226,
+        "fire_level": 1
+      },
+      {
+        "ticker": "VRA",
+        "price": 2.35,
+        "previous_close": 2.34,
+        "blackrock_pct": 1.6811285714285713,
+        "vanguard_pct": 4.052996428571428,
+        "fire_level": 2
+      },
+      {
+        "ticker": "FORA",
+        "price": 2.29,
+        "previous_close": 2.26,
+        "blackrock_pct": 0.2582935483870968,
+        "vanguard_pct": 2.500451612903226,
+        "fire_level": 1
+      },
+      {
+        "ticker": "STKS",
+        "price": 2.15,
+        "previous_close": 2.12,
+        "blackrock_pct": 1.7135322580645163,
+        "vanguard_pct": 3.912858064516129,
+        "fire_level": 1
+      },
+      {
+        "ticker": "GANX",
+        "price": 1.8,
+        "previous_close": 1.66,
+        "blackrock_pct": 0.31251944444444446,
+        "vanguard_pct": 1.4843111111111111,
+        "fire_level": 0
+      },
+      {
+        "ticker": "ASRT",
+        "price": 0.74,
+        "previous_close": 0.73,
+        "blackrock_pct": 1.4319385416666668,
+        "vanguard_pct": 4.566886458333333,
+        "fire_level": 2
+      },
+      {
+        "ticker": "XBIT",
+        "price": 2.15,
+        "previous_close": 2.16,
+        "blackrock_pct": 1.2453533333333333,
+        "vanguard_pct": 3.15135,
+        "fire_level": 1
+      },
+      {
+        "ticker": "PMVP",
+        "price": 1.36,
+        "previous_close": 1.34,
+        "blackrock_pct": 2.1520603773584908,
+        "vanguard_pct": 4.063396226415095,
+        "fire_level": 2
+      },
+      {
+        "ticker": "RLMD",
+        "price": 2.58,
+        "previous_close": 2.77,
+        "blackrock_pct": 1.5393939393939393,
+        "vanguard_pct": 1.1032636363636363,
+        "fire_level": 1
+      },
+      {
+        "ticker": "FBIO",
+        "price": 2.47,
+        "previous_close": 2.47,
+        "blackrock_pct": 0.44028666666666666,
+        "vanguard_pct": 2.8430733333333333,
+        "fire_level": 1
+      },
+      {
+        "ticker": "IMUX",
+        "price": 0.71,
+        "previous_close": 0.69,
+        "blackrock_pct": 0.7057969696969697,
+        "vanguard_pct": 4.166816161616162,
+        "fire_level": 2
+      },
+      {
+        "ticker": "FTEK",
+        "price": 2.18,
+        "previous_close": 2.52,
+        "blackrock_pct": 1.3258645161290323,
+        "vanguard_pct": 3.035383870967742,
+        "fire_level": 1
+      },
+      {
+        "ticker": "MCHX",
+        "price": 1.69,
+        "previous_close": 1.71,
+        "blackrock_pct": 1.57854,
+        "vanguard_pct": 3.2368875,
+        "fire_level": 1
+      },
+      {
+        "ticker": "ALTO",
+        "price": 1.18,
+        "previous_close": 1.13,
+        "blackrock_pct": 3.0680233766233767,
+        "vanguard_pct": 4.556249350649351,
+        "fire_level": 2
       },
       {
         "ticker": "DTI",
-        "price": 2.18,
-        "previous_close": 2.23,
+        "price": 2.14,
+        "previous_close": 2.19,
         "blackrock_pct": 0.12006944444444445,
         "vanguard_pct": 1.0526111111111112,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "fire_level": 0
       },
       {
-        "ticker": "RANI",
-        "price": 2.27,
+        "ticker": "LAZR",
+        "price": 1.3,
+        "previous_close": 1.35,
+        "blackrock_pct": 4.341815625,
+        "vanguard_pct": 2.956246875,
+        "fire_level": 2
+      },
+      {
+        "ticker": "BYSI",
+        "price": 1.97,
+        "previous_close": 2.01,
+        "blackrock_pct": 1.5877124999999999,
+        "vanguard_pct": 1.3092475,
+        "fire_level": 1
+      },
+      {
+        "ticker": "MNOV",
+        "price": 1.46,
+        "previous_close": 1.42,
+        "blackrock_pct": 1.4198265306122448,
+        "vanguard_pct": 1.401177551020408,
+        "fire_level": 1
+      },
+      {
+        "ticker": "LUNG",
+        "price": 1.69,
+        "previous_close": 1.72,
+        "blackrock_pct": 6.562921951219512,
+        "vanguard_pct": 5.595092682926829,
+        "fire_level": 3
+      },
+      {
+        "ticker": "ALXO",
+        "price": 1.26,
+        "previous_close": 1.46,
+        "blackrock_pct": 1.326475925925926,
+        "vanguard_pct": 2.9644592592592596,
+        "fire_level": 1
+      },
+      {
+        "ticker": "GEG",
+        "price": 2.43,
+        "previous_close": 2.47,
+        "blackrock_pct": 1.1467310344827586,
+        "vanguard_pct": 3.456455172413793,
+        "fire_level": 1
+      },
+      {
+        "ticker": "CMTL",
+        "price": 2.91,
+        "previous_close": 2.97,
+        "blackrock_pct": 2.671289655172414,
+        "vanguard_pct": 4.63741724137931,
+        "fire_level": 2
+      },
+      {
+        "ticker": "EQ",
+        "price": 1.3,
+        "previous_close": 1.44,
+        "blackrock_pct": 0,
+        "vanguard_pct": 1.373485,
+        "fire_level": 0
+      },
+      {
+        "ticker": "ATYR",
+        "price": 0.82,
+        "previous_close": 0.83,
+        "blackrock_pct": 5.9006459183673465,
+        "vanguard_pct": 4.750048979591837,
+        "fire_level": 3
+      },
+      {
+        "ticker": "SND",
+        "price": 2.15,
+        "previous_close": 2.14,
+        "blackrock_pct": 1.0809795454545454,
+        "vanguard_pct": 3.3777613636363633,
+        "fire_level": 1
+      },
+      {
+        "ticker": "PRPL",
+        "price": 0.75,
+        "previous_close": 0.81,
+        "blackrock_pct": 1.6527527777777777,
+        "vanguard_pct": 2.4362055555555555,
+        "fire_level": 1
+      },
+      {
+        "ticker": "NNBR",
+        "price": 1.81,
+        "previous_close": 1.8,
+        "blackrock_pct": 1.47326,
+        "vanguard_pct": 4.364664,
+        "fire_level": 2
+      },
+      {
+        "ticker": "SOHO",
+        "price": 2.15,
         "previous_close": 2.15,
-        "blackrock_pct": 0.24719166666666664,
-        "vanguard_pct": 1.6659979166666665,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "blackrock_pct": 0,
+        "vanguard_pct": 4.433104999999999,
+        "fire_level": 2
       },
       {
-        "ticker": "RAVE",
-        "price": 2.47,
-        "previous_close": 2.52,
-        "blackrock_pct": 0.36617142857142854,
-        "vanguard_pct": 1.9252142857142855,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "CBUS",
+        "price": 1.33,
+        "previous_close": 1.37,
+        "blackrock_pct": 0.9079886792452829,
+        "vanguard_pct": 1.6153735849056605,
+        "fire_level": 0
       },
       {
-        "ticker": "HEPS",
-        "price": 2.48,
-        "previous_close": 2.51,
-        "blackrock_pct": 1.0739419928825622,
-        "vanguard_pct": 0,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "FLL",
+        "price": 2.39,
+        "previous_close": 2.41,
+        "blackrock_pct": 2.110069444444444,
+        "vanguard_pct": 4.334797222222223,
+        "fire_level": 2
+      },
+      {
+        "ticker": "QNCX",
+        "price": 1.63,
+        "previous_close": 1.6,
+        "blackrock_pct": 0.6217370370370371,
+        "vanguard_pct": 2.692662962962963,
+        "fire_level": 1
+      },
+      {
+        "ticker": "UHG",
+        "price": 1.44,
+        "previous_close": 1.4,
+        "blackrock_pct": 0.3617,
+        "vanguard_pct": 2.4021636363636363,
+        "fire_level": 1
+      },
+      {
+        "ticker": "PRLD",
+        "price": 1.45,
+        "previous_close": 1.76,
+        "blackrock_pct": 0.9830886363636363,
+        "vanguard_pct": 2.119477272727273,
+        "fire_level": 1
+      },
+      {
+        "ticker": "GRWG",
+        "price": 1.46,
+        "previous_close": 1.45,
+        "blackrock_pct": 2.987546666666667,
+        "vanguard_pct": 4.8472349999999995,
+        "fire_level": 2
+      },
+      {
+        "ticker": "ORGN",
+        "price": 0.53,
+        "previous_close": 0.52,
+        "blackrock_pct": 1.2818526666666668,
+        "vanguard_pct": 3.554959333333333,
+        "fire_level": 1
+      },
+      {
+        "ticker": "STTK",
+        "price": 2,
+        "previous_close": 1.93,
+        "blackrock_pct": 1.3990285714285713,
+        "vanguard_pct": 3.4098,
+        "fire_level": 1
+      },
+      {
+        "ticker": "SPWH",
+        "price": 2.34,
+        "previous_close": 2.28,
+        "blackrock_pct": 1.8516394736842106,
+        "vanguard_pct": 4.530399999999999,
+        "fire_level": 2
+      },
+      {
+        "ticker": "STRO",
+        "price": 0.96,
+        "previous_close": 1.02,
+        "blackrock_pct": 2.4788329411764707,
+        "vanguard_pct": 4.841470588235294,
+        "fire_level": 2
+      },
+      {
+        "ticker": "MGX",
+        "price": 2.25,
+        "previous_close": 2.29,
+        "blackrock_pct": 0.7799052631578947,
+        "vanguard_pct": 3.309576315789474,
+        "fire_level": 1
+      },
+      {
+        "ticker": "BAER",
+        "price": 1.67,
+        "previous_close": 1.67,
+        "blackrock_pct": 0.4033446428571429,
+        "vanguard_pct": 1.3395232142857143,
+        "fire_level": 0
+      },
+      {
+        "ticker": "BMEA",
+        "price": 1.34,
+        "previous_close": 1.26,
+        "blackrock_pct": 1.0613394366197184,
+        "vanguard_pct": 2.6474507042253523,
+        "fire_level": 1
+      },
+      {
+        "ticker": "ONMD",
+        "price": 1.75,
+        "previous_close": 1.76,
+        "blackrock_pct": 0,
+        "vanguard_pct": 1.625,
+        "fire_level": 0
+      },
+      {
+        "ticker": "CNTX",
+        "price": 1.1,
+        "previous_close": 1.11,
+        "blackrock_pct": 0.9433,
+        "vanguard_pct": 3.73398,
+        "fire_level": 1
+      },
+      {
+        "ticker": "GENK",
+        "price": 3,
+        "previous_close": 2.84,
+        "blackrock_pct": 0.20868000000000003,
+        "vanguard_pct": 3.40032,
+        "fire_level": 1
+      },
+      {
+        "ticker": "TUSK",
+        "price": 2.12,
+        "previous_close": 2.05,
+        "blackrock_pct": 3.0606229166666665,
+        "vanguard_pct": 1.9942520833333335,
+        "fire_level": 1
+      },
+      {
+        "ticker": "OVID",
+        "price": 1.34,
+        "previous_close": 1.33,
+        "blackrock_pct": 1.9281830985915491,
+        "vanguard_pct": 3.712838028169014,
+        "fire_level": 1
+      },
+      {
+        "ticker": "DLTH",
+        "price": 2.79,
+        "previous_close": 2.7,
+        "blackrock_pct": 1.1626030303030304,
+        "vanguard_pct": 2.424309090909091,
+        "fire_level": 1
+      },
+      {
+        "ticker": "PROP",
+        "price": 1.86,
+        "previous_close": 1.91,
+        "blackrock_pct": 3.098828,
+        "vanguard_pct": 2.538358,
+        "fire_level": 2
+      },
+      {
+        "ticker": "PLRX",
+        "price": 1.65,
+        "previous_close": 1.61,
+        "blackrock_pct": 3.4926540983606555,
+        "vanguard_pct": 4.921881967213115,
+        "fire_level": 2
+      },
+      {
+        "ticker": "CDLX",
+        "price": 1.78,
+        "previous_close": 1.74,
+        "blackrock_pct": 2.0848075471698113,
+        "vanguard_pct": 4.560205660377358,
+        "fire_level": 2
+      },
+      {
+        "ticker": "HAIN",
+        "price": 1.12,
+        "previous_close": 1.11,
+        "blackrock_pct": 7.403911111111111,
+        "vanguard_pct": 7.235506666666666,
+        "fire_level": 3
+      },
+      {
+        "ticker": "MGNX",
+        "price": 1.46,
+        "previous_close": 1.45,
+        "blackrock_pct": 2.8849666666666667,
+        "vanguard_pct": 6.687482539682539,
+        "fire_level": 2
+      },
+      {
+        "ticker": "GNSS",
+        "price": 2.36,
+        "previous_close": 2.33,
+        "blackrock_pct": 1.4424888888888887,
+        "vanguard_pct": 4.684926666666667,
+        "fire_level": 2
+      },
+      {
+        "ticker": "HYPR",
+        "price": 1.13,
+        "previous_close": 1.04,
+        "blackrock_pct": 0.7380423076923077,
+        "vanguard_pct": 4.258764102564102,
+        "fire_level": 2
+      },
+      {
+        "ticker": "DCGO",
+        "price": 1.08,
+        "previous_close": 1.02,
+        "blackrock_pct": 6.589662244897959,
+        "vanguard_pct": 5.4246020408163265,
+        "fire_level": 3
+      },
+      {
+        "ticker": "ZNTL",
+        "price": 1.35,
+        "previous_close": 1.32,
+        "blackrock_pct": 2.4190930555555554,
+        "vanguard_pct": 4.006433333333334,
+        "fire_level": 2
+      },
+      {
+        "ticker": "IKT",
+        "price": 1.67,
+        "previous_close": 1.59,
+        "blackrock_pct": 3.6375573333333335,
+        "vanguard_pct": 4.29916,
+        "fire_level": 2
+      },
+      {
+        "ticker": "TCRX",
+        "price": 1.13,
+        "previous_close": 1.12,
+        "blackrock_pct": 4.935623076923077,
+        "vanguard_pct": 4.133415384615384,
+        "fire_level": 3
+      },
+      {
+        "ticker": "FOSL",
+        "price": 2.05,
+        "previous_close": 1.96,
+        "blackrock_pct": 1.5546925925925925,
+        "vanguard_pct": 4.103496296296296,
+        "fire_level": 2
+      },
+      {
+        "ticker": "WHWK",
+        "price": 2.27,
+        "previous_close": 2.26,
+        "blackrock_pct": 0.6347234042553191,
+        "vanguard_pct": 2.7984787234042554,
+        "fire_level": 1
+      },
+      {
+        "ticker": "PNBK",
+        "price": 1.23,
+        "previous_close": 1.2,
+        "blackrock_pct": 1.8862895652173912,
+        "vanguard_pct": 0.9227113043478261,
+        "fire_level": 0
+      },
+      {
+        "ticker": "HFFG",
+        "price": 2.34,
+        "previous_close": 2.25,
+        "blackrock_pct": 4.8774999999999995,
+        "vanguard_pct": 4.0387849056603775,
+        "fire_level": 3
+      },
+      {
+        "ticker": "ATOS",
+        "price": 0.83,
+        "previous_close": 0.85,
+        "blackrock_pct": 1.665124031007752,
+        "vanguard_pct": 4.521803875968993,
+        "fire_level": 2
+      },
+      {
+        "ticker": "ACET",
+        "price": 0.68,
+        "previous_close": 0.69,
+        "blackrock_pct": 0,
+        "vanguard_pct": 2.1389032679738564,
+        "fire_level": 1
+      },
+      {
+        "ticker": "OMEX",
+        "price": 1.94,
+        "previous_close": 1.79,
+        "blackrock_pct": 0.5587555555555556,
+        "vanguard_pct": 1.0251044444444444,
+        "fire_level": 0
+      },
+      {
+        "ticker": "MYPS",
+        "price": 0.86,
+        "previous_close": 0.82,
+        "blackrock_pct": 6.296015596330275,
+        "vanguard_pct": 5.0963155963302755,
+        "fire_level": 3
+      },
+      {
+        "ticker": "SEER",
+        "price": 2.18,
+        "previous_close": 2.19,
+        "blackrock_pct": 3.6045057692307694,
+        "vanguard_pct": 4.235853846153846,
+        "fire_level": 2
+      },
+      {
+        "ticker": "CCLD",
+        "price": 2.93,
+        "previous_close": 2.88,
+        "blackrock_pct": 0.4456595238095238,
+        "vanguard_pct": 6.155452380952381,
+        "fire_level": 2
+      },
+      {
+        "ticker": "INO",
+        "price": 2.33,
+        "previous_close": 2.43,
+        "blackrock_pct": 1.0143924528301886,
+        "vanguard_pct": 3.790839622641509,
+        "fire_level": 1
+      },
+      {
+        "ticker": "HURA",
+        "price": 2.43,
+        "previous_close": 2.45,
+        "blackrock_pct": 2.623972549019608,
+        "vanguard_pct": 4.38086274509804,
+        "fire_level": 2
+      },
+      {
+        "ticker": "RPID",
+        "price": 2.76,
+        "previous_close": 2.7,
+        "blackrock_pct": 1.1920425000000001,
+        "vanguard_pct": 2.2609075,
+        "fire_level": 1
+      },
+      {
+        "ticker": "ABOS",
+        "price": 2.02,
+        "previous_close": 1.94,
+        "blackrock_pct": 0,
+        "vanguard_pct": 2.769427868852459,
+        "fire_level": 1
+      },
+      {
+        "ticker": "AMTX",
+        "price": 2.09,
+        "previous_close": 2.06,
+        "blackrock_pct": 0.9607523809523809,
+        "vanguard_pct": 3.411750793650794,
+        "fire_level": 1
+      },
+      {
+        "ticker": "SPRO",
+        "price": 2.42,
+        "previous_close": 2.35,
+        "blackrock_pct": 0.7763714285714286,
+        "vanguard_pct": 3.4828232142857143,
+        "fire_level": 1
+      },
+      {
+        "ticker": "BTMD",
+        "price": 2.89,
+        "previous_close": 2.86,
+        "blackrock_pct": 5.333048484848485,
+        "vanguard_pct": 4.313887878787879,
+        "fire_level": 3
+      },
+      {
+        "ticker": "IRD",
+        "price": 2.18,
+        "previous_close": 2.17,
+        "blackrock_pct": 0,
+        "vanguard_pct": 1.6536666666666668,
+        "fire_level": 0
+      },
+      {
+        "ticker": "CLYM",
+        "price": 1.94,
+        "previous_close": 1.88,
+        "blackrock_pct": 1.291130882352941,
+        "vanguard_pct": 1.9577205882352942,
+        "fire_level": 1
+      },
+      {
+        "ticker": "TEAD",
+        "price": 1.42,
+        "previous_close": 1.36,
+        "blackrock_pct": 2.894265263157895,
+        "vanguard_pct": 2.248123157894737,
+        "fire_level": 2
+      },
+      {
+        "ticker": "MERC",
+        "price": 1.91,
+        "previous_close": 1.95,
+        "blackrock_pct": 1.4689537313432837,
+        "vanguard_pct": 1.2361283582089553,
+        "fire_level": 1
+      },
+      {
+        "ticker": "PLBY",
+        "price": 1.34,
+        "previous_close": 1.3,
+        "blackrock_pct": 0.5233675925925927,
+        "vanguard_pct": 2.465599074074074,
+        "fire_level": 1
+      },
+      {
+        "ticker": "ALEC",
+        "price": 1.29,
+        "previous_close": 1.32,
+        "blackrock_pct": 7.894633663366337,
+        "vanguard_pct": 5.928419801980199,
+        "fire_level": 3
+      },
+      {
+        "ticker": "NKTX",
+        "price": 1.94,
+        "previous_close": 1.97,
+        "blackrock_pct": 5.850485915492958,
+        "vanguard_pct": 3.5975802816901408,
+        "fire_level": 2
+      },
+      {
+        "ticker": "EXFY",
+        "price": 1.63,
+        "previous_close": 1.58,
+        "blackrock_pct": 4.944366666666666,
+        "vanguard_pct": 5.365354320987654,
+        "fire_level": 3
+      },
+      {
+        "ticker": "SPWR",
+        "price": 1.73,
+        "previous_close": 1.62,
+        "blackrock_pct": 3.9443168674698796,
+        "vanguard_pct": 3.624832530120482,
+        "fire_level": 2
+      },
+      {
+        "ticker": "FATE",
+        "price": 1.11,
+        "previous_close": 1.19,
+        "blackrock_pct": 9.400418260869566,
+        "vanguard_pct": 7.623273043478261,
+        "fire_level": 3
+      },
+      {
+        "ticker": "CRDF",
+        "price": 2.22,
+        "previous_close": 2.22,
+        "blackrock_pct": 5.875367164179105,
+        "vanguard_pct": 5.564677611940298,
+        "fire_level": 3
+      },
+      {
+        "ticker": "CGTX",
+        "price": 1.69,
+        "previous_close": 1.57,
+        "blackrock_pct": 0.08733522727272727,
+        "vanguard_pct": 1.482215909090909,
+        "fire_level": 0
+      },
+      {
+        "ticker": "LUCD",
+        "price": 1.07,
+        "previous_close": 1.11,
+        "blackrock_pct": 2.6411116788321167,
+        "vanguard_pct": 3.0126116788321164,
+        "fire_level": 2
+      },
+      {
+        "ticker": "ARAY",
+        "price": 1.39,
+        "previous_close": 1.38,
+        "blackrock_pct": 8.00145221238938,
+        "vanguard_pct": 4.752734513274336,
+        "fire_level": 3
+      },
+      {
+        "ticker": "MXCT",
+        "price": 1.7,
+        "previous_close": 1.61,
+        "blackrock_pct": 9.534806542056074,
+        "vanguard_pct": 5.2352149532710275,
+        "fire_level": 3
+      },
+      {
+        "ticker": "APLT",
+        "price": 0.92,
+        "previous_close": 1.01,
+        "blackrock_pct": 3.624781944444445,
+        "vanguard_pct": 3.2875090277777774,
+        "fire_level": 2
+      },
+      {
+        "ticker": "NAUT",
+        "price": 1.48,
+        "previous_close": 1.59,
+        "blackrock_pct": 0.4991277777777778,
+        "vanguard_pct": 1.972286507936508,
+        "fire_level": 0
+      },
+      {
+        "ticker": "INV",
+        "price": 3.53,
+        "previous_close": 3.3,
+        "blackrock_pct": 0.5900051724137931,
+        "vanguard_pct": 2.53773275862069,
+        "fire_level": 1
+      },
+      {
+        "ticker": "STIM",
+        "price": 2.89,
+        "previous_close": 2.87,
+        "blackrock_pct": 3.392763636363636,
+        "vanguard_pct": 4.155475757575758,
+        "fire_level": 2
+      },
+      {
+        "ticker": "MAPS",
+        "price": 1.01,
+        "previous_close": 0.98,
+        "blackrock_pct": 4.995541666666667,
+        "vanguard_pct": 4.824789814814815,
+        "fire_level": 3
+      },
+      {
+        "ticker": "SGMO",
+        "price": 0.54,
+        "previous_close": 0.56,
+        "blackrock_pct": 1.5922874172185428,
+        "vanguard_pct": 3.104214569536424,
+        "fire_level": 1
+      },
+      {
+        "ticker": "SKIN",
+        "price": 1.47,
+        "previous_close": 1.38,
+        "blackrock_pct": 5.717342519685039,
+        "vanguard_pct": 4.473872440944882,
+        "fire_level": 3
+      },
+      {
+        "ticker": "POWW",
+        "price": 1.65,
+        "previous_close": 1.6,
+        "blackrock_pct": 5.3185726495726495,
+        "vanguard_pct": 4.429865811965812,
+        "fire_level": 3
       },
       {
         "ticker": "BTM",
-        "price": 2.5,
-        "previous_close": 2.53,
+        "price": 2.66,
+        "previous_close": 2.46,
         "blackrock_pct": 0,
         "vanguard_pct": 1.8613575757575755,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "fire_level": 0
       },
       {
-        "ticker": "ULY",
-        "price": 2.57,
-        "previous_close": 2.74,
-        "blackrock_pct": 0,
-        "vanguard_pct": 1.9504000000000001,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "BLNK",
+        "price": 1.65,
+        "previous_close": 1.48,
+        "blackrock_pct": 1.815355652173913,
+        "vanguard_pct": 3.848820869565217,
+        "fire_level": 1
       },
       {
-        "ticker": "CARV",
-        "price": 3.01,
-        "previous_close": 2.99,
-        "blackrock_pct": 0,
-        "vanguard_pct": 1.4257600000000001,
-        "fire_level": 0,
-        "previous_fire_level": 0,
-        "fire_level_changed": false
+        "ticker": "CHRS",
+        "price": 1.55,
+        "previous_close": 1.55,
+        "blackrock_pct": 9.258370689655173,
+        "vanguard_pct": 9.112512931034484,
+        "fire_level": 3
       },
       {
-        "ticker": "CERO",
-        "price": 0.1,
-        "previous_close": 0.1,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "TRUE",
+        "price": 2.19,
+        "previous_close": 2.19,
+        "blackrock_pct": 7.846444943820225,
+        "vanguard_pct": 4.940696629213483,
+        "fire_level": 3
       },
       {
-        "ticker": "ARBK",
-        "price": 0.32,
-        "previous_close": 0.35,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "SKYX",
+        "price": 1.56,
+        "previous_close": 1.54,
+        "blackrock_pct": 2.826842105263158,
+        "vanguard_pct": 2.7112298245614035,
+        "fire_level": 2
       },
       {
-        "ticker": "PAVM",
-        "price": 0.37,
-        "previous_close": 0.4,
-        "blackrock_pct": 0.26911111111111113,
-        "vanguard_pct": 0.3018296296296296,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "OSUR",
+        "price": 2.54,
+        "previous_close": 2.57,
+        "blackrock_pct": 8.99751506849315,
+        "vanguard_pct": 5.825246575342466,
+        "fire_level": 3
       },
       {
-        "ticker": "PMN",
-        "price": 0.41,
-        "previous_close": 0.41,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SKYQ",
-        "price": 0.42,
-        "previous_close": 0.45,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "STAI",
-        "price": 0.43,
-        "previous_close": 0.46,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0.26678450704225354,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GOVX",
-        "price": 0.53,
-        "previous_close": 0.57,
-        "blackrock_pct": 0.09188333333333333,
-        "vanguard_pct": 0.3838533333333333,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GTBP",
-        "price": 0.61,
-        "previous_close": 0.62,
-        "blackrock_pct": 0.08851818181818182,
-        "vanguard_pct": 0.09549090909090908,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "XBP",
-        "price": 0.62,
-        "previous_close": 0.65,
-        "blackrock_pct": 0.023296610169491524,
-        "vanguard_pct": 0.02582372881355932,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "KTTA",
-        "price": 0.75,
-        "previous_close": 0.82,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CMND",
-        "price": 0.8,
-        "previous_close": 0.81,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IOBT",
-        "price": 0.85,
-        "previous_close": 0.91,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "RELI",
-        "price": 0.91,
-        "previous_close": 0.96,
-        "blackrock_pct": 0.01022,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "REE",
-        "price": 0.94,
-        "previous_close": 0.99,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "VRME",
-        "price": 0.97,
-        "previous_close": 0.99,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0.8904749999999999,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MDIA",
-        "price": 0.97,
-        "previous_close": 1.05,
-        "blackrock_pct": 0.03579210526315789,
-        "vanguard_pct": 0.06469342105263158,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "LMFA",
-        "price": 0.98,
-        "previous_close": 1,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0.1031625,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "TRIB",
-        "price": 1.01,
-        "previous_close": 0.98,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ENLV",
-        "price": 1.04,
-        "previous_close": 1.05,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BFRI",
-        "price": 1.06,
-        "previous_close": 1.1,
-        "blackrock_pct": 0.042018181818181816,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "LEXX",
-        "price": 1.07,
-        "previous_close": 1.04,
-        "blackrock_pct": 0.12474999999999999,
-        "vanguard_pct": 0.6070636363636364,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ADGM",
-        "price": 1.07,
-        "previous_close": 1.09,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "LGO",
-        "price": 1.13,
-        "previous_close": 1.15,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CAN",
-        "price": 1.14,
-        "previous_close": 1.3,
-        "blackrock_pct": 0.02652589907604833,
-        "vanguard_pct": 0.21344278606965175,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "XELB",
-        "price": 1.16,
-        "previous_close": 1.2,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0.22637999999999997,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GUTS",
-        "price": 1.16,
-        "previous_close": 1.19,
-        "blackrock_pct": 0.6717492424242424,
-        "vanguard_pct": 0.839989393939394,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BRNS",
-        "price": 1.18,
-        "previous_close": 1.19,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ASST",
-        "price": 1.19,
-        "previous_close": 1.27,
-        "blackrock_pct": 0.010195342465753425,
-        "vanguard_pct": 0.1733772602739726,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GLBS",
-        "price": 1.2,
-        "previous_close": 1.18,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "AACG",
-        "price": 1.21,
-        "previous_close": 1.2,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "TLRY",
-        "price": 1.25,
-        "previous_close": 1.31,
-        "blackrock_pct": 0.25105138023152274,
-        "vanguard_pct": 0.3984581478183437,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IFRX",
+        "ticker": "FFAI",
         "price": 1.26,
-        "previous_close": 1.38,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "previous_close": 1.24,
+        "blackrock_pct": 3.663442176870748,
+        "vanguard_pct": 3.5651632653061225,
+        "fire_level": 2
       },
       {
-        "ticker": "LVRO",
-        "price": 1.28,
-        "previous_close": 1.32,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "ZEO",
+        "price": 1.57,
+        "previous_close": 1.5,
+        "blackrock_pct": 0.036851612903225806,
+        "vanguard_pct": 1.1562193548387096,
+        "fire_level": 0
       },
       {
-        "ticker": "SXTP",
-        "price": 1.3,
-        "previous_close": 1.34,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "HRTX",
+        "price": 1.1,
+        "previous_close": 1.14,
+        "blackrock_pct": 5.520062841530055,
+        "vanguard_pct": 4.629213114754099,
+        "fire_level": 3
       },
       {
-        "ticker": "BLIN",
-        "price": 1.3,
-        "previous_close": 1.31,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0.9232499999999999,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "CDXS",
+        "price": 2.15,
+        "previous_close": 2.17,
+        "blackrock_pct": 7.92882,
+        "vanguard_pct": 5.099125555555555,
+        "fire_level": 3
       },
       {
-        "ticker": "TLPH",
-        "price": 1.3,
-        "previous_close": 1.41,
-        "blackrock_pct": 0.19478297872340425,
-        "vanguard_pct": 0.17310212765957447,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "SSP",
+        "price": 2.07,
+        "previous_close": 2.17,
+        "blackrock_pct": 6.62745,
+        "vanguard_pct": 5.703365789473684,
+        "fire_level": 3
       },
       {
-        "ticker": "CASI",
-        "price": 1.36,
-        "previous_close": 1.39,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "WALD",
+        "price": 1.77,
+        "previous_close": 1.71,
+        "blackrock_pct": 1.6854026785714287,
+        "vanguard_pct": 0.2355267857142857,
+        "fire_level": 0
       },
       {
-        "ticker": "CTXR",
-        "price": 1.37,
-        "previous_close": 1.52,
-        "blackrock_pct": 0.38806111111111113,
-        "vanguard_pct": 0.44501666666666667,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "OABI",
+        "price": 1.41,
+        "previous_close": 1.48,
+        "blackrock_pct": 4.861929861111111,
+        "vanguard_pct": 3.658552083333334,
+        "fire_level": 2
       },
       {
-        "ticker": "EM",
-        "price": 1.37,
-        "previous_close": 1.37,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PRHI",
-        "price": 1.43,
-        "previous_close": 1.46,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0.2084916666666667,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "APVO",
-        "price": 1.45,
-        "previous_close": 1.47,
-        "blackrock_pct": 0.000007142857142857143,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "RDZN",
-        "price": 1.49,
-        "previous_close": 1.51,
-        "blackrock_pct": 0.6629118421052632,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "YTRA",
-        "price": 1.5,
-        "previous_close": 1.4,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MOGO",
-        "price": 1.51,
-        "previous_close": 1.56,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IBIO",
-        "price": 1.58,
-        "previous_close": 1.76,
-        "blackrock_pct": 0.213635,
-        "vanguard_pct": 0.7193050000000001,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "GREE",
-        "price": 1.6,
-        "previous_close": 1.83,
-        "blackrock_pct": 0.09864615384615386,
-        "vanguard_pct": 0.5629000000000001,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "LVTX",
-        "price": 1.61,
-        "previous_close": 1.63,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "NNDM",
-        "price": 1.62,
-        "previous_close": 1.67,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PHIO",
-        "price": 1.64,
-        "previous_close": 1.86,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0.8110833333333333,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "INVZ",
-        "price": 1.64,
-        "previous_close": 1.76,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CNTB",
-        "price": 1.67,
-        "previous_close": 1.65,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CGEN",
-        "price": 1.68,
+        "ticker": "LPRO",
+        "price": 1.75,
         "previous_close": 1.73,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "blackrock_pct": 6.24588813559322,
+        "vanguard_pct": 4.964529661016949,
+        "fire_level": 3
       },
       {
-        "ticker": "ARBE",
-        "price": 1.68,
-        "previous_close": 1.8,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "CRBU",
+        "price": 2.11,
+        "previous_close": 2.17,
+        "blackrock_pct": 2.025243010752688,
+        "vanguard_pct": 4.397705376344086,
+        "fire_level": 2
       },
       {
-        "ticker": "AIFF",
-        "price": 1.69,
-        "previous_close": 1.83,
-        "blackrock_pct": 0.12133846153846153,
-        "vanguard_pct": 0.7845076923076924,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "TNYA",
+        "price": 1.4,
+        "previous_close": 1.38,
+        "blackrock_pct": 1.6765644171779144,
+        "vanguard_pct": 2.917378527607362,
+        "fire_level": 1
       },
       {
-        "ticker": "ADAG",
+        "ticker": "KLTR",
+        "price": 1.53,
+        "previous_close": 1.5,
+        "blackrock_pct": 3.7099688311688315,
+        "vanguard_pct": 3.20192987012987,
+        "fire_level": 2
+      },
+      {
+        "ticker": "BRLT",
+        "price": 2.35,
+        "previous_close": 2.56,
+        "blackrock_pct": 0.99224,
+        "vanguard_pct": 3.5662466666666672,
+        "fire_level": 1
+      },
+      {
+        "ticker": "CCCC",
+        "price": 2.34,
+        "previous_close": 2.26,
+        "blackrock_pct": 1.966251612903226,
+        "vanguard_pct": 3.245184946236559,
+        "fire_level": 1
+      },
+      {
+        "ticker": "EGHT",
+        "price": 2.14,
+        "previous_close": 1.77,
+        "blackrock_pct": 8.223075,
+        "vanguard_pct": 9.982183823529411,
+        "fire_level": 3
+      },
+      {
+        "ticker": "SATL",
+        "price": 1.77,
+        "previous_close": 1.7,
+        "blackrock_pct": 2.9013544715447157,
+        "vanguard_pct": 1.837248780487805,
+        "fire_level": 1
+      },
+      {
+        "ticker": "SLS",
         "price": 1.7,
-        "previous_close": 1.79,
-        "blackrock_pct": 0.001076271186440678,
+        "previous_close": 1.66,
+        "blackrock_pct": 3.6722183999999998,
+        "vanguard_pct": 5.3238392,
+        "fire_level": 2
+      },
+      {
+        "ticker": "RANI",
+        "price": 2.44,
+        "previous_close": 2.38,
+        "blackrock_pct": 0.24719166666666664,
+        "vanguard_pct": 1.6659979166666665,
+        "fire_level": 0
+      },
+      {
+        "ticker": "ACRS",
+        "price": 2.15,
+        "previous_close": 2.36,
+        "blackrock_pct": 5.106369444444445,
+        "vanguard_pct": 6.168576851851852,
+        "fire_level": 3
+      },
+      {
+        "ticker": "ALLO",
+        "price": 1.1,
+        "previous_close": 1.11,
+        "blackrock_pct": 8.061891891891893,
+        "vanguard_pct": 3.720327927927928,
+        "fire_level": 3
+      },
+      {
+        "ticker": "CERS",
+        "price": 1.45,
+        "previous_close": 1.45,
+        "blackrock_pct": 10.796681770833333,
+        "vanguard_pct": 5.584022395833333,
+        "fire_level": 3
+      },
+      {
+        "ticker": "DH",
+        "price": 2.68,
+        "previous_close": 2.78,
+        "blackrock_pct": 2.9957384615384615,
+        "vanguard_pct": 2.812123076923077,
+        "fire_level": 2
+      },
+      {
+        "ticker": "MNTK",
+        "price": 1.95,
+        "previous_close": 1.82,
+        "blackrock_pct": 3.0818408450704227,
+        "vanguard_pct": 2.799291549295775,
+        "fire_level": 2
+      },
+      {
+        "ticker": "IRWD",
+        "price": 2.14,
+        "previous_close": 1.87,
+        "blackrock_pct": 7.4216037037037035,
+        "vanguard_pct": 10.001314197530863,
+        "fire_level": 3
+      },
+      {
+        "ticker": "HUMA",
+        "price": 1.46,
+        "previous_close": 1.46,
+        "blackrock_pct": 5.318421390374332,
+        "vanguard_pct": 3.743114438502674,
+        "fire_level": 2
+      },
+      {
+        "ticker": "GPRO",
+        "price": 1.76,
+        "previous_close": 1.69,
+        "blackrock_pct": 2.0655886363636364,
+        "vanguard_pct": 5.100379545454546,
+        "fire_level": 2
+      },
+      {
+        "ticker": "REKR",
+        "price": 2.32,
+        "previous_close": 2.31,
+        "blackrock_pct": 1.097361111111111,
+        "vanguard_pct": 3.592048412698413,
+        "fire_level": 1
+      },
+      {
+        "ticker": "MVIS",
+        "price": 1.09,
+        "previous_close": 1.06,
+        "blackrock_pct": 5.743249501661129,
+        "vanguard_pct": 6.154394684385382,
+        "fire_level": 3
+      },
+      {
+        "ticker": "SVC",
+        "price": 2.08,
+        "previous_close": 1.97,
+        "blackrock_pct": 8.16627005988024,
+        "vanguard_pct": 9.61962874251497,
+        "fire_level": 3
+      },
+      {
+        "ticker": "NFE",
+        "price": 1.51,
+        "previous_close": 1.35,
+        "blackrock_pct": 6.652712982456141,
+        "vanguard_pct": 5.9559417543859645,
+        "fire_level": 3
+      },
+      {
+        "ticker": "CNDT",
+        "price": 2.33,
+        "previous_close": 2.28,
+        "blackrock_pct": 9.153960126582279,
+        "vanguard_pct": 5.406089873417722,
+        "fire_level": 3
+      },
+      {
+        "ticker": "IVVD",
+        "price": 1.52,
+        "previous_close": 1.4,
+        "blackrock_pct": 0.7881140186915887,
+        "vanguard_pct": 1.8354785046728974,
+        "fire_level": 0
+      },
+      {
+        "ticker": "RXT",
+        "price": 1.55,
+        "previous_close": 1.5,
+        "blackrock_pct": 2.375705439330544,
+        "vanguard_pct": 2.4810857740585774,
+        "fire_level": 2
+      },
+      {
+        "ticker": "IHRT",
+        "price": 4.46,
+        "previous_close": 3.99,
+        "blackrock_pct": 6.18461472868217,
+        "vanguard_pct": 5.371005426356589,
+        "fire_level": 3
+      },
+      {
+        "ticker": "AUTL",
+        "price": 1.38,
+        "previous_close": 1.41,
+        "blackrock_pct": 1.3124571428571428,
         "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "fire_level": 0
       },
       {
-        "ticker": "EDSA",
-        "price": 1.72,
-        "previous_close": 1.74,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0.22662857142857143,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "ADV",
+        "price": 1.29,
+        "previous_close": 1.23,
+        "blackrock_pct": 1.8860070552147241,
+        "vanguard_pct": 0.5834993865030674,
+        "fire_level": 0
       },
       {
-        "ticker": "BNGO",
-        "price": 1.73,
-        "previous_close": 1.72,
-        "blackrock_pct": 0.09936,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "OPAL",
+        "price": 2.21,
+        "previous_close": 2.26,
+        "blackrock_pct": 3.841651724137931,
+        "vanguard_pct": 3.955279310344827,
+        "fire_level": 2
       },
       {
-        "ticker": "CYCN",
-        "price": 1.78,
-        "previous_close": 1.86,
-        "blackrock_pct": 0.5599,
-        "vanguard_pct": 0.783,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "LAB",
+        "price": 1.14,
+        "previous_close": 1.19,
+        "blackrock_pct": 6.498628272251309,
+        "vanguard_pct": 4.445481151832461,
+        "fire_level": 3
       },
       {
-        "ticker": "RPTX",
+        "ticker": "QSI",
         "price": 1.82,
         "previous_close": 1.84,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "blackrock_pct": 5.9279464480874315,
+        "vanguard_pct": 4.737519672131148,
+        "fire_level": 3
       },
       {
-        "ticker": "MREO",
-        "price": 1.82,
-        "previous_close": 1.86,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "OCGN",
+        "price": 1.39,
+        "previous_close": 1.43,
+        "blackrock_pct": 1.7919647435897437,
+        "vanguard_pct": 4.734833653846153,
+        "fire_level": 2
       },
       {
-        "ticker": "MIST",
-        "price": 1.86,
-        "previous_close": 1.85,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "LXRX",
+        "price": 1.36,
+        "previous_close": 1.33,
+        "blackrock_pct": 0.9241512396694215,
+        "vanguard_pct": 2.4383019283746554,
+        "fire_level": 1
       },
       {
-        "ticker": "BIOX",
-        "price": 1.87,
-        "previous_close": 1.86,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PALI",
-        "price": 1.87,
-        "previous_close": 2,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "REBN",
-        "price": 1.88,
-        "previous_close": 1.87,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0.5509333333333333,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SNDL",
-        "price": 1.9,
-        "previous_close": 2.19,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "XAIR",
-        "price": 1.91,
-        "previous_close": 1.95,
-        "blackrock_pct": 0.2754,
-        "vanguard_pct": 0.9074375000000001,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "WPRT",
-        "price": 1.98,
-        "previous_close": 1.99,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SMTK",
-        "price": 2.05,
-        "previous_close": 2,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "EDAP",
-        "price": 2.06,
-        "previous_close": 2.02,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "DWSN",
-        "price": 2.07,
-        "previous_close": 2.06,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0.3515064516129032,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "UCL",
-        "price": 2.13,
-        "previous_close": 2.1,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "NSPR",
-        "price": 2.13,
-        "previous_close": 2.27,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "VERO",
-        "price": 2.14,
-        "previous_close": 2.11,
-        "blackrock_pct": 0.00085,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ALTS",
-        "price": 2.14,
-        "previous_close": 2.22,
-        "blackrock_pct": 0.030229508196721315,
-        "vanguard_pct": 0.5736688524590164,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "AYTU",
-        "price": 2.16,
-        "previous_close": 2.21,
-        "blackrock_pct": 0.22793000000000002,
-        "vanguard_pct": 0.27888,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "TRAW",
-        "price": 2.19,
-        "previous_close": 2.39,
-        "blackrock_pct": 0.14222857142857143,
-        "vanguard_pct": 0.1881857142857143,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CLGN",
-        "price": 2.19,
-        "previous_close": 2.28,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "IQ",
-        "price": 2.19,
-        "previous_close": 2.25,
-        "blackrock_pct": 0.29382964864864863,
-        "vanguard_pct": 0.5229914054054055,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "CMBM",
-        "price": 2.2,
-        "previous_close": 2.04,
-        "blackrock_pct": 0.6130607142857143,
-        "vanguard_pct": 0.5727607142857143,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MDCX",
-        "price": 2.22,
-        "previous_close": 2.34,
-        "blackrock_pct": 0.07882,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "HERZ",
-        "price": 2.25,
-        "previous_close": 2.28,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "BSLK",
-        "price": 2.26,
-        "previous_close": 2.31,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "TYGO",
-        "price": 2.26,
-        "previous_close": 2.36,
-        "blackrock_pct": 0.008768181818181819,
-        "vanguard_pct": 0.4947333333333333,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "LIQT",
-        "price": 2.29,
-        "previous_close": 2.39,
-        "blackrock_pct": 0.0548,
-        "vanguard_pct": 0.31286,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "QIPT",
-        "price": 2.31,
+        "ticker": "GOSS",
+        "price": 2.28,
         "previous_close": 2.3,
-        "blackrock_pct": 0.793153488372093,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "blackrock_pct": 5.349161233480176,
+        "vanguard_pct": 5.026780616740088,
+        "fire_level": 3
       },
       {
-        "ticker": "ORMP",
-        "price": 2.32,
-        "previous_close": 2.36,
-        "blackrock_pct": 0.20870731707317075,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "GEVO",
+        "price": 2.16,
+        "previous_close": 2.11,
+        "blackrock_pct": 6.6213962809917355,
+        "vanguard_pct": 6.210394214876033,
+        "fire_level": 3
       },
       {
-        "ticker": "VVOS",
-        "price": 2.39,
-        "previous_close": 2.47,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0.532925,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "AKBA",
+        "price": 2.09,
+        "previous_close": 2.09,
+        "blackrock_pct": 6.933570188679246,
+        "vanguard_pct": 5.513760754716982,
+        "fire_level": 3
       },
       {
-        "ticker": "GNTA",
+        "ticker": "CLNE",
+        "price": 2.23,
+        "previous_close": 2.78,
+        "blackrock_pct": 7.216061187214612,
+        "vanguard_pct": 5.050783561643836,
+        "fire_level": 3
+      },
+      {
+        "ticker": "BYND",
+        "price": 1.3,
+        "previous_close": 1.33,
+        "blackrock_pct": 6.792466233766234,
+        "vanguard_pct": 6.11769090909091,
+        "fire_level": 3
+      },
+      {
+        "ticker": "ERAS",
+        "price": 2.25,
+        "previous_close": 2.31,
+        "blackrock_pct": 5.340210563380281,
+        "vanguard_pct": 4.470280633802816,
+        "fire_level": 3
+      },
+      {
+        "ticker": "ESPR",
+        "price": 2.94,
+        "previous_close": 2.85,
+        "blackrock_pct": 6.341838362068966,
+        "vanguard_pct": 5.050357327586207,
+        "fire_level": 3
+      },
+      {
+        "ticker": "OLPX",
+        "price": 1.07,
+        "previous_close": 1.02,
+        "blackrock_pct": 1.5897086956521738,
+        "vanguard_pct": 1.7378404797601201,
+        "fire_level": 1
+      },
+      {
+        "ticker": "PACB",
+        "price": 1.97,
+        "previous_close": 2,
+        "blackrock_pct": 7.5509580000000005,
+        "vanguard_pct": 5.339058333333333,
+        "fire_level": 3
+      },
+      {
+        "ticker": "IOVA",
+        "price": 1.79,
+        "previous_close": 1.82,
+        "blackrock_pct": 6.419008839779005,
+        "vanguard_pct": 6.927202209944751,
+        "fire_level": 3
+      },
+      {
+        "ticker": "GERN",
+        "price": 1.11,
+        "previous_close": 1.15,
+        "blackrock_pct": 7.840671630094044,
+        "vanguard_pct": 5.582163009404389,
+        "fire_level": 3
+      },
+      {
+        "ticker": "SABR",
+        "price": 2.01,
+        "previous_close": 2,
+        "blackrock_pct": 13.82433063291139,
+        "vanguard_pct": 10.657791392405064,
+        "fire_level": 3
+      },
+      {
+        "ticker": "HEPS",
         "price": 2.41,
-        "previous_close": 2.56,
-        "blackrock_pct": 0,
+        "previous_close": 2.36,
+        "blackrock_pct": 1.0739419928825622,
         "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "fire_level": 0
       },
       {
-        "ticker": "CRNT",
-        "price": 2.42,
-        "previous_close": 2.54,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "OPK",
+        "price": 1.37,
+        "previous_close": 1.39,
+        "blackrock_pct": 4.094984635416667,
+        "vanguard_pct": 4.97899921875,
+        "fire_level": 3
       },
       {
-        "ticker": "KPRX",
-        "price": 2.43,
-        "previous_close": 2.47,
-        "blackrock_pct": 0.0019333333333333333,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "IBRX",
+        "price": 2.15,
+        "previous_close": 2.08,
+        "blackrock_pct": 1.8801283597883598,
+        "vanguard_pct": 2.3087097354497357,
+        "fire_level": 1
       },
       {
-        "ticker": "CRON",
-        "price": 2.47,
-        "previous_close": 2.54,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "PLUG",
+        "price": 2.6,
+        "previous_close": 2.52,
+        "blackrock_pct": 6.779058766233765,
+        "vanguard_pct": 8.266470535714285,
+        "fire_level": 3
       },
       {
-        "ticker": "SHFS",
-        "price": 2.49,
-        "previous_close": 2.49,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0.9434666666666666,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ANEB",
-        "price": 2.51,
-        "previous_close": 2.54,
-        "blackrock_pct": 0.04198292682926829,
-        "vanguard_pct": 0.526709756097561,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PRQR",
-        "price": 2.54,
-        "previous_close": 2.59,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "PSEC",
-        "price": 2.56,
-        "previous_close": 2.61,
-        "blackrock_pct": 0.4269411255411255,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "MMLP",
-        "price": 2.65,
-        "previous_close": 2.58,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "THCH",
-        "price": 2.71,
-        "previous_close": 2.71,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ICMB",
-        "price": 2.77,
-        "previous_close": 2.77,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "ENTX",
-        "price": 2.9,
-        "previous_close": 2.84,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "SY",
-        "price": 3.51,
-        "previous_close": 3.47,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
-      },
-      {
-        "ticker": "FPA",
-        "price": 39.26,
-        "previous_close": 39.93,
-        "blackrock_pct": 0,
-        "vanguard_pct": 0,
-        "fire_level": -1,
-        "previous_fire_level": -1,
-        "fire_level_changed": false
+        "ticker": "KSS",
+        "price": 17.88,
+        "previous_close": 16.11,
+        "blackrock_pct": 16.418024107142855,
+        "vanguard_pct": 11.089495535714287,
+        "fire_level": 3
       }
     ],
     "summary": {
       "total_processed": 374,
-      "qualifying_count": 372,
-      "under_dollar": 62,
+      "qualifying_count": 271,
       "fire_level_3": 51,
       "fire_level_2": 67,
       "fire_level_1": 113,
+      "fire_level_0": 40,
       "total_fire_stocks": 231,
-      "total_scanned_stocks": 372
+      "total_scanned_stocks": 271
     },
-    "timestamp": "2025-11-04T17:50:24.825Z"
+    "timestamp": "2025-11-05T19:19:10.702Z"
   },
   "processedStocks": {
     "stocks": [],
@@ -4147,8 +2595,10 @@
       "ASRT",
       "ASST",
       "KSS",
-      "TLRY"
+      "TLRY",
+      "HBIO",
+      "STRO"
     ],
-    "last_updated": "2025-11-03T18:11:41.935Z"
+    "last_updated": "2025-11-05T19:30:04.211Z"
   }
 }
