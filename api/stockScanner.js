@@ -165,67 +165,52 @@ class StockScanner {
     }
   }
 
-  // Calculate ranking
-  calculateRanking(stock) {
-    const { blackrock_pct, vanguard_pct, price } = stock;
-    
-    const hasBoth = blackrock_pct > 0 && vanguard_pct > 0;
-    const hasBr4Plus = blackrock_pct >= 4.0;
-    const hasVg4Plus = vanguard_pct >= 4.0;
-    const hasBr3Plus = blackrock_pct >= 3.0;
-    const hasVg3Plus = vanguard_pct >= 3.0;
-
-    if (hasBoth && hasBr4Plus && hasVg4Plus) {
-      return { category: 1, score: -(blackrock_pct + vanguard_pct) + price * 0.01 };
-    } else if ((hasBr3Plus && vanguard_pct > 0) || (hasVg3Plus && blackrock_pct > 0)) {
-      return { category: 2, score: price };
-    } else {
-      return { category: 3, score: price };
-    }
-  }
-
   // Save results - handles both full scan and daily scan
   async saveResults(stocks, totalProcessed, isDailyScan = false) {
     try {
       if (!isDailyScan) {
-        // Full scan: just save all results directly
-        const ranking = stocks.map(stock => ({
-          ...stock
-        }));
-
-        ranking.sort((a, b) => {
-          if (a.fire_level !== b.fire_level) return b.fire_level - a.fire_level; // Higher fire first
-          return a.price - b.price; // Lower price first within same fire level
-        });
-
+        // Full scan: only save stocks with fire_level > 0 (qualifying stocks)
+        const qualifyingStocks = stocks.filter(s => s.fire_level > 0);
+        const nonQualifyingTickers = stocks.filter(s => s.fire_level <= 0).map(s => s.ticker); // Remove fire_level -1, 0
+        
         const results = {
-          stocks: ranking,
+          stocks: qualifyingStocks,
           summary: {
             total_processed: totalProcessed,
-            qualifying_count: ranking.length,
-            under_dollar: ranking.filter(s => s.price < 1.0).length,
-            fire_level_3: ranking.filter(s => s.fire_level === 3).length,
-            fire_level_2: ranking.filter(s => s.fire_level === 2).length,
-            fire_level_1: ranking.filter(s => s.fire_level === 1).length,
-            total_fire_stocks: ranking.filter(s => s.fire_level > 0).length
+            qualifying_count: qualifyingStocks.length,
+            under_dollar: qualifyingStocks.filter(s => s.price < 1.0).length,
+            fire_level_3: qualifyingStocks.filter(s => s.fire_level === 3).length,
+            fire_level_2: qualifyingStocks.filter(s => s.fire_level === 2).length,
+            fire_level_1: qualifyingStocks.filter(s => s.fire_level === 1).length,
+            total_fire_stocks: qualifyingStocks.length
           },
           timestamp: new Date().toISOString()
         };
 
         await dbService.saveScanResults(results);
-        console.log(`✅ Full scan saved: ${ranking.length} stocks`);
+        
+        // Remove non-qualifying tickers from the tickers list (fire_level -1 or 0)
+        if (nonQualifyingTickers.length > 0) {
+          for (const ticker of nonQualifyingTickers) {
+            await dbService.removeTicker(ticker);
+          }
+          console.log(`🗑️ Removed ${nonQualifyingTickers.length} non-qualifying tickers (fire_level <= 0) from ticker list`);
+        }
+        
+        console.log(`✅ Full scan saved: ${qualifyingStocks.length} qualifying stocks (filtered from ${stocks.length} scanned)`);
         return;
       }
 
-      // Daily scan: merge with existing results
+      // Daily scan: merge with existing results and remove stocks that lost fire
       const currentResults = await dbService.getScanResults();
       
       if (!currentResults || !currentResults.stocks) {
         console.log('⚠️ No existing scan results found. Saving daily scan as new results.');
-        // Just save the fire stocks if no existing data
+        // Only save stocks with fire_level > 0
+        const qualifyingStocks = stocks.filter(s => s.fire_level > 0);
         await dbService.saveScanResults({
-          stocks: stocks,
-          summary: { total_processed: totalProcessed, qualifying_count: stocks.length },
+          stocks: qualifyingStocks,
+          summary: { total_processed: totalProcessed, qualifying_count: qualifyingStocks.length },
           timestamp: new Date().toISOString()
         });
         return;
@@ -237,20 +222,23 @@ class StockScanner {
         updatedStocksMap.set(stock.ticker, stock);
       });
 
-      // Merge: Update existing fire stocks, keep everything else unchanged
-      const mergedStocks = currentResults.stocks.map(existingStock => {
-        if (updatedStocksMap.has(existingStock.ticker)) {
-          return updatedStocksMap.get(existingStock.ticker); // Replace with updated data
-        }
-        return existingStock; // Keep unchanged
-      });
+      // Merge: Update scanned stocks, keep unscanned stocks, remove stocks that lost fire (fire_level <= 0)
+      const mergedStocks = currentResults.stocks
+        .map(existingStock => {
+          if (updatedStocksMap.has(existingStock.ticker)) {
+            return updatedStocksMap.get(existingStock.ticker); // Replace with updated data
+          }
+          return existingStock; // Keep unchanged (wasn't scanned today)
+        })
+        .filter(stock => stock.fire_level > 0); // Remove stocks with fire_level -1 or 0
 
-      // Sort and save merged results
-      mergedStocks.sort((a, b) => {
-        if (a.fire_level !== b.fire_level) return b.fire_level - a.fire_level; // Higher fire first
-        return a.price - b.price; // Lower price first within same fire level
-      });
-
+      // Identify tickers that lost fire and need to be removed (fire_level -1 or 0)
+      const removedTickers = currentResults.stocks
+        .filter(stock => updatedStocksMap.has(stock.ticker) && updatedStocksMap.get(stock.ticker).fire_level <= 0)
+        .map(stock => stock.ticker);
+      
+      const removedCount = currentResults.stocks.length - mergedStocks.length;
+      
       const results = {
         stocks: mergedStocks,
         summary: {
@@ -261,7 +249,16 @@ class StockScanner {
       };
 
       await dbService.saveScanResults(results);
-      console.log(`✅ Daily scan merged: Updated ${stocks.length} fire stocks, total ${mergedStocks.length} stocks`);
+      
+      // Remove non-qualifying tickers from the tickers list
+      if (removedTickers.length > 0) {
+        for (const ticker of removedTickers) {
+          await dbService.removeTicker(ticker);
+        }
+        console.log(`🗑️ Removed ${removedTickers.length} non-qualifying tickers from ticker list: ${removedTickers.join(', ')}`);
+      }
+      
+      console.log(`✅ Daily scan merged: Updated ${stocks.length} fire stocks, removed ${removedCount} non-qualifying, total ${mergedStocks.length} stocks`);
     } catch (error) {
       console.error('Error saving results:', error);
     }
@@ -300,10 +297,6 @@ class StockScanner {
       if (result) {
         // Calculate fire level for consistency with daily scan
         result.fire_level = calculateFireLevel(result);
-        
-        // Add change tracking fields for consistency with daily scan
-        result.previous_fire_level = result.fire_level; // Same as current since it's a fresh scan
-        result.fire_level_changed = false; // No change in full scan
         
         this.results.push(result);
         console.log(`✅ ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}% | Fire:${result.fire_level}🔥`);
@@ -355,10 +348,6 @@ class StockScanner {
         // Calculate fire level for the new ticker
         result.fire_level = calculateFireLevel(result);
         
-        // For new tickers, no previous fire level
-        result.previous_fire_level = 0;
-        result.fire_level_changed = result.fire_level > 0; // New ticker with fire is a "change"
-        
         this.results.push(result);
         console.log(`✅ NEW ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}% | Fire:${result.fire_level}🔥`);
       }
@@ -370,14 +359,18 @@ class StockScanner {
     // Add new results to existing scan results
     await this.addToExistingResults(this.results);
 
-    console.log(`🆕 New ticker scan complete: ${this.results.length} new stocks added`);
+    // Filter to only return qualifying stocks (fire_level > 0)
+    const qualifyingStocks = this.results.filter(s => s.fire_level > 0);
+    
+    console.log(`🆕 New ticker scan complete: ${qualifyingStocks.length} qualifying stocks added (${this.results.length - qualifyingStocks.length} rejected)`);
     
     return {
-      stocks: this.results,
+      stocks: qualifyingStocks, // Only return qualifying stocks
       summary: {
         total_processed: newTickers.length,
-        qualifying_count: this.results.length,
-        new_tickers: this.results.length
+        qualifying_count: qualifyingStocks.length,
+        rejected_count: this.results.length - qualifyingStocks.length,
+        new_tickers: qualifyingStocks.length
       }
     };
   }
@@ -385,38 +378,40 @@ class StockScanner {
   // Add new stock results to existing scan results
   async addToExistingResults(newStocks) {
     try {
+      // Only add stocks with fire_level > 0 (qualifying stocks)
+      const qualifyingNewStocks = newStocks.filter(s => s.fire_level > 0);
+      
+      if (qualifyingNewStocks.length === 0) {
+        console.log('⚠️ No qualifying new stocks to add (all had fire_level === 0)');
+        return;
+      }
+      
       // Get current scan results
       const currentResults = await dbService.getScanResults();
       
       if (!currentResults || !currentResults.stocks) {
         console.log('⚠️ No existing scan results found. Saving new ticker results as initial data.');
-        // Create new results with just the new stocks
+        // Create new results with just the qualifying new stocks
         await dbService.saveScanResults({
-          stocks: newStocks,
+          stocks: qualifyingNewStocks,
           summary: { 
-            total_processed: newStocks.length, 
-            qualifying_count: newStocks.length,
-            new_tickers_added: newStocks.length
+            total_processed: qualifyingNewStocks.length, 
+            qualifying_count: qualifyingNewStocks.length,
+            new_tickers_added: qualifyingNewStocks.length
           },
           timestamp: new Date().toISOString()
         });
         return;
       }
 
-      // Simply append new stocks to existing stocks
-      const allStocks = [...currentResults.stocks, ...newStocks];
-
-      // Sort by fire level (descending) then by price (ascending)
-      allStocks.sort((a, b) => {
-        if (a.fire_level !== b.fire_level) return b.fire_level - a.fire_level; // Higher fire first
-        return a.price - b.price; // Lower price first within same fire level
-      });
+      // Simply append qualifying new stocks to existing stocks
+      const allStocks = [...currentResults.stocks, ...qualifyingNewStocks];
 
       // Update summary stats
       const updatedSummary = {
         ...currentResults.summary,
         qualifying_count: allStocks.length,
-        new_tickers_added: newStocks.length,
+        new_tickers_added: qualifyingNewStocks.length,
         last_new_ticker_scan: new Date().toISOString()
       };
 
@@ -427,7 +422,7 @@ class StockScanner {
       };
 
       await dbService.saveScanResults(results);
-      console.log(`✅ Added ${newStocks.length} new stocks to existing ${currentResults.stocks.length} stocks, total now ${allStocks.length}`);
+      console.log(`✅ Added ${qualifyingNewStocks.length} qualifying new stocks to existing ${currentResults.stocks.length} stocks, total now ${allStocks.length}`);
     } catch (error) {
       console.error('Error adding new stocks to existing results:', error);
     }
@@ -466,27 +461,11 @@ class StockScanner {
       if (result) {
         // Calculate fire level using the same logic as database service
         result.fire_level = calculateFireLevel(result);
-        
-        const previousStock = previousStockMap.get(ticker);
-        
-        // Add change tracking
-        if (previousStock) {
-          result.previous_fire_level = previousStock.fire_level;
-          result.fire_level_changed = result.fire_level !== previousStock.fire_level;
-        } else {
-          result.fire_level_changed = false;
-        }
 
         this.results.push(result);
         
         // Log detailed analysis for each ticker (like in full scan)
         console.log(`✅ ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}% | Fire:${result.fire_level}🔥`);
-        
-        // Log changes
-        if (result.fire_level_changed) {
-          const changeDirection = result.fire_level > result.previous_fire_level ? '📈' : '📉';
-          console.log(`${changeDirection} ${ticker} fire level changed: ${result.previous_fire_level}🔥 → ${result.fire_level}🔥`);
-        }
       }
 
       // Rate limiting
@@ -495,17 +474,14 @@ class StockScanner {
 
     // Save results using daily scan merge logic
     await this.saveResults(this.results, tickers.length, true);
-
-    const changeCount = this.results.filter(s => s.fire_level_changed).length;
     
-    console.log(`🔥 Daily scan complete: ${this.results.length} fire stocks scanned, ${changeCount} changed`);
+    console.log(`🔥 Daily scan complete: ${this.results.length} fire stocks scanned`);
     
     return {
       stocks: this.results,
       summary: {
         total_processed: tickers.length,
-        qualifying_count: this.results.length,
-        changed_count: changeCount
+        qualifying_count: this.results.length
       }
     };
   }

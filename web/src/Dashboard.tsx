@@ -25,7 +25,7 @@ const Dashboard: React.FC = () => {
     progress: { current: number; total: number; percentage: number } | null;
     message: string | null;
   }>({ scanning: false, progress: null, message: null });
-  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [activeFilter, setActiveFilter] = useState<string>('anyfire');
   const [multiFilters, setMultiFilters] = useState<{
     fireLevels: Set<number>;
     priceFilters: Set<string>;

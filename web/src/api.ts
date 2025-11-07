@@ -9,6 +9,12 @@ export const api = {
     const response = await axios.post(`${API_BASE}/api/scan/start`, { fireStocksOnly });
     return response.data;
   },
+  
+  // Scan multiple stocks
+  scanMultipleStocks: async (tickers: string[]): Promise<{ success: boolean; stocks?: any[]; count?: number; errors?: any[]; error?: string }> => {
+    const response = await axios.post(`${API_BASE}/api/scan`, { tickers });
+    return response.data;
+  },
 
   // Get current scan status
   getScanStatus: async (): Promise<ScanStatus> => {

@@ -13,8 +13,6 @@ export interface Stock {
   discrepancy: boolean;
   notes: string;
   fire_level?: number; // 0-3, calculated by API
-  previous_fire_level?: number; // Previous fire level for change tracking
-  fire_level_changed?: boolean; // True if fire level changed from previous scan
   is_new?: boolean; // True if this is a new fire stock
 }
 

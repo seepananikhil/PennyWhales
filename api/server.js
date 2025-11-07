@@ -246,6 +246,71 @@ app.post('/api/scan/clear', async (req, res) => {
   }
 });
 
+// Scan single stock
+app.post('/api/scan', async (req, res) => {
+  try {
+    const { ticker, tickers } = req.body;
+    
+    // Support both single ticker and multiple tickers
+    let tickersToScan = [];
+    
+    if (ticker && typeof ticker === 'string') {
+      tickersToScan = [ticker];
+    } else if (tickers && Array.isArray(tickers)) {
+      tickersToScan = tickers;
+    } else {
+      return res.status(400).json({ error: 'Ticker or tickers array is required' });
+    }
+
+    console.log(`🔍 Scanning ${tickersToScan.length} stock(s): ${tickersToScan.join(', ')}`);
+
+    const scanner = new StockScanner();
+    const { calculateFireLevel } = require('./fireUtils');
+    
+    const results = [];
+    const errors = [];
+
+    for (const tick of tickersToScan) {
+      try {
+        const result = await scanner.analyzeTicker(tick.toUpperCase().trim());
+        
+        if (result) {
+          result.fire_level = calculateFireLevel(result);
+          results.push(result);
+        } else {
+          errors.push({
+            ticker: tick.toUpperCase().trim(),
+            error: 'Could not fetch data for this ticker'
+          });
+        }
+      } catch (error) {
+        errors.push({
+          ticker: tick.toUpperCase().trim(),
+          error: error.message || 'Failed to scan stock'
+        });
+      }
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Could not fetch data for any of the tickers',
+        errors
+      });
+    }
+
+    res.json({
+      success: true,
+      stocks: results,
+      count: results.length,
+      errors: errors.length > 0 ? errors : undefined
+    });
+  } catch (error) {
+    console.error('Error scanning stock(s):', error);
+    res.status(500).json({ error: 'Failed to scan stock(s)' });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -360,17 +425,44 @@ app.post('/api/tickers', async (req, res) => {
     const { ticker, tickers } = req.body;
     
     if (ticker) {
-      // Add single ticker
-      const added = await dbService.addTicker(ticker);
-      if (added) {
-        res.json({ success: true, message: `Added ticker: ${ticker.toUpperCase()}` });
+      // Add single ticker - scan first to check if it qualifies
+      console.log(`🎯 Scanning ${ticker} to check if it qualifies...`);
+      const scanner = new StockScanner();
+      const scanResult = await scanner.scanNewTickers([ticker]);
+      
+      if (scanResult.stocks.length > 0) {
+        const added = await dbService.addTicker(ticker);
+        if (added) {
+          res.json({ 
+            success: true, 
+            message: `Added qualifying ticker: ${ticker.toUpperCase()}`,
+            fire_level: scanResult.stocks[0].fire_level
+          });
+        } else {
+          res.status(400).json({ error: 'Ticker already exists' });
+        }
       } else {
-        res.status(400).json({ error: 'Ticker already exists' });
+        res.status(400).json({ 
+          error: `Ticker ${ticker.toUpperCase()} does not qualify (fire_level === 0)`,
+          rejected: true
+        });
       }
     } else if (tickers && Array.isArray(tickers)) {
-      // Add multiple tickers
-      const added = await dbService.addTickers(tickers);
-      res.json({ success: true, added: added.length, tickers: added });
+      // Add multiple tickers - scan first to check which qualify
+      console.log(`🎯 Scanning ${tickers.length} tickers to check which qualify...`);
+      const scanner = new StockScanner();
+      const scanResult = await scanner.scanNewTickers(tickers);
+      
+      const qualifiedTickers = scanResult.stocks.map(s => s.ticker);
+      const added = await dbService.addTickers(qualifiedTickers);
+      
+      res.json({ 
+        success: true, 
+        added: added.length,
+        rejected: tickers.length - added.length,
+        tickers: added,
+        message: `${added.length} qualifying tickers added (${tickers.length - added.length} rejected)`
+      });
     } else {
       res.status(400).json({ error: 'Invalid request. Provide ticker or tickers array' });
     }
@@ -424,35 +516,33 @@ app.patch('/api/tickers', async (req, res) => {
       return res.status(400).json({ error: 'tickers must be an array' });
     }
     
-    const added = await dbService.addTickers(tickers);
+    // Scan tickers FIRST before adding them to the list
+    console.log(`🎯 Scanning ${tickers.length} new tickers to check if they qualify...`);
     
-    // Auto-trigger scan for only the new tickers
+    const scanner = new StockScanner();
+    const scanResult = await scanner.scanNewTickers(tickers);
+    
+    // Only add tickers that qualified (have fire_level > 0) to the tickers list
+    const qualifiedTickers = scanResult.stocks.map(s => s.ticker);
+    const added = await dbService.addTickers(qualifiedTickers);
+    
     if (added.length > 0) {
-      console.log(`🎯 ${added.length} new tickers added, scanning and adding to results...`);
+      console.log(`✅ Added ${added.length} qualifying tickers to ticker list (${tickers.length - added.length} rejected)`);
       
-      // Start scan in background for new tickers only
-      setTimeout(async () => {
-        try {
-          const scanner = new StockScanner();
-          
-          // Scan new tickers and add them to existing results
-          await scanner.scanNewTickers(added);
-          
-          // Auto-populate Hot Picks watchlist after new tickers are scanned
-          await autoPopulateHotPicks();
-          
-          console.log(`✅ Successfully scanned and added ${added.length} new tickers to results`);
-        } catch (error) {
-          console.error('❌ Failed to scan new tickers:', error);
-        }
-      }, 1000);
+      // Auto-populate Hot Picks watchlist after new tickers are added
+      await autoPopulateHotPicks();
+    } else {
+      console.log(`⚠️ No qualifying tickers found (all ${tickers.length} tickers had fire_level === 0)`);
     }
     
     res.json({ 
       success: true, 
-      added: added.length, 
+      added: added.length,
+      rejected: tickers.length - added.length,
       tickers: added,
-      message: added.length > 0 ? 'New tickers added and scanned successfully' : 'No new tickers to add'
+      message: added.length > 0 
+        ? `${added.length} qualifying tickers added (${tickers.length - added.length} rejected for no fire)` 
+        : 'No qualifying tickers found'
     });
   } catch (error) {
     console.error('Error adding tickers:', error);

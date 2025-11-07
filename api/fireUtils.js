@@ -56,7 +56,7 @@ function calculateFireLevel(stock) {
     return 1;
   }
   
-  return -1; // Below meaningful thresholds
+  return 0; // Below meaningful thresholds
 }/**
  * Get fire level description
  * @param {number} fireLevel - Fire level (-1, 1-5)

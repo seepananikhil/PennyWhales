@@ -311,19 +311,6 @@ const StockCard: React.FC<StockCardProps> = ({
             gap: "4px",
           }}
         >
-          {stock.fire_level_changed && (
-            <span
-              style={{
-                fontSize: "0.75rem",
-                color: stock.fire_level! > (stock.previous_fire_level || 0)
-                  ? "#28a745"
-                  : "#dc3545",
-                fontWeight: "bold",
-              }}
-            >
-              {stock.fire_level! > (stock.previous_fire_level || 0) ? "▲" : "▼"}
-            </span>
-          )}
           <span style={{ fontSize: "1rem" }}>
             {getFireEmoji(fireLevel)}
           </span>

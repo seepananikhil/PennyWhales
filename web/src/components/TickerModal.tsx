@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { theme } from '../theme';
+import api from '../api';
+import StockCard from './StockCard';
 
 interface TickerModalProps {
   isOpen: boolean;
@@ -19,8 +21,72 @@ const TickerModal: React.FC<TickerModalProps> = ({
   const [bulkText, setBulkText] = useState<string>('');
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
   const [replaceMode, setReplaceMode] = useState<boolean>(false);
+  const [scanning, setScanning] = useState<boolean>(false);
+  const [scannedStocks, setScannedStocks] = useState<any[]>([]);
+  const [scanErrors, setScanErrors] = useState<any[]>([]);
+  const [showResults, setShowResults] = useState<boolean>(false);
 
   if (!isOpen) return null;
+
+  const handleScan = async () => {
+    const newTickers = bulkText
+      .split(/[,\s\n]+/)
+      .map(ticker => ticker.trim().toUpperCase())
+      .filter(ticker => ticker.length > 0);
+    
+    if (newTickers.length === 0) return;
+
+    setScanning(true);
+    try {
+      const result = await api.scanMultipleStocks(newTickers);
+      if (result.success && result.stocks) {
+        setScannedStocks(result.stocks);
+        setScanErrors(result.errors || []);
+        setShowResults(true);
+      }
+    } catch (error) {
+      console.error('Error scanning tickers:', error);
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  const handleAddSelected = (tickersToAdd: string[]) => {
+    if (tickersToAdd.length === 0) return;
+
+    // Filter only fire stocks
+    const fireStocksToAdd = scannedStocks
+      .filter(s => tickersToAdd.includes(s.ticker) && s.fire_level > 0)
+      .map(s => s.ticker);
+
+    if (fireStocksToAdd.length === 0) return;
+
+    if (replaceMode) {
+      onSave(fireStocksToAdd);
+    } else {
+      onAddNew(fireStocksToAdd);
+    }
+
+    // Remove added stocks from scanned list
+    setScannedStocks(prev => prev.filter(s => !fireStocksToAdd.includes(s.ticker)));
+  };
+
+  const handleAddAllScanned = () => {
+    const fireStockTickers = scannedStocks
+      .filter(s => s.fire_level > 0)
+      .map(s => s.ticker);
+    handleAddSelected(fireStockTickers);
+  };
+
+  const handleIgnoreStock = (ticker: string) => {
+    setScannedStocks(prev => prev.filter(s => s.ticker !== ticker));
+  };
+
+  const handleBackToInput = () => {
+    setShowResults(false);
+    setScannedStocks([]);
+    setScanErrors([]);
+  };
 
   const handleSave = () => {
     const newTickers = bulkText
@@ -32,11 +98,27 @@ const TickerModal: React.FC<TickerModalProps> = ({
       // Show confirmation before replacing
       setShowConfirmation(true);
     } else {
-      // Add new tickers without replacing
-      onAddNew(newTickers);
-      setBulkText('');
-      onClose();
+      // Scan first instead of adding directly
+      handleScan();
     }
+  };
+
+  const handleAddDirectly = () => {
+    const newTickers = bulkText
+      .split(/[,\s\n]+/)
+      .map(ticker => ticker.trim().toUpperCase())
+      .filter(ticker => ticker.length > 0);
+    
+    if (newTickers.length === 0) return;
+
+    if (replaceMode) {
+      onSave(newTickers);
+    } else {
+      onAddNew(newTickers);
+    }
+    
+    setBulkText('');
+    onClose();
   };
 
   const handleConfirmReplace = () => {
@@ -62,9 +144,12 @@ const TickerModal: React.FC<TickerModalProps> = ({
   };
 
   const handleClose = () => {
-    if (!showConfirmation) {
+    if (!showConfirmation && !scanning) {
       setBulkText('');
       setReplaceMode(false);
+      setShowResults(false);
+      setScannedStocks([]);
+      setScanErrors([]);
       onClose();
     }
   };
@@ -91,13 +176,14 @@ const TickerModal: React.FC<TickerModalProps> = ({
         className="ticker-modal-content"
         style={{
           backgroundColor: theme.ui.surface,
-          borderRadius: theme.borderRadius.lg,
-          width: '90%',
-          maxWidth: '600px',
-          maxHeight: '80vh',
+          borderRadius: theme.borderRadius.md,
+          width: '95%',
+          height: '95vh',
           overflow: 'hidden',
           boxShadow: theme.ui.shadow.xl,
-          border: `1px solid ${theme.ui.border}`
+          border: `1px solid ${theme.ui.border}`,
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
         {/* Header */}
@@ -153,7 +239,12 @@ const TickerModal: React.FC<TickerModalProps> = ({
         </div>
 
         {/* Body */}
-        <div style={{ padding: theme.spacing.xl }}>
+        <div style={{ 
+          padding: theme.spacing.xl, 
+          flex: 1, 
+          overflow: 'auto',
+          height: 'calc(100vh - 80px)' // Account for header height
+        }}>
           {showConfirmation ? (
             // Confirmation Dialog
             <div style={{ textAlign: 'center' }}>
@@ -251,6 +342,156 @@ const TickerModal: React.FC<TickerModalProps> = ({
                 </button>
               </div>
             </div>
+          ) : showResults ? (
+            // Scanned Results View
+            <>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: theme.spacing.lg
+              }}>
+                <h3 style={{
+                  margin: 0,
+                  fontSize: theme.typography.fontSize.lg,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.ui.text.primary
+                }}>
+                  📊 Scanned Results ({scannedStocks.length})
+                </h3>
+                <button
+                  onClick={handleBackToInput}
+                  style={{
+                    padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                    border: `1px solid ${theme.ui.border}`,
+                    borderRadius: theme.borderRadius.sm,
+                    backgroundColor: 'transparent',
+                    color: theme.ui.text.secondary,
+                    cursor: 'pointer',
+                    fontSize: theme.typography.fontSize.xs,
+                    fontWeight: theme.typography.fontWeight.medium
+                  }}
+                >
+                  ← Back
+                </button>
+              </div>
+
+              {/* Error Messages */}
+              {scanErrors.length > 0 && (
+                <div style={{
+                  padding: theme.spacing.sm,
+                  backgroundColor: '#fff3cd',
+                  color: '#856404',
+                  borderRadius: theme.borderRadius.sm,
+                  marginBottom: theme.spacing.md,
+                  fontSize: theme.typography.fontSize.xs
+                }}>
+                  ⚠️ Could not scan {scanErrors.length} ticker(s): {scanErrors.map((e: any) => e.ticker).join(', ')}
+                </div>
+              )}
+
+              {/* Results Grid */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: theme.spacing.md,
+                marginBottom: theme.spacing.lg
+              }}>
+                {scannedStocks.map((stock) => (
+                  <div key={stock.ticker} style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.sm }}>
+                    <StockCard 
+                      stock={stock}
+                      isHolding={false}
+                      onToggleHolding={() => {}}
+                      onOpenChart={() => {}}
+                    />
+                    {/* Action Buttons */}
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: theme.spacing.sm
+                    }}>
+                      <button
+                        onClick={() => handleIgnoreStock(stock.ticker)}
+                        style={{
+                          padding: theme.spacing.sm,
+                          border: `1px solid ${theme.ui.border}`,
+                          borderRadius: theme.borderRadius.sm,
+                          backgroundColor: theme.ui.surface,
+                          color: theme.ui.text.primary,
+                          cursor: 'pointer',
+                          fontSize: theme.typography.fontSize.xs,
+                          fontWeight: theme.typography.fontWeight.medium
+                        }}
+                      >
+                        ❌ Ignore
+                      </button>
+                      <button
+                        onClick={() => handleAddSelected([stock.ticker])}
+                        disabled={stock.fire_level === 0}
+                        style={{
+                          padding: theme.spacing.sm,
+                          border: 'none',
+                          borderRadius: theme.borderRadius.sm,
+                          backgroundColor: stock.fire_level === 0 ? theme.ui.text.muted : theme.status.success,
+                          color: 'white',
+                          cursor: stock.fire_level === 0 ? 'not-allowed' : 'pointer',
+                          fontSize: theme.typography.fontSize.xs,
+                          fontWeight: theme.typography.fontWeight.semibold,
+                          opacity: stock.fire_level === 0 ? 0.5 : 1
+                        }}
+                      >
+                        ✅ Add
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom Actions */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: theme.spacing.sm,
+                paddingTop: theme.spacing.md,
+                borderTop: `1px solid ${theme.ui.border}`
+              }}>
+                <button
+                  onClick={handleClose}
+                  style={{
+                    padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+                    border: `1px solid ${theme.ui.border}`,
+                    borderRadius: theme.borderRadius.md,
+                    backgroundColor: 'transparent',
+                    color: theme.ui.text.secondary,
+                    cursor: 'pointer',
+                    fontSize: theme.typography.fontSize.sm,
+                    fontWeight: theme.typography.fontWeight.medium
+                  }}
+                >
+                  Close
+                </button>
+                <button
+                  onClick={handleAddAllScanned}
+                  disabled={scannedStocks.filter(s => s.fire_level > 0).length === 0}
+                  style={{
+                    padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+                    border: 'none',
+                    borderRadius: theme.borderRadius.md,
+                    backgroundColor: scannedStocks.filter(s => s.fire_level > 0).length === 0 
+                      ? theme.ui.text.muted 
+                      : theme.status.success,
+                    color: 'white',
+                    cursor: scannedStocks.filter(s => s.fire_level > 0).length === 0 ? 'not-allowed' : 'pointer',
+                    fontSize: theme.typography.fontSize.sm,
+                    fontWeight: theme.typography.fontWeight.semibold,
+                    opacity: scannedStocks.filter(s => s.fire_level > 0).length === 0 ? 0.6 : 1
+                  }}
+                >
+                  ✅ Add All Fire Stocks ({scannedStocks.filter(s => s.fire_level > 0).length})
+                </button>
+              </div>
+            </>
           ) : (
             // Main Form
             <>
@@ -264,7 +505,7 @@ const TickerModal: React.FC<TickerModalProps> = ({
               >
                 {replaceMode 
                   ? 'Enter new tickers to completely replace your current list. You will be asked to confirm before replacing.'
-                  : 'Enter new tickers to add to your existing list. Fire levels will be automatically analyzed.'
+                  : 'Enter tickers to add to your list. Click "Scan Stocks" to preview BlackRock & Vanguard holdings and fire levels before adding, or click "Add New" to add directly without scanning.'
                 }
               </p>
               
@@ -353,13 +594,13 @@ const TickerModal: React.FC<TickerModalProps> = ({
                 </button>
                 
                 <button
-                  onClick={handleSave}
+                  onClick={handleAddDirectly}
                   disabled={!bulkText.trim()}
                   style={{
                     padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
                     border: 'none',
                     borderRadius: theme.borderRadius.md,
-                    backgroundColor: !bulkText.trim() 
+                    backgroundColor: !bulkText.trim()
                       ? theme.ui.text.muted 
                       : replaceMode 
                         ? theme.status.warning 
@@ -386,6 +627,40 @@ const TickerModal: React.FC<TickerModalProps> = ({
                   }}
                 >
                   {replaceMode ? '🔄 Replace All' : '➕ Add New'}
+                </button>
+                
+                <button
+                  onClick={handleSave}
+                  disabled={!bulkText.trim() || scanning}
+                  style={{
+                    padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+                    border: 'none',
+                    borderRadius: theme.borderRadius.md,
+                    backgroundColor: !bulkText.trim() || scanning
+                      ? theme.ui.text.muted 
+                      : theme.status.info,
+                    color: 'white',
+                    cursor: !bulkText.trim() || scanning ? 'not-allowed' : 'pointer',
+                    fontSize: theme.typography.fontSize.sm,
+                    fontWeight: theme.typography.fontWeight.semibold,
+                    transition: `all ${theme.transition.normal}`,
+                    boxShadow: theme.ui.shadow.sm,
+                    opacity: !bulkText.trim() || scanning ? 0.6 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    if (bulkText.trim() && !scanning) {
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (bulkText.trim() && !scanning) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+                    }
+                  }}
+                >
+                  {scanning ? '⏳ Scanning...' : '🔍 Scan Stocks'}
                 </button>
               </div>
             </>
