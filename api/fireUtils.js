@@ -5,7 +5,8 @@
 
 /**
  * Calculate fire level for a stock with enhanced granular levels
- * @param {Object} stock - Stock object with blackrock_pct and vanguard_pct
+ * Uses both percentage holdings AND market values for stable weightage
+ * @param {Object} stock - Stock object with blackrock_pct, vanguard_pct, blackrock_market_value, vanguard_market_value
  * @returns {number} Fire level (-1, 1-5, where -1 = zero/minimal presence)
  */
 function calculateFireLevel(stock) {
@@ -13,50 +14,50 @@ function calculateFireLevel(stock) {
   const vanguardPct = stock.vanguard_pct || 0;
   const combinedPct = blackrockPct + vanguardPct;
   
-  // Fire Level -1 (Zero/Minimal Presence ❄️): Absent or below meaningful thresholds
-  if (blackrockPct < 1.0 && vanguardPct < 1.0) {
-    return -1;
-  }
+  // Market values in millions (converted from API thousands)
+  const blackrockValue = stock.blackrock_market_value || 0;
+  const vanguardValue = stock.vanguard_market_value || 0;
+  const combinedValue = blackrockValue + vanguardValue;
   
-  // Fire Level 5 (Inferno 🔥🔥🔥🔥🔥): Extreme institutional confidence
-  if ((blackrockPct >= 10 && vanguardPct >= 10) ||   // Both funds ≥10%
-      blackrockPct >= 10 || vanguardPct >= 10 ||     // OR one fund ≥10%
-      combinedPct >= 15) {                           // OR combined ≥15%
+  // Simple tiered approach - check elite conditions first, then fall through
+  
+  // FIRE LEVEL 5 - Elite institutional confidence
+  if (combinedValue >= 50 ||                    // Massive investment ($50M+)
+      combinedPct >= 15 ||                      // Elite percentage (15%+)
+      (blackrockPct >= 10 || vanguardPct >= 10)) { // Major fund strong conviction
     return 5;
   }
   
-  // Fire Level 4 (Blazing 🔥🔥🔥🔥): Very high confidence
-  if ((blackrockPct >= 7 && vanguardPct >= 7) ||     // Both funds ≥7%
-      blackrockPct >= 8 || vanguardPct >= 8 ||       // OR one fund ≥8%
-      combinedPct >= 12) {                           // OR combined ≥12%
+  // FIRE LEVEL 4 - Very high institutional confidence  
+  if (combinedValue >= 30 ||                    // Large investment ($30M+)
+      combinedPct >= 10 ||                      // High percentage (10%+)
+      (blackrockPct >= 7 || vanguardPct >= 7)) {    // Single fund strong commitment
     return 4;
   }
   
-  // Fire Level 3 (Hot 🔥🔥🔥): High confidence
-  if ((blackrockPct >= 5 && vanguardPct >= 5) ||     // Both funds ≥5%
-      blackrockPct >= 6 || vanguardPct >= 6 ||       // OR one fund ≥6%
-      combinedPct >= 9) {                            // OR combined ≥9%
+  // FIRE LEVEL 3 - High institutional confidence
+  if (combinedValue >= 15 ||                    // Substantial investment ($15M+)
+      combinedPct >= 7 ||                       // Good percentage (7%+)
+      (blackrockPct >= 5 || vanguardPct >= 5)) {    // Single fund good commitment
     return 3;
   }
   
-  // Fire Level 2 (Strong 🔥🔥): Strong institutional interest
-  if ((blackrockPct >= 3 && vanguardPct >= 3) ||     // Both funds ≥3%
-      blackrockPct >= 4 || vanguardPct >= 4 ||       // OR one fund ≥4%
-      combinedPct >= 6) {                            // OR combined ≥6%
+  // FIRE LEVEL 2 - Good institutional interest
+  if (combinedValue >= 5 ||                     // Decent investment ($5M+)
+      combinedPct >= 4 ||                       // Fair percentage (4%+)
+      (blackrockPct >= 3 || vanguardPct >= 3)) {    // Single fund fair commitment
     return 2;
   }
   
-  // Fire Level 1 (Warm 🔥): Meaningful but moderate interest
-  if ((blackrockPct >= 2 && vanguardPct >= 2) ||     // Both funds ≥2%
-      blackrockPct >= 2 || vanguardPct >= 2 ||       // OR one fund ≥2%
-      combinedPct >= 3) {                            // OR combined ≥3%
+  // FIRE LEVEL 1 - Minimal but meaningful presence
+  if (combinedValue >= 1 ||                     // Some investment ($1M+)
+      combinedPct >= 2 ||                       // Basic percentage (2%+)
+      (blackrockPct >= 1.5 || vanguardPct >= 1.5)) { // Single fund basic commitment
     return 1;
   }
   
-  return -1; // Below Fire Level 1 thresholds - treat as minimal presence
-}
-
-/**
+  return -1; // Below meaningful thresholds
+}/**
  * Get fire level description
  * @param {number} fireLevel - Fire level (-1, 1-5)
  * @returns {string} Human readable description

@@ -378,8 +378,34 @@ const StockCard: React.FC<StockCardProps> = ({
           justifyContent: "space-between",
         }}
       >
-        <span>BR: {stock.blackrock_pct.toFixed(1)}%</span>
-        <span>VG: {stock.vanguard_pct.toFixed(1)}%</span>
+        <span>
+          BR: {stock.blackrock_pct.toFixed(1)}%
+          {stock.blackrock_market_value && stock.blackrock_market_value > 0 && (
+            <span style={{ 
+              fontSize: theme.typography.fontSize.xs, 
+              color: "#888", 
+              fontWeight: "normal" 
+            }}
+            > (${stock.blackrock_market_value >= 1000 
+                ? `${(stock.blackrock_market_value / 1000).toFixed(1)}B` 
+                : `${stock.blackrock_market_value.toFixed(1)}M`})
+            </span>
+          )}
+        </span>
+        <span>
+          VG: {stock.vanguard_pct.toFixed(1)}%
+          {stock.vanguard_market_value && stock.vanguard_market_value > 0 && (
+            <span style={{ 
+              fontSize: theme.typography.fontSize.xs, 
+              color: "#888", 
+              fontWeight: "normal" 
+            }}
+            > (${stock.vanguard_market_value >= 1000 
+                ? `${(stock.vanguard_market_value / 1000).toFixed(1)}B` 
+                : `${stock.vanguard_market_value.toFixed(1)}M`})
+            </span>
+          )}
+        </span>
       </div>
     </div>
     </>

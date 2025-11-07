@@ -63,11 +63,18 @@ class StockScanner {
   // Parse BlackRock and Vanguard holdings
   parseHoldings(data) {
     if (!data?.data?.holdingsTransactions?.table?.rows) {
-      return { blackrock: 0, vanguard: 0 };
+      return { 
+        blackrock: 0, 
+        vanguard: 0,
+        blackrockMarketValue: 0,
+        vanguardMarketValue: 0
+      };
     }
 
     let blackrockPct = 0;
     let vanguardPct = 0;
+    let blackrockMarketValue = 0;
+    let vanguardMarketValue = 0;
 
     try {
       const holdings = data.data.holdingsTransactions.table.rows;
@@ -88,14 +95,27 @@ class StockScanner {
         const ownerName = holding.ownerName.toUpperCase();
         const sharesHeldStr = holding.sharesHeld?.replace(/[,\s]/g, '') || '0';
         const sharesHeld = parseFloat(sharesHeldStr) || 0;
+        
+        // Parse market value (remove $ and commas, convert to number)
+        // Note: marketValue from API is in thousands of dollars
+        // Convert to millions for easier filtering and display
+        const marketValueStr = holding.marketValue?.replace(/[$,\s]/g, '') || '0';
+        const marketValueThousands = parseFloat(marketValueStr) || 0;
+        const marketValue = marketValueThousands / 1000; // Convert thousands to millions
 
         if (totalShares > 0) {
           const pctHeld = (sharesHeld / totalShares) * 100;
 
           if (ownerName.includes('BLACKROCK') || ownerName.includes('BLACK ROCK')) {
-            blackrockPct = Math.max(blackrockPct, pctHeld);
+            if (pctHeld > blackrockPct) {
+              blackrockPct = pctHeld;
+              blackrockMarketValue = marketValue;
+            }
           } else if (ownerName.includes('VANGUARD')) {
-            vanguardPct = Math.max(vanguardPct, pctHeld);
+            if (pctHeld > vanguardPct) {
+              vanguardPct = pctHeld;
+              vanguardMarketValue = marketValue;
+            }
           }
         }
       }
@@ -103,7 +123,12 @@ class StockScanner {
       console.error('Error parsing holdings:', error);
     }
 
-    return { blackrock: blackrockPct, vanguard: vanguardPct };
+    return { 
+      blackrock: blackrockPct, 
+      vanguard: vanguardPct,
+      blackrockMarketValue: blackrockMarketValue,
+      vanguardMarketValue: vanguardMarketValue
+    };
   }
 
   // Analyze a single ticker
@@ -121,7 +146,7 @@ class StockScanner {
         return null;
       }
 
-      const { blackrock, vanguard } = this.parseHoldings(holdingsData);
+      const { blackrock, vanguard, blackrockMarketValue, vanguardMarketValue } = this.parseHoldings(holdingsData);
 
       // Always return the stock data regardless of holding percentages
       // The fire level calculation will handle the rating (including 0 for no fire)
@@ -130,7 +155,9 @@ class StockScanner {
         price: Math.round(priceData.price * 100) / 100, // Round to 2 decimals
         previous_close: Math.round(priceData.previousClose * 100) / 100, // Round to 2 decimals
         blackrock_pct: blackrock,
-        vanguard_pct: vanguard
+        vanguard_pct: vanguard,
+        blackrock_market_value: blackrockMarketValue, // Store as number (in millions)
+        vanguard_market_value: vanguardMarketValue     // Store as number (in millions)
       };
     } catch (error) {
       console.error(`Error analyzing ${ticker}:`, error);

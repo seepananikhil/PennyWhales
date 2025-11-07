@@ -29,6 +29,7 @@ const Dashboard: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>('combined-desc');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedPriceFilter, setSelectedPriceFilter] = useState<string | null>(null);
+  const [selectedMarketValueFilter, setSelectedMarketValueFilter] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -332,6 +333,32 @@ const Dashboard: React.FC = () => {
       });
     }
     
+    // Apply market value filter if selected
+    if (selectedMarketValueFilter) {
+      stocks = stocks.filter(ticker => {
+        const stock = stockData.get(ticker);
+        if (!stock) return false;
+        
+        // Calculate combined market value in millions
+        const blackrockValue = stock.blackrock_market_value || 0;
+        const vanguardValue = stock.vanguard_market_value || 0;
+        const combinedValue = blackrockValue + vanguardValue;
+        
+        switch (selectedMarketValueFilter) {
+          case 'under10':
+            return combinedValue < 10;
+          case '10to50':
+            return combinedValue >= 10 && combinedValue < 50;
+          case '50to100':
+            return combinedValue >= 50 && combinedValue < 100;
+          case 'over100':
+            return combinedValue >= 100;
+          default:
+            return true;
+        }
+      });
+    }
+    
     // Filter by search query if provided
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
@@ -395,6 +422,16 @@ const Dashboard: React.FC = () => {
           const priceChangeAscA = livePriceData.get(a)?.priceChange || 0;
           const priceChangeAscB = livePriceData.get(b)?.priceChange || 0;
           return priceChangeAscA - priceChangeAscB;
+        case 'market-value-desc':
+          // Sort by combined market value (highest first)
+          const marketValueA = (stockA.blackrock_market_value || 0) + (stockA.vanguard_market_value || 0);
+          const marketValueB = (stockB.blackrock_market_value || 0) + (stockB.vanguard_market_value || 0);
+          return marketValueB - marketValueA;
+        case 'market-value-asc':
+          // Sort by combined market value (lowest first)
+          const marketValueAscA = (stockA.blackrock_market_value || 0) + (stockA.vanguard_market_value || 0);
+          const marketValueAscB = (stockB.blackrock_market_value || 0) + (stockB.vanguard_market_value || 0);
+          return marketValueAscA - marketValueAscB;
         default:
           // Default to combined VG + BR (highest first)
           const defaultA = stockA.vanguard_pct + stockA.blackrock_pct;
@@ -506,6 +543,8 @@ const Dashboard: React.FC = () => {
               <option value="price-asc">💰 Price (Low to High)</option>
               <option value="price-change-desc">📈 Price Change % (High to Low)</option>
               <option value="price-change-asc">📉 Price Change % (Low to High)</option>
+              <option value="market-value-desc">💎 Market Value (High to Low)</option>
+              <option value="market-value-asc">💎 Market Value (Low to High)</option>
             </select>
             <button
               onClick={() => setShowModal(true)}
@@ -1044,6 +1083,170 @@ const Dashboard: React.FC = () => {
             }}
           >
             🏆 Over $2
+          </button>
+        </div>
+
+        {/* Market Value Filter Row */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: theme.spacing.md,
+          marginBottom: theme.spacing.md
+        }}>
+          <button
+            onClick={() => {
+              if (selectedMarketValueFilter === 'under10') {
+                setSelectedMarketValueFilter(null);
+              } else {
+                setSelectedMarketValueFilter('under10');
+              }
+            }}
+            style={{
+              padding: theme.spacing.md,
+              backgroundColor: selectedMarketValueFilter === 'under10' ? '#17a2b8' : theme.ui.surface,
+              color: selectedMarketValueFilter === 'under10' ? 'white' : '#17a2b8',
+              border: `2px solid #17a2b8`,
+              borderRadius: theme.borderRadius.md,
+              textAlign: 'center',
+              boxShadow: selectedMarketValueFilter === 'under10' ? '0 4px 8px rgba(23, 162, 184, 0.3)' : theme.ui.shadow.sm,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: selectedMarketValueFilter === 'under10' ? 'translateY(-1px)' : 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}
+            onMouseEnter={(e) => {
+              if (selectedMarketValueFilter !== 'under10') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(23, 162, 184, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (selectedMarketValueFilter !== 'under10') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            💎 Under $10M
+          </button>
+
+          <button
+            onClick={() => {
+              if (selectedMarketValueFilter === '10to50') {
+                setSelectedMarketValueFilter(null);
+              } else {
+                setSelectedMarketValueFilter('10to50');
+              }
+            }}
+            style={{
+              padding: theme.spacing.md,
+              backgroundColor: selectedMarketValueFilter === '10to50' ? '#20c997' : theme.ui.surface,
+              color: selectedMarketValueFilter === '10to50' ? 'white' : '#20c997',
+              border: `2px solid #20c997`,
+              borderRadius: theme.borderRadius.md,
+              textAlign: 'center',
+              boxShadow: selectedMarketValueFilter === '10to50' ? '0 4px 8px rgba(32, 201, 151, 0.3)' : theme.ui.shadow.sm,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: selectedMarketValueFilter === '10to50' ? 'translateY(-1px)' : 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}
+            onMouseEnter={(e) => {
+              if (selectedMarketValueFilter !== '10to50') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(32, 201, 151, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (selectedMarketValueFilter !== '10to50') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            🚀 $10M - $50M
+          </button>
+
+          <button
+            onClick={() => {
+              if (selectedMarketValueFilter === '50to100') {
+                setSelectedMarketValueFilter(null);
+              } else {
+                setSelectedMarketValueFilter('50to100');
+              }
+            }}
+            style={{
+              padding: theme.spacing.md,
+              backgroundColor: selectedMarketValueFilter === '50to100' ? '#e83e8c' : theme.ui.surface,
+              color: selectedMarketValueFilter === '50to100' ? 'white' : '#e83e8c',
+              border: `2px solid #e83e8c`,
+              borderRadius: theme.borderRadius.md,
+              textAlign: 'center',
+              boxShadow: selectedMarketValueFilter === '50to100' ? '0 4px 8px rgba(232, 62, 140, 0.3)' : theme.ui.shadow.sm,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: selectedMarketValueFilter === '50to100' ? 'translateY(-1px)' : 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}
+            onMouseEnter={(e) => {
+              if (selectedMarketValueFilter !== '50to100') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(232, 62, 140, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (selectedMarketValueFilter !== '50to100') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            💰 $50M - $100M
+          </button>
+
+          <button
+            onClick={() => {
+              if (selectedMarketValueFilter === 'over100') {
+                setSelectedMarketValueFilter(null);
+              } else {
+                setSelectedMarketValueFilter('over100');
+              }
+            }}
+            style={{
+              padding: theme.spacing.md,
+              backgroundColor: selectedMarketValueFilter === 'over100' ? '#6610f2' : theme.ui.surface,
+              color: selectedMarketValueFilter === 'over100' ? 'white' : '#6610f2',
+              border: `2px solid #6610f2`,
+              borderRadius: theme.borderRadius.md,
+              textAlign: 'center',
+              boxShadow: selectedMarketValueFilter === 'over100' ? '0 4px 8px rgba(102, 16, 242, 0.3)' : theme.ui.shadow.sm,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: selectedMarketValueFilter === 'over100' ? 'translateY(-1px)' : 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}
+            onMouseEnter={(e) => {
+              if (selectedMarketValueFilter !== 'over100') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(102, 16, 242, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (selectedMarketValueFilter !== 'over100') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            🏆 Over $100M
           </button>
         </div>
       </div>
