@@ -1,6 +1,7 @@
 export interface Stock {
   ticker: string;
   price: number;
+  previous_close?: number; // Previous closing price for change tracking
   blackrock_pct: number;
   vanguard_pct: number;
   blackrock_market_value?: number; // Market value in millions (numeric)

@@ -35,8 +35,10 @@ const Dashboard: React.FC = () => {
     priceFilters: new Set(),
     marketValueFilters: new Set()
   });
-  const [sortBy, setSortBy] = useState<string>('combined-desc');
+  const [sortBy, setSortBy] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [topGainers, setTopGainers] = useState<string[]>([]);
+  const [topLosers, setTopLosers] = useState<string[]>([]);
 
   useEffect(() => {
     loadData();
@@ -49,7 +51,17 @@ const Dashboard: React.FC = () => {
   }, [activeWatchlistId]);
 
   const loadData = async () => {
-    await Promise.all([loadTickers(), loadStockData(), loadHoldings(), loadWatchlists()]);
+    await Promise.all([loadTickers(), loadStockData(), loadHoldings(), loadWatchlists(), loadTopMovers()]);
+  };
+
+  const loadTopMovers = async () => {
+    try {
+      const { gainers, losers } = await api.getTopMovers(20);
+      setTopGainers(gainers.map(g => g.ticker));
+      setTopLosers(losers.map(l => l.ticker));
+    } catch (err) {
+      console.error('Error loading top movers:', err);
+    }
   };
 
   const loadTickers = async () => {
@@ -313,13 +325,18 @@ const Dashboard: React.FC = () => {
         newFilters.marketValueFilters = newMarketValueFilters;
       }
       
-      // Auto-set activeFilter based on whether we have any filters
-      const hasFilters = newFilters.fireLevels.size > 0 || 
-                        newFilters.priceFilters.size > 0 || 
-                        newFilters.marketValueFilters.size > 0;
-      setActiveFilter(hasFilters ? 'multifilter' : 'all');
-      
       return newFilters;
+    });
+    
+    // Auto-set activeFilter based on whether we have any filters
+    // Check the updated state by calculating hasFilters separately
+    setActiveFilter(prev => {
+      // If currently on gainers/losers, switch to multifilter when toggling
+      const newFiltersSize = (type === 'fire' ? (multiFilters.fireLevels.has(value as number) ? multiFilters.fireLevels.size - 1 : multiFilters.fireLevels.size + 1) : multiFilters.fireLevels.size) +
+                             (type === 'price' ? (multiFilters.priceFilters.has(value as string) ? multiFilters.priceFilters.size - 1 : multiFilters.priceFilters.size + 1) : multiFilters.priceFilters.size) +
+                             (type === 'marketValue' ? (multiFilters.marketValueFilters.has(value as string) ? multiFilters.marketValueFilters.size - 1 : multiFilters.marketValueFilters.size + 1) : multiFilters.marketValueFilters.size);
+      
+      return newFiltersSize > 0 ? 'multifilter' : 'all';
     });
   };
 
@@ -378,6 +395,12 @@ const Dashboard: React.FC = () => {
         break;
       case 'holdings':
         stocks = holdingTickers;
+        break;
+      case 'gainers':
+        stocks = topGainers.filter(ticker => tickersWithData.includes(ticker));
+        break;
+      case 'losers':
+        stocks = topLosers.filter(ticker => tickersWithData.includes(ticker));
         break;
       default:
         stocks = tickersWithData;
@@ -442,6 +465,9 @@ const Dashboard: React.FC = () => {
     
     // Sort stocks based on selected sort option
     return stocks.sort((a, b) => {
+      // If no sort selected, maintain original order
+      if (!sortBy) return 0;
+      
       const stockA = stockData.get(a);
       const stockB = stockData.get(b);
       
@@ -620,6 +646,7 @@ const Dashboard: React.FC = () => {
                 fontFamily: theme.typography.fontFamily
               }}
             >
+              <option value="">🔢 No Sort</option>
               <option value="combined-desc">🔥 VG + BR % (High to Low)</option>
               <option value="combined-asc">🔥 VG + BR % (Low to High)</option>
               <option value="vg-desc">🔄 VG % (High to Low)</option>
@@ -1133,6 +1160,98 @@ const Dashboard: React.FC = () => {
             }}
           >
             🏆 Over $2
+          </button>
+
+          <button
+            onClick={() => {
+              // Clear multiFilters when switching to gainers
+              setMultiFilters({
+                fireLevels: new Set(),
+                priceFilters: new Set(),
+                marketValueFilters: new Set()
+              });
+              
+              if (activeFilter === 'gainers') {
+                setActiveFilter('all');
+              } else {
+                setActiveFilter('gainers');
+              }
+            }}
+            style={{
+              padding: theme.spacing.md,
+              backgroundColor: activeFilter === 'gainers' ? '#28a745' : theme.ui.surface,
+              color: activeFilter === 'gainers' ? 'white' : '#28a745',
+              border: `2px solid #28a745`,
+              borderRadius: theme.borderRadius.md,
+              textAlign: 'center',
+              boxShadow: activeFilter === 'gainers' ? '0 4px 8px rgba(40, 167, 69, 0.3)' : theme.ui.shadow.sm,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'gainers' ? 'translateY(-1px)' : 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'gainers') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(40, 167, 69, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'gainers') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            📈 Top Gainers
+          </button>
+
+          <button
+            onClick={() => {
+              // Clear multiFilters when switching to losers
+              setMultiFilters({
+                fireLevels: new Set(),
+                priceFilters: new Set(),
+                marketValueFilters: new Set()
+              });
+              
+              if (activeFilter === 'losers') {
+                setActiveFilter('all');
+              } else {
+                setActiveFilter('losers');
+              }
+            }}
+            style={{
+              padding: theme.spacing.md,
+              backgroundColor: activeFilter === 'losers' ? '#dc3545' : theme.ui.surface,
+              color: activeFilter === 'losers' ? 'white' : '#dc3545',
+              border: `2px solid #dc3545`,
+              borderRadius: theme.borderRadius.md,
+              textAlign: 'center',
+              boxShadow: activeFilter === 'losers' ? '0 4px 8px rgba(220, 53, 69, 0.3)' : theme.ui.shadow.sm,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'losers' ? 'translateY(-1px)' : 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'losers') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'losers') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            📉 Top Losers
           </button>
         </div>
 

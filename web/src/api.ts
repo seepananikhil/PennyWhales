@@ -125,6 +125,87 @@ export const api = {
   }> => {
     const response = await axios.get(`${API_BASE}/api/price/${ticker}`);
     return response.data;
+  },
+
+  // Top Gainers and Losers
+  getTopGainers: async (limit: number = 10, minPrice?: number, maxPrice?: number): Promise<{
+    gainers: Array<{
+      ticker: string;
+      price: number;
+      previousClose: number;
+      priceChange: number;
+      priceChangePercent: number;
+      fireLevel: number;
+      blackrockPct: number;
+      vanguardPct: number;
+    }>;
+    count: number;
+    timestamp: string;
+  }> => {
+    const params = new URLSearchParams();
+    params.append('limit', limit.toString());
+    if (minPrice !== undefined) params.append('minPrice', minPrice.toString());
+    if (maxPrice !== undefined) params.append('maxPrice', maxPrice.toString());
+    
+    const response = await axios.get(`${API_BASE}/api/movers/gainers?${params.toString()}`);
+    return response.data;
+  },
+
+  getTopLosers: async (limit: number = 10, minPrice?: number, maxPrice?: number): Promise<{
+    losers: Array<{
+      ticker: string;
+      price: number;
+      previousClose: number;
+      priceChange: number;
+      priceChangePercent: number;
+      fireLevel: number;
+      blackrockPct: number;
+      vanguardPct: number;
+    }>;
+    count: number;
+    timestamp: string;
+  }> => {
+    const params = new URLSearchParams();
+    params.append('limit', limit.toString());
+    if (minPrice !== undefined) params.append('minPrice', minPrice.toString());
+    if (maxPrice !== undefined) params.append('maxPrice', maxPrice.toString());
+    
+    const response = await axios.get(`${API_BASE}/api/movers/losers?${params.toString()}`);
+    return response.data;
+  },
+
+  getTopMovers: async (limit: number = 10, minPrice?: number, maxPrice?: number): Promise<{
+    gainers: Array<{
+      ticker: string;
+      price: number;
+      previousClose: number;
+      priceChange: number;
+      priceChangePercent: number;
+      fireLevel: number;
+      blackrockPct: number;
+      vanguardPct: number;
+    }>;
+    losers: Array<{
+      ticker: string;
+      price: number;
+      previousClose: number;
+      priceChange: number;
+      priceChangePercent: number;
+      fireLevel: number;
+      blackrockPct: number;
+      vanguardPct: number;
+    }>;
+    gainersCount: number;
+    losersCount: number;
+    timestamp: string;
+  }> => {
+    const params = new URLSearchParams();
+    params.append('limit', limit.toString());
+    if (minPrice !== undefined) params.append('minPrice', minPrice.toString());
+    if (maxPrice !== undefined) params.append('maxPrice', maxPrice.toString());
+    
+    const response = await axios.get(`${API_BASE}/api/movers/all?${params.toString()}`);
+    return response.data;
   }
 };
 

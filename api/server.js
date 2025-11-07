@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const cron = require('node-cron');
 const StockScanner = require('./stockScanner');
 const dbService = require('./database');
 const { getStockPriceData } = require('./priceUtils');
@@ -27,6 +28,113 @@ let scanState = {
 };
 
 let currentScanner = null;
+
+// Auto-populate watchlist with hot picks (fire 3-5, price <= $1.20)
+async function autoPopulateHotPicks() {
+  try {
+    console.log('🔥 Auto-populating Hot Picks watchlist...');
+    
+    const scanResults = await dbService.getScanResults();
+    if (!scanResults || !scanResults.stocks) {
+      console.log('⚠️ No scan results found for auto-population');
+      return;
+    }
+
+    // Filter for fire stocks (3-5) with price <= $1.20
+    const hotPicks = scanResults.stocks.filter(stock => 
+      stock.fire_level >= 3 && 
+      stock.fire_level <= 5 && 
+      stock.price <= 1.20
+    );
+
+    if (hotPicks.length === 0) {
+      console.log('📊 No stocks match hot picks criteria (fire 3-5, price <= $1.20)');
+      return;
+    }
+
+    const hotPickTickers = hotPicks.map(s => s.ticker);
+    console.log(`🎯 Found ${hotPickTickers.length} hot picks: ${hotPickTickers.join(', ')}`);
+
+    // Check if "Hot Picks" watchlist exists
+    const watchlists = await dbService.getWatchlists();
+    let hotPicksWatchlist = watchlists.find(w => w.name === 'Hot Picks');
+
+    if (!hotPicksWatchlist) {
+      // Create new Hot Picks watchlist
+      hotPicksWatchlist = await dbService.createWatchlist('Hot Picks', hotPickTickers);
+      console.log(`✅ Created Hot Picks watchlist with ${hotPickTickers.length} stocks`);
+    } else {
+      // Update existing Hot Picks watchlist
+      await dbService.updateWatchlist(hotPicksWatchlist.id, { stocks: hotPickTickers });
+      console.log(`✅ Updated Hot Picks watchlist with ${hotPickTickers.length} stocks`);
+    }
+
+    return { success: true, count: hotPickTickers.length };
+  } catch (error) {
+    console.error('❌ Error auto-populating Hot Picks:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Run daily scan at 6am IST
+async function runDailyScan() {
+  if (scanState.scanning) {
+    console.log('⏭️ Scan already in progress, skipping scheduled scan');
+    return;
+  }
+
+  try {
+    console.log('⏰ Starting scheduled daily scan at 6am IST...');
+    scanState.scanning = true;
+    scanState.error = null;
+    scanState.progress = { current: 0, total: 0, percentage: 0 };
+
+    // Create new scanner instance
+    currentScanner = new StockScanner();
+    
+    // Set up progress callback
+    currentScanner.onProgress = (progress) => {
+      scanState.progress = progress;
+      console.log(`Daily scan progress: ${progress.current}/${progress.total} (${progress.percentage}%)`);
+    };
+
+    // Get previous fire stocks and run scan on them
+    const previousResults = await dbService.getScanResults();
+    const previousFireStocks = previousResults?.stocks?.filter(s => s.fire_level && s.fire_level > 0) || [];
+    
+    if (previousFireStocks.length === 0) {
+      console.log('⚠️ No previous fire stocks found. Running full scan instead...');
+      await currentScanner.scan();
+    } else {
+      const fireStockTickers = previousFireStocks.map(s => s.ticker);
+      console.log(`🔥 Scanning ${fireStockTickers.length} fire stocks`);
+      await currentScanner.scanTickers(fireStockTickers, previousFireStocks);
+    }
+
+    scanState.scanning = false;
+    scanState.last_scan = new Date().toISOString();
+    
+    // Auto-populate Hot Picks watchlist after scan completes
+    await autoPopulateHotPicks();
+    
+    console.log('✅ Scheduled daily scan completed successfully');
+  } catch (error) {
+    scanState.scanning = false;
+    scanState.error = error.message;
+    console.error('❌ Scheduled daily scan failed:', error);
+  }
+}
+
+// Schedule daily scan at 6:00 AM IST (which is 0:30 UTC)
+// IST is UTC+5:30, so 6:00 AM IST = 0:30 AM UTC
+cron.schedule('30 0 * * *', () => {
+  console.log('⏰ Cron triggered: Running scheduled daily scan at 6:00 AM IST');
+  runDailyScan();
+}, {
+  timezone: "UTC"
+});
+
+console.log('⏰ Scheduled daily scan at 6:00 AM IST (0:30 AM UTC)');
 
 // API Routes
 
@@ -73,6 +181,10 @@ app.post('/api/scan/start', async (req, res) => {
         const results = await currentScanner.scanTickers(fireStockTickers, previousFireStocks);
         scanState.scanning = false;
         scanState.last_scan = new Date().toISOString();
+        
+        // Auto-populate Hot Picks watchlist after scan completes
+        await autoPopulateHotPicks();
+        
         console.log('✅ Fire stocks scan completed successfully');
       } catch (error) {
         scanState.scanning = false;
@@ -88,6 +200,10 @@ app.post('/api/scan/start', async (req, res) => {
         const results = await currentScanner.scan();
         scanState.scanning = false;
         scanState.last_scan = new Date().toISOString();
+        
+        // Auto-populate Hot Picks watchlist after scan completes
+        await autoPopulateHotPicks();
+        
         console.log('✅ Full scan completed successfully');
       } catch (error) {
         scanState.scanning = false;
@@ -158,6 +274,73 @@ app.get('/api/price/:ticker', async (req, res) => {
   } catch (error) {
     console.error(`Error fetching price for ${req.params.ticker}:`, error);
     res.status(500).json({ error: 'Failed to fetch price data' });
+  }
+});
+
+app.get('/api/movers/all', async (req, res) => {
+  try {
+    const { limit = 10, minPrice, maxPrice } = req.query;
+    const results = await dbService.getScanResults();
+    
+    if (!results || !results.stocks) {
+      return res.json({ gainers: [], losers: [], count: 0 });
+    }
+    
+    // Filter stocks with valid price data and only fire stocks (fire_level > 0)
+    let stocks = results.stocks.filter(stock => 
+      stock.price && 
+      stock.previous_close && 
+      stock.previous_close > 0 &&
+      stock.fire_level && 
+      stock.fire_level > 0
+    );
+    
+    // Apply price filters if provided
+    if (minPrice) {
+      stocks = stocks.filter(stock => stock.price >= parseFloat(minPrice));
+    }
+    if (maxPrice) {
+      stocks = stocks.filter(stock => stock.price <= parseFloat(maxPrice));
+    }
+    
+    // Calculate price change percentage
+    const stocksWithChange = stocks.map(stock => {
+      const priceChange = stock.price - stock.previous_close;
+      const priceChangePercent = (priceChange / stock.previous_close) * 100;
+      return {
+        ticker: stock.ticker,
+        price: stock.price,
+        previousClose: stock.previous_close,
+        priceChange: priceChange,
+        priceChangePercent: priceChangePercent,
+        fireLevel: stock.fire_level || 0,
+        blackrockPct: stock.blackrock_pct || 0,
+        vanguardPct: stock.vanguard_pct || 0
+      };
+    });
+    
+    // Get top gainers - sorted by highest percentage gain
+    const gainers = stocksWithChange
+      .filter(stock => stock.priceChangePercent > 0)
+      .sort((a, b) => b.priceChangePercent - a.priceChangePercent) // Highest gains first
+      .slice(0, parseInt(limit));
+    
+    // Get top losers - sorted by biggest percentage loss
+    const losers = stocksWithChange
+      .filter(stock => stock.priceChangePercent < 0)
+      .sort((a, b) => a.priceChangePercent - b.priceChangePercent) // Most negative first
+      .slice(0, parseInt(limit));
+    
+    res.json({ 
+      gainers, 
+      losers,
+      gainersCount: gainers.length,
+      losersCount: losers.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error getting movers:', error);
+    res.status(500).json({ error: 'Failed to get movers' });
   }
 });
 
@@ -254,6 +437,10 @@ app.patch('/api/tickers', async (req, res) => {
           
           // Scan new tickers and add them to existing results
           await scanner.scanNewTickers(added);
+          
+          // Auto-populate Hot Picks watchlist after new tickers are scanned
+          await autoPopulateHotPicks();
+          
           console.log(`✅ Successfully scanned and added ${added.length} new tickers to results`);
         } catch (error) {
           console.error('❌ Failed to scan new tickers:', error);
@@ -343,6 +530,17 @@ app.get('/api/holdings/:ticker', async (req, res) => {
   }
 });
 
+// Hot Picks auto-population endpoint
+app.post('/api/watchlists/hot-picks/populate', async (req, res) => {
+  try {
+    const result = await autoPopulateHotPicks();
+    res.json(result);
+  } catch (error) {
+    console.error('Error populating Hot Picks:', error);
+    res.status(500).json({ success: false, error: 'Failed to populate Hot Picks' });
+  }
+});
+
 // Watchlist Management Endpoints
 app.get('/api/watchlists', async (req, res) => {
   try {
@@ -367,6 +565,8 @@ app.get('/api/watchlists', async (req, res) => {
           previous_close: stock.previous_close,
           blackrock_pct: stock.blackrock_pct,
           vanguard_pct: stock.vanguard_pct,
+          blackrock_market_value: stock.blackrock_market_value,
+          vanguard_market_value: stock.vanguard_market_value,
           fire_level: stock.fire_level,
           previous_fire_level: stock.previous_fire_level,
           fire_level_changed: stock.fire_level_changed
@@ -376,6 +576,8 @@ app.get('/api/watchlists', async (req, res) => {
           previous_close: null,
           blackrock_pct: null,
           vanguard_pct: null,
+          blackrock_market_value: null,
+          vanguard_market_value: null,
           fire_level: null,
           previous_fire_level: null,
           fire_level_changed: null
@@ -422,6 +624,8 @@ app.get('/api/watchlists/:id', async (req, res) => {
         previous_close: stock.previous_close,
         blackrock_pct: stock.blackrock_pct,
         vanguard_pct: stock.vanguard_pct,
+        blackrock_market_value: stock.blackrock_market_value,
+        vanguard_market_value: stock.vanguard_market_value,
         fire_level: stock.fire_level,
         previous_fire_level: stock.previous_fire_level,
         fire_level_changed: stock.fire_level_changed
@@ -431,6 +635,8 @@ app.get('/api/watchlists/:id', async (req, res) => {
         previous_close: null,
         blackrock_pct: null,
         vanguard_pct: null,
+        blackrock_market_value: null,
+        vanguard_market_value: null,
         fire_level: null,
         previous_fire_level: null,
         fire_level_changed: null
