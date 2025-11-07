@@ -26,10 +26,17 @@ const Dashboard: React.FC = () => {
     message: string | null;
   }>({ scanning: false, progress: null, message: null });
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [multiFilters, setMultiFilters] = useState<{
+    fireLevels: Set<number>;
+    priceFilters: Set<string>;
+    marketValueFilters: Set<string>;
+  }>({
+    fireLevels: new Set(),
+    priceFilters: new Set(),
+    marketValueFilters: new Set()
+  });
   const [sortBy, setSortBy] = useState<string>('combined-desc');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedPriceFilter, setSelectedPriceFilter] = useState<string | null>(null);
-  const [selectedMarketValueFilter, setSelectedMarketValueFilter] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -275,6 +282,55 @@ const Dashboard: React.FC = () => {
     window.open(`https://www.tradingview.com/chart/?symbol=${ticker}`, '_blank');
   };
 
+  // Single unified filter toggle function
+  const toggleFilter = (type: 'fire' | 'price' | 'marketValue', value: number | string) => {
+    setMultiFilters(prev => {
+      const newFilters = { ...prev };
+      
+      if (type === 'fire') {
+        const newFireLevels = new Set(prev.fireLevels);
+        if (newFireLevels.has(value as number)) {
+          newFireLevels.delete(value as number);
+        } else {
+          newFireLevels.add(value as number);
+        }
+        newFilters.fireLevels = newFireLevels;
+      } else if (type === 'price') {
+        const newPriceFilters = new Set(prev.priceFilters);
+        if (newPriceFilters.has(value as string)) {
+          newPriceFilters.delete(value as string);
+        } else {
+          newPriceFilters.add(value as string);
+        }
+        newFilters.priceFilters = newPriceFilters;
+      } else if (type === 'marketValue') {
+        const newMarketValueFilters = new Set(prev.marketValueFilters);
+        if (newMarketValueFilters.has(value as string)) {
+          newMarketValueFilters.delete(value as string);
+        } else {
+          newMarketValueFilters.add(value as string);
+        }
+        newFilters.marketValueFilters = newMarketValueFilters;
+      }
+      
+      // Auto-set activeFilter based on whether we have any filters
+      const hasFilters = newFilters.fireLevels.size > 0 || 
+                        newFilters.priceFilters.size > 0 || 
+                        newFilters.marketValueFilters.size > 0;
+      setActiveFilter(hasFilters ? 'multifilter' : 'all');
+      
+      return newFilters;
+    });
+  };
+
+  const clearAllFilters = () => {
+    setMultiFilters({
+      fireLevels: new Set(),
+      priceFilters: new Set(),
+      marketValueFilters: new Set()
+    });
+  };
+
   // Calculate stats
   const tickersWithData = tickers.filter(ticker => stockData.has(ticker));
   const fire5Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 5);
@@ -307,6 +363,19 @@ const Dashboard: React.FC = () => {
       case 'anyfire':
         stocks = anyFireTickers;
         break;
+      case 'multifire':
+      case 'multifilter':
+        // Multi-select filtering
+        stocks = tickersWithData;
+        
+        // Apply fire level filters
+        if (multiFilters.fireLevels.size > 0) {
+          stocks = stocks.filter(ticker => {
+            const fireLevel = stockData.get(ticker)?.fire_level || 0;
+            return multiFilters.fireLevels.has(fireLevel);
+          });
+        }
+        break;
       case 'holdings':
         stocks = holdingTickers;
         break;
@@ -315,26 +384,28 @@ const Dashboard: React.FC = () => {
     }
     
     // Apply price filter if selected
-    if (selectedPriceFilter) {
+    if (multiFilters.priceFilters.size > 0) {
       stocks = stocks.filter(ticker => {
         const stock = stockData.get(ticker);
         if (!stock) return false;
         
-        switch (selectedPriceFilter) {
-          case 'under1':
-            return stock.price < 1.0;
-          case '1to2':
-            return stock.price >= 1.0 && stock.price <= 2.0;
-          case 'over2':
-            return stock.price > 2.0;
-          default:
-            return true;
-        }
+        return Array.from(multiFilters.priceFilters).some(priceFilter => {
+          switch (priceFilter) {
+            case 'under1':
+              return stock.price < 1.0;
+            case '1to2':
+              return stock.price >= 1.0 && stock.price <= 2.0;
+            case 'over2':
+              return stock.price > 2.0;
+            default:
+              return true;
+          }
+        });
       });
     }
     
     // Apply market value filter if selected
-    if (selectedMarketValueFilter) {
+    if (multiFilters.marketValueFilters.size > 0) {
       stocks = stocks.filter(ticker => {
         const stock = stockData.get(ticker);
         if (!stock) return false;
@@ -344,18 +415,20 @@ const Dashboard: React.FC = () => {
         const vanguardValue = stock.vanguard_market_value || 0;
         const combinedValue = blackrockValue + vanguardValue;
         
-        switch (selectedMarketValueFilter) {
-          case 'under10':
-            return combinedValue < 10;
-          case '10to50':
-            return combinedValue >= 10 && combinedValue < 50;
-          case '50to100':
-            return combinedValue >= 50 && combinedValue < 100;
-          case 'over100':
-            return combinedValue >= 100;
-          default:
-            return true;
-        }
+        return Array.from(multiFilters.marketValueFilters).some(marketValueFilter => {
+          switch (marketValueFilter) {
+            case 'under10':
+              return combinedValue < 10;
+            case '10to50':
+              return combinedValue >= 10 && combinedValue < 50;
+            case '50to100':
+              return combinedValue >= 50 && combinedValue < 100;
+            case 'over100':
+              return combinedValue >= 100;
+            default:
+              return true;
+          }
+        });
       });
     }
     
@@ -484,9 +557,24 @@ const Dashboard: React.FC = () => {
             margin: 0,
             fontSize: theme.typography.fontSize.xxl,
             fontWeight: theme.typography.fontWeight.bold,
-            color: theme.ui.text.primary
+            color: theme.ui.text.primary,
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing.md
           }}>
             🎯 Dashboard
+            {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0) && (
+              <span style={{
+                fontSize: theme.typography.fontSize.sm,
+                backgroundColor: theme.status.info,
+                color: 'white',
+                padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                borderRadius: theme.borderRadius.md,
+                fontWeight: theme.typography.fontWeight.medium
+              }}>
+                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size} filters active
+              </span>
+            )}
           </h1>
           <div style={{ display: 'flex', gap: theme.spacing.md, alignItems: 'center' }}>
             {/* Search Input */}
@@ -582,7 +670,10 @@ const Dashboard: React.FC = () => {
           marginBottom: theme.spacing.md
         }}>
           <div 
-            onClick={() => setActiveFilter('all')}
+            onClick={() => {
+              setActiveFilter('all');
+              clearAllFilters();
+            }}
             style={{
               textAlign: 'center',
               padding: theme.spacing.sm,
@@ -628,8 +719,10 @@ const Dashboard: React.FC = () => {
             onClick={() => {
               if (activeFilter === 'anyfire') {
                 setActiveFilter('all');
+                clearAllFilters();
               } else {
                 setActiveFilter('anyfire');
+                clearAllFilters();
               }
             }}
             style={{
@@ -673,32 +766,27 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div 
-            onClick={() => {
-              if (activeFilter === 'fire5') {
-                setActiveFilter('all');
-              } else {
-                setActiveFilter('fire5');
-              }
-            }}
+            onClick={() => toggleFilter('fire', 5)}
             style={{
               textAlign: 'center',
               padding: theme.spacing.sm,
-              backgroundColor: activeFilter === 'fire5' ? getFireLevelStyle(5).primary : getFireLevelStyle(5).background,
+              backgroundColor: multiFilters.fireLevels.has(5) ? getFireLevelStyle(5).primary : getFireLevelStyle(5).background,
               borderRadius: theme.borderRadius.md,
-              border: `2px solid ${activeFilter === 'fire5' ? getFireLevelStyle(5).primary : getFireLevelStyle(5).border}`,
+              border: `2px solid ${multiFilters.fireLevels.has(5) ? getFireLevelStyle(5).primary : getFireLevelStyle(5).border}`,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: activeFilter === 'fire5' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: activeFilter === 'fire5' ? theme.ui.shadow.md : theme.ui.shadow.sm
+              transform: multiFilters.fireLevels.has(5) ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: multiFilters.fireLevels.has(5) ? theme.ui.shadow.md : theme.ui.shadow.sm,
+              position: 'relative'
             }}
             onMouseEnter={(e) => {
-              if (activeFilter !== 'fire5') {
+              if (!multiFilters.fireLevels.has(5)) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.md;
               }
             }}
             onMouseLeave={(e) => {
-              if (activeFilter !== 'fire5') {
+              if (!multiFilters.fireLevels.has(5)) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
@@ -707,13 +795,13 @@ const Dashboard: React.FC = () => {
             <div style={{
               fontSize: theme.typography.fontSize.lg,
               fontWeight: theme.typography.fontWeight.bold,
-              color: activeFilter === 'fire5' ? 'white' : getFireLevelStyle(5).primary
+              color: multiFilters.fireLevels.has(5) ? 'white' : getFireLevelStyle(5).primary
             }}>
               {fire5Tickers.length}
             </div>
             <div style={{
               fontSize: theme.typography.fontSize.xs,
-              color: activeFilter === 'fire5' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              color: multiFilters.fireLevels.has(5) ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
               fontWeight: theme.typography.fontWeight.medium
             }}>
               🔥🔥🔥🔥🔥
@@ -721,32 +809,27 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div 
-            onClick={() => {
-              if (activeFilter === 'fire4') {
-                setActiveFilter('all');
-              } else {
-                setActiveFilter('fire4');
-              }
-            }}
+            onClick={() => toggleFilter('fire', 4)}
             style={{
               textAlign: 'center',
               padding: theme.spacing.sm,
-              backgroundColor: activeFilter === 'fire4' ? getFireLevelStyle(4).primary : getFireLevelStyle(4).background,
+              backgroundColor: multiFilters.fireLevels.has(4) ? getFireLevelStyle(4).primary : getFireLevelStyle(4).background,
               borderRadius: theme.borderRadius.md,
-              border: `2px solid ${activeFilter === 'fire4' ? getFireLevelStyle(4).primary : getFireLevelStyle(4).border}`,
+              border: `2px solid ${multiFilters.fireLevels.has(4) ? getFireLevelStyle(4).primary : getFireLevelStyle(4).border}`,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: activeFilter === 'fire4' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: activeFilter === 'fire4' ? theme.ui.shadow.md : theme.ui.shadow.sm
+              transform: multiFilters.fireLevels.has(4) ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: multiFilters.fireLevels.has(4) ? theme.ui.shadow.md : theme.ui.shadow.sm,
+              position: 'relative'
             }}
             onMouseEnter={(e) => {
-              if (activeFilter !== 'fire4') {
+              if (!multiFilters.fireLevels.has(4)) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.md;
               }
             }}
             onMouseLeave={(e) => {
-              if (activeFilter !== 'fire4') {
+              if (!multiFilters.fireLevels.has(4)) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
@@ -755,13 +838,13 @@ const Dashboard: React.FC = () => {
             <div style={{
               fontSize: theme.typography.fontSize.lg,
               fontWeight: theme.typography.fontWeight.bold,
-              color: activeFilter === 'fire4' ? 'white' : getFireLevelStyle(4).primary
+              color: multiFilters.fireLevels.has(4) ? 'white' : getFireLevelStyle(4).primary
             }}>
               {fire4Tickers.length}
             </div>
             <div style={{
               fontSize: theme.typography.fontSize.xs,
-              color: activeFilter === 'fire4' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              color: multiFilters.fireLevels.has(4) ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
               fontWeight: theme.typography.fontWeight.medium
             }}>
               🔥🔥🔥🔥
@@ -769,32 +852,27 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div 
-            onClick={() => {
-              if (activeFilter === 'fire3') {
-                setActiveFilter('all');
-              } else {
-                setActiveFilter('fire3');
-              }
-            }}
+            onClick={() => toggleFilter('fire', 3)}
             style={{
               textAlign: 'center',
               padding: theme.spacing.sm,
-              backgroundColor: activeFilter === 'fire3' ? getFireLevelStyle(3).primary : getFireLevelStyle(3).background,
+              backgroundColor: multiFilters.fireLevels.has(3) ? getFireLevelStyle(3).primary : getFireLevelStyle(3).background,
               borderRadius: theme.borderRadius.md,
-              border: `2px solid ${activeFilter === 'fire3' ? getFireLevelStyle(3).primary : getFireLevelStyle(3).border}`,
+              border: `2px solid ${multiFilters.fireLevels.has(3) ? getFireLevelStyle(3).primary : getFireLevelStyle(3).border}`,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: activeFilter === 'fire3' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: activeFilter === 'fire3' ? theme.ui.shadow.md : theme.ui.shadow.sm
+              transform: multiFilters.fireLevels.has(3) ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: multiFilters.fireLevels.has(3) ? theme.ui.shadow.md : theme.ui.shadow.sm,
+              position: 'relative'
             }}
             onMouseEnter={(e) => {
-              if (activeFilter !== 'fire3') {
+              if (!multiFilters.fireLevels.has(3)) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.md;
               }
             }}
             onMouseLeave={(e) => {
-              if (activeFilter !== 'fire3') {
+              if (!multiFilters.fireLevels.has(3)) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
@@ -803,13 +881,13 @@ const Dashboard: React.FC = () => {
             <div style={{
               fontSize: theme.typography.fontSize.lg,
               fontWeight: theme.typography.fontWeight.bold,
-              color: activeFilter === 'fire3' ? 'white' : getFireLevelStyle(3).primary
+              color: multiFilters.fireLevels.has(3) ? 'white' : getFireLevelStyle(3).primary
             }}>
               {fire3Tickers.length}
             </div>
             <div style={{
               fontSize: theme.typography.fontSize.xs,
-              color: activeFilter === 'fire3' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              color: multiFilters.fireLevels.has(3) ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
               fontWeight: theme.typography.fontWeight.medium
             }}>
               🔥🔥🔥
@@ -817,32 +895,27 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div 
-            onClick={() => {
-              if (activeFilter === 'fire2') {
-                setActiveFilter('all');
-              } else {
-                setActiveFilter('fire2');
-              }
-            }}
+            onClick={() => toggleFilter('fire', 2)}
             style={{
               textAlign: 'center',
               padding: theme.spacing.sm,
-              backgroundColor: activeFilter === 'fire2' ? getFireLevelStyle(2).primary : getFireLevelStyle(2).background,
+              backgroundColor: multiFilters.fireLevels.has(2) ? getFireLevelStyle(2).primary : getFireLevelStyle(2).background,
               borderRadius: theme.borderRadius.md,
-              border: `2px solid ${activeFilter === 'fire2' ? getFireLevelStyle(2).primary : getFireLevelStyle(2).border}`,
+              border: `2px solid ${multiFilters.fireLevels.has(2) ? getFireLevelStyle(2).primary : getFireLevelStyle(2).border}`,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: activeFilter === 'fire2' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: activeFilter === 'fire2' ? theme.ui.shadow.md : theme.ui.shadow.sm
+              transform: multiFilters.fireLevels.has(2) ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: multiFilters.fireLevels.has(2) ? theme.ui.shadow.md : theme.ui.shadow.sm,
+              position: 'relative'
             }}
             onMouseEnter={(e) => {
-              if (activeFilter !== 'fire2') {
+              if (!multiFilters.fireLevels.has(2)) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.md;
               }
             }}
             onMouseLeave={(e) => {
-              if (activeFilter !== 'fire2') {
+              if (!multiFilters.fireLevels.has(2)) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
@@ -851,13 +924,13 @@ const Dashboard: React.FC = () => {
             <div style={{
               fontSize: theme.typography.fontSize.lg,
               fontWeight: theme.typography.fontWeight.bold,
-              color: activeFilter === 'fire2' ? 'white' : getFireLevelStyle(2).primary
+              color: multiFilters.fireLevels.has(2) ? 'white' : getFireLevelStyle(2).primary
             }}>
               {fire2Tickers.length}
             </div>
             <div style={{
               fontSize: theme.typography.fontSize.xs,
-              color: activeFilter === 'fire2' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              color: multiFilters.fireLevels.has(2) ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
               fontWeight: theme.typography.fontWeight.medium
             }}>
               🔥🔥
@@ -865,32 +938,27 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div 
-            onClick={() => {
-              if (activeFilter === 'fire1') {
-                setActiveFilter('all');
-              } else {
-                setActiveFilter('fire1');
-              }
-            }}
+            onClick={() => toggleFilter('fire', 1)}
             style={{
               textAlign: 'center',
               padding: theme.spacing.sm,
-              backgroundColor: activeFilter === 'fire1' ? getFireLevelStyle(1).primary : getFireLevelStyle(1).background,
+              backgroundColor: multiFilters.fireLevels.has(1) ? getFireLevelStyle(1).primary : getFireLevelStyle(1).background,
               borderRadius: theme.borderRadius.md,
-              border: `2px solid ${activeFilter === 'fire1' ? getFireLevelStyle(1).primary : getFireLevelStyle(1).border}`,
+              border: `2px solid ${multiFilters.fireLevels.has(1) ? getFireLevelStyle(1).primary : getFireLevelStyle(1).border}`,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: activeFilter === 'fire1' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: activeFilter === 'fire1' ? theme.ui.shadow.md : theme.ui.shadow.sm
+              transform: multiFilters.fireLevels.has(1) ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: multiFilters.fireLevels.has(1) ? theme.ui.shadow.md : theme.ui.shadow.sm,
+              position: 'relative'
             }}
             onMouseEnter={(e) => {
-              if (activeFilter !== 'fire1') {
+              if (!multiFilters.fireLevels.has(1)) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.md;
               }
             }}
             onMouseLeave={(e) => {
-              if (activeFilter !== 'fire1') {
+              if (!multiFilters.fireLevels.has(1)) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
@@ -899,13 +967,13 @@ const Dashboard: React.FC = () => {
             <div style={{
               fontSize: theme.typography.fontSize.lg,
               fontWeight: theme.typography.fontWeight.bold,
-              color: activeFilter === 'fire1' ? 'white' : getFireLevelStyle(1).primary
+              color: multiFilters.fireLevels.has(1) ? 'white' : getFireLevelStyle(1).primary
             }}>
               {fire1Tickers.length}
             </div>
             <div style={{
               fontSize: theme.typography.fontSize.xs,
-              color: activeFilter === 'fire1' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              color: multiFilters.fireLevels.has(1) ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
               fontWeight: theme.typography.fontWeight.medium
             }}>
               🔥
@@ -969,36 +1037,30 @@ const Dashboard: React.FC = () => {
           marginBottom: theme.spacing.md
         }}>
           <button
-            onClick={() => {
-              if (selectedPriceFilter === 'under1') {
-                setSelectedPriceFilter(null);
-              } else {
-                setSelectedPriceFilter('under1');
-              }
-            }}
+            onClick={() => toggleFilter('price', 'under1')}
             style={{
               padding: theme.spacing.md,
-              backgroundColor: selectedPriceFilter === 'under1' ? '#28a745' : theme.ui.surface,
-              color: selectedPriceFilter === 'under1' ? 'white' : '#28a745',
+              backgroundColor: multiFilters.priceFilters.has('under1') ? '#28a745' : theme.ui.surface,
+              color: multiFilters.priceFilters.has('under1') ? 'white' : '#28a745',
               border: `2px solid #28a745`,
               borderRadius: theme.borderRadius.md,
               textAlign: 'center',
-              boxShadow: selectedPriceFilter === 'under1' ? '0 4px 8px rgba(40, 167, 69, 0.3)' : theme.ui.shadow.sm,
+              boxShadow: multiFilters.priceFilters.has('under1') ? '0 4px 8px rgba(40, 167, 69, 0.3)' : theme.ui.shadow.sm,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: selectedPriceFilter === 'under1' ? 'translateY(-1px)' : 'none',
+              transform: multiFilters.priceFilters.has('under1') ? 'translateY(-1px)' : 'none',
               fontFamily: theme.typography.fontFamily,
               fontSize: theme.typography.fontSize.sm,
               fontWeight: theme.typography.fontWeight.semibold
             }}
             onMouseEnter={(e) => {
-              if (selectedPriceFilter !== 'under1') {
+              if (!multiFilters.priceFilters.has('under1')) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = '0 4px 8px rgba(40, 167, 69, 0.2)';
               }
             }}
             onMouseLeave={(e) => {
-              if (selectedPriceFilter !== 'under1') {
+              if (!multiFilters.priceFilters.has('under1')) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
@@ -1008,36 +1070,30 @@ const Dashboard: React.FC = () => {
           </button>
 
           <button
-            onClick={() => {
-              if (selectedPriceFilter === '1to2') {
-                setSelectedPriceFilter(null);
-              } else {
-                setSelectedPriceFilter('1to2');
-              }
-            }}
+            onClick={() => toggleFilter('price', '1to2')}
             style={{
               padding: theme.spacing.md,
-              backgroundColor: selectedPriceFilter === '1to2' ? '#fd7e14' : theme.ui.surface,
-              color: selectedPriceFilter === '1to2' ? 'white' : '#fd7e14',
+              backgroundColor: multiFilters.priceFilters.has('1to2') ? '#fd7e14' : theme.ui.surface,
+              color: multiFilters.priceFilters.has('1to2') ? 'white' : '#fd7e14',
               border: `2px solid #fd7e14`,
               borderRadius: theme.borderRadius.md,
               textAlign: 'center',
-              boxShadow: selectedPriceFilter === '1to2' ? '0 4px 8px rgba(253, 126, 20, 0.3)' : theme.ui.shadow.sm,
+              boxShadow: multiFilters.priceFilters.has('1to2') ? '0 4px 8px rgba(253, 126, 20, 0.3)' : theme.ui.shadow.sm,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: selectedPriceFilter === '1to2' ? 'translateY(-1px)' : 'none',
+              transform: multiFilters.priceFilters.has('1to2') ? 'translateY(-1px)' : 'none',
               fontFamily: theme.typography.fontFamily,
               fontSize: theme.typography.fontSize.sm,
               fontWeight: theme.typography.fontWeight.semibold
             }}
             onMouseEnter={(e) => {
-              if (selectedPriceFilter !== '1to2') {
+              if (!multiFilters.priceFilters.has('1to2')) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = '0 4px 8px rgba(253, 126, 20, 0.2)';
               }
             }}
             onMouseLeave={(e) => {
-              if (selectedPriceFilter !== '1to2') {
+              if (!multiFilters.priceFilters.has('1to2')) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
@@ -1047,36 +1103,30 @@ const Dashboard: React.FC = () => {
           </button>
 
           <button
-            onClick={() => {
-              if (selectedPriceFilter === 'over2') {
-                setSelectedPriceFilter(null);
-              } else {
-                setSelectedPriceFilter('over2');
-              }
-            }}
+            onClick={() => toggleFilter('price', 'over2')}
             style={{
               padding: theme.spacing.md,
-              backgroundColor: selectedPriceFilter === 'over2' ? '#6f42c1' : theme.ui.surface,
-              color: selectedPriceFilter === 'over2' ? 'white' : '#6f42c1',
+              backgroundColor: multiFilters.priceFilters.has('over2') ? '#6f42c1' : theme.ui.surface,
+              color: multiFilters.priceFilters.has('over2') ? 'white' : '#6f42c1',
               border: `2px solid #6f42c1`,
               borderRadius: theme.borderRadius.md,
               textAlign: 'center',
-              boxShadow: selectedPriceFilter === 'over2' ? '0 4px 8px rgba(111, 66, 193, 0.3)' : theme.ui.shadow.sm,
+              boxShadow: multiFilters.priceFilters.has('over2') ? '0 4px 8px rgba(111, 66, 193, 0.3)' : theme.ui.shadow.sm,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: selectedPriceFilter === 'over2' ? 'translateY(-1px)' : 'none',
+              transform: multiFilters.priceFilters.has('over2') ? 'translateY(-1px)' : 'none',
               fontFamily: theme.typography.fontFamily,
               fontSize: theme.typography.fontSize.sm,
               fontWeight: theme.typography.fontWeight.semibold
             }}
             onMouseEnter={(e) => {
-              if (selectedPriceFilter !== 'over2') {
+              if (!multiFilters.priceFilters.has('over2')) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = '0 4px 8px rgba(111, 66, 193, 0.2)';
               }
             }}
             onMouseLeave={(e) => {
-              if (selectedPriceFilter !== 'over2') {
+              if (!multiFilters.priceFilters.has('over2')) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
@@ -1094,36 +1144,30 @@ const Dashboard: React.FC = () => {
           marginBottom: theme.spacing.md
         }}>
           <button
-            onClick={() => {
-              if (selectedMarketValueFilter === 'under10') {
-                setSelectedMarketValueFilter(null);
-              } else {
-                setSelectedMarketValueFilter('under10');
-              }
-            }}
+            onClick={() => toggleFilter('marketValue', 'under10')}
             style={{
               padding: theme.spacing.md,
-              backgroundColor: selectedMarketValueFilter === 'under10' ? '#17a2b8' : theme.ui.surface,
-              color: selectedMarketValueFilter === 'under10' ? 'white' : '#17a2b8',
+              backgroundColor: multiFilters.marketValueFilters.has('under10') ? '#17a2b8' : theme.ui.surface,
+              color: multiFilters.marketValueFilters.has('under10') ? 'white' : '#17a2b8',
               border: `2px solid #17a2b8`,
               borderRadius: theme.borderRadius.md,
               textAlign: 'center',
-              boxShadow: selectedMarketValueFilter === 'under10' ? '0 4px 8px rgba(23, 162, 184, 0.3)' : theme.ui.shadow.sm,
+              boxShadow: multiFilters.marketValueFilters.has('under10') ? '0 4px 8px rgba(23, 162, 184, 0.3)' : theme.ui.shadow.sm,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: selectedMarketValueFilter === 'under10' ? 'translateY(-1px)' : 'none',
+              transform: multiFilters.marketValueFilters.has('under10') ? 'translateY(-1px)' : 'none',
               fontFamily: theme.typography.fontFamily,
               fontSize: theme.typography.fontSize.sm,
               fontWeight: theme.typography.fontWeight.semibold
             }}
             onMouseEnter={(e) => {
-              if (selectedMarketValueFilter !== 'under10') {
+              if (!multiFilters.marketValueFilters.has('under10')) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = '0 4px 8px rgba(23, 162, 184, 0.2)';
               }
             }}
             onMouseLeave={(e) => {
-              if (selectedMarketValueFilter !== 'under10') {
+              if (!multiFilters.marketValueFilters.has('under10')) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
@@ -1133,36 +1177,30 @@ const Dashboard: React.FC = () => {
           </button>
 
           <button
-            onClick={() => {
-              if (selectedMarketValueFilter === '10to50') {
-                setSelectedMarketValueFilter(null);
-              } else {
-                setSelectedMarketValueFilter('10to50');
-              }
-            }}
+            onClick={() => toggleFilter('marketValue', '10to50')}
             style={{
               padding: theme.spacing.md,
-              backgroundColor: selectedMarketValueFilter === '10to50' ? '#20c997' : theme.ui.surface,
-              color: selectedMarketValueFilter === '10to50' ? 'white' : '#20c997',
+              backgroundColor: multiFilters.marketValueFilters.has('10to50') ? '#20c997' : theme.ui.surface,
+              color: multiFilters.marketValueFilters.has('10to50') ? 'white' : '#20c997',
               border: `2px solid #20c997`,
               borderRadius: theme.borderRadius.md,
               textAlign: 'center',
-              boxShadow: selectedMarketValueFilter === '10to50' ? '0 4px 8px rgba(32, 201, 151, 0.3)' : theme.ui.shadow.sm,
+              boxShadow: multiFilters.marketValueFilters.has('10to50') ? '0 4px 8px rgba(32, 201, 151, 0.3)' : theme.ui.shadow.sm,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: selectedMarketValueFilter === '10to50' ? 'translateY(-1px)' : 'none',
+              transform: multiFilters.marketValueFilters.has('10to50') ? 'translateY(-1px)' : 'none',
               fontFamily: theme.typography.fontFamily,
               fontSize: theme.typography.fontSize.sm,
               fontWeight: theme.typography.fontWeight.semibold
             }}
             onMouseEnter={(e) => {
-              if (selectedMarketValueFilter !== '10to50') {
+              if (!multiFilters.marketValueFilters.has('10to50')) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = '0 4px 8px rgba(32, 201, 151, 0.2)';
               }
             }}
             onMouseLeave={(e) => {
-              if (selectedMarketValueFilter !== '10to50') {
+              if (!multiFilters.marketValueFilters.has('10to50')) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
@@ -1172,36 +1210,30 @@ const Dashboard: React.FC = () => {
           </button>
 
           <button
-            onClick={() => {
-              if (selectedMarketValueFilter === '50to100') {
-                setSelectedMarketValueFilter(null);
-              } else {
-                setSelectedMarketValueFilter('50to100');
-              }
-            }}
+            onClick={() => toggleFilter('marketValue', '50to100')}
             style={{
               padding: theme.spacing.md,
-              backgroundColor: selectedMarketValueFilter === '50to100' ? '#e83e8c' : theme.ui.surface,
-              color: selectedMarketValueFilter === '50to100' ? 'white' : '#e83e8c',
+              backgroundColor: multiFilters.marketValueFilters.has('50to100') ? '#e83e8c' : theme.ui.surface,
+              color: multiFilters.marketValueFilters.has('50to100') ? 'white' : '#e83e8c',
               border: `2px solid #e83e8c`,
               borderRadius: theme.borderRadius.md,
               textAlign: 'center',
-              boxShadow: selectedMarketValueFilter === '50to100' ? '0 4px 8px rgba(232, 62, 140, 0.3)' : theme.ui.shadow.sm,
+              boxShadow: multiFilters.marketValueFilters.has('50to100') ? '0 4px 8px rgba(232, 62, 140, 0.3)' : theme.ui.shadow.sm,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: selectedMarketValueFilter === '50to100' ? 'translateY(-1px)' : 'none',
+              transform: multiFilters.marketValueFilters.has('50to100') ? 'translateY(-1px)' : 'none',
               fontFamily: theme.typography.fontFamily,
               fontSize: theme.typography.fontSize.sm,
               fontWeight: theme.typography.fontWeight.semibold
             }}
             onMouseEnter={(e) => {
-              if (selectedMarketValueFilter !== '50to100') {
+              if (!multiFilters.marketValueFilters.has('50to100')) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = '0 4px 8px rgba(232, 62, 140, 0.2)';
               }
             }}
             onMouseLeave={(e) => {
-              if (selectedMarketValueFilter !== '50to100') {
+              if (!multiFilters.marketValueFilters.has('50to100')) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
@@ -1211,36 +1243,30 @@ const Dashboard: React.FC = () => {
           </button>
 
           <button
-            onClick={() => {
-              if (selectedMarketValueFilter === 'over100') {
-                setSelectedMarketValueFilter(null);
-              } else {
-                setSelectedMarketValueFilter('over100');
-              }
-            }}
+            onClick={() => toggleFilter('marketValue', 'over100')}
             style={{
               padding: theme.spacing.md,
-              backgroundColor: selectedMarketValueFilter === 'over100' ? '#6610f2' : theme.ui.surface,
-              color: selectedMarketValueFilter === 'over100' ? 'white' : '#6610f2',
+              backgroundColor: multiFilters.marketValueFilters.has('over100') ? '#6610f2' : theme.ui.surface,
+              color: multiFilters.marketValueFilters.has('over100') ? 'white' : '#6610f2',
               border: `2px solid #6610f2`,
               borderRadius: theme.borderRadius.md,
               textAlign: 'center',
-              boxShadow: selectedMarketValueFilter === 'over100' ? '0 4px 8px rgba(102, 16, 242, 0.3)' : theme.ui.shadow.sm,
+              boxShadow: multiFilters.marketValueFilters.has('over100') ? '0 4px 8px rgba(102, 16, 242, 0.3)' : theme.ui.shadow.sm,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: selectedMarketValueFilter === 'over100' ? 'translateY(-1px)' : 'none',
+              transform: multiFilters.marketValueFilters.has('over100') ? 'translateY(-1px)' : 'none',
               fontFamily: theme.typography.fontFamily,
               fontSize: theme.typography.fontSize.sm,
               fontWeight: theme.typography.fontWeight.semibold
             }}
             onMouseEnter={(e) => {
-              if (selectedMarketValueFilter !== 'over100') {
+              if (!multiFilters.marketValueFilters.has('over100')) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = '0 4px 8px rgba(102, 16, 242, 0.2)';
               }
             }}
             onMouseLeave={(e) => {
-              if (selectedMarketValueFilter !== 'over100') {
+              if (!multiFilters.marketValueFilters.has('over100')) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
