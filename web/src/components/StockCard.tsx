@@ -282,7 +282,7 @@ const StockCard: React.FC<StockCardProps> = ({
       
       <div
         style={{
-          fontSize: theme.typography.fontSize.xl,
+          fontSize: theme.typography.fontSize.lg,
           color: "#666",
           lineHeight: "1.2",
           display: "flex",
