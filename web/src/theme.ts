@@ -2,6 +2,20 @@
 export const theme = {
   // Fire Level Colors
   fire: {
+    level5: {
+      primary: '#8B0000',    // Dark red for 5 fires (inferno)
+      secondary: '#B22222',  // Fire brick red
+      background: '#FFF0F0', // Very light red background  
+      border: '#FFB3B3',     // Light red border
+      emoji: '🔥🔥🔥🔥🔥'
+    },
+    level4: {
+      primary: '#DC143C',    // Crimson for 4 fires
+      secondary: '#FF1744',  // Bright crimson
+      background: '#FFF0F0', // Very light crimson background
+      border: '#FFB3B3',     // Light crimson border
+      emoji: '🔥🔥🔥🔥'
+    },
     level3: {
       primary: '#FF4444',    // Bright red for 3 fires
       secondary: '#FF6B6B',  // Lighter red
@@ -147,6 +161,10 @@ export const theme = {
 // Helper functions for getting fire level styling
 export const getFireLevelStyle = (level: number) => {
   switch (level) {
+    case 5:
+      return theme.fire.level5;
+    case 4:
+      return theme.fire.level4;
     case 3:
       return theme.fire.level3;
     case 2:

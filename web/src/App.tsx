@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import { ThemeProvider, useTheme } from './ThemeContext';
-import FireDashboard from './FireDashboard';
 import Dashboard from './Dashboard';
 import Scans from './Scans';
 import Sidebar from './components/Sidebar';

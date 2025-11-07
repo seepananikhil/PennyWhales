@@ -208,18 +208,24 @@ const Dashboard: React.FC = () => {
 
   // Calculate stats
   const tickersWithData = tickers.filter(ticker => stockData.has(ticker));
-  const tickersWithoutData = tickers.filter(ticker => !stockData.has(ticker));
+  const fire5Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 5);
+  const fire4Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 4);
   const fire3Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 3);
   const fire2Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 2);
   const fire1Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 1);
   const anyFireTickers = tickersWithData.filter(ticker => (stockData.get(ticker)?.fire_level || 0) > 0);
-  const minimalTickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 0);
   const holdingTickers = tickers.filter(ticker => holdings.has(ticker));
 
   // Filter stocks based on active filter and search query
   const getFilteredStocks = () => {
     let stocks;
     switch (activeFilter) {
+      case 'fire5':
+        stocks = fire5Tickers;
+        break;
+      case 'fire4':
+        stocks = fire4Tickers;
+        break;
       case 'fire3':
         stocks = fire3Tickers;
         break;
@@ -231,9 +237,6 @@ const Dashboard: React.FC = () => {
         break;
       case 'anyfire':
         stocks = anyFireTickers;
-        break;
-      case 'minimal':
-        stocks = minimalTickers;
         break;
       case 'holdings':
         stocks = holdingTickers;
@@ -564,6 +567,102 @@ const Dashboard: React.FC = () => {
 
           <div 
             onClick={() => {
+              if (activeFilter === 'fire5') {
+                setActiveFilter('all');
+              } else {
+                setActiveFilter('fire5');
+              }
+            }}
+            style={{
+              textAlign: 'center',
+              padding: theme.spacing.sm,
+              backgroundColor: activeFilter === 'fire5' ? getFireLevelStyle(5).primary : getFireLevelStyle(5).background,
+              borderRadius: theme.borderRadius.md,
+              border: `2px solid ${activeFilter === 'fire5' ? getFireLevelStyle(5).primary : getFireLevelStyle(5).border}`,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'fire5' ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: activeFilter === 'fire5' ? theme.ui.shadow.md : theme.ui.shadow.sm
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'fire5') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'fire5') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: activeFilter === 'fire5' ? 'white' : getFireLevelStyle(5).primary
+            }}>
+              {fire5Tickers.length}
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.xs,
+              color: activeFilter === 'fire5' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              🔥🔥🔥🔥🔥
+            </div>
+          </div>
+
+          <div 
+            onClick={() => {
+              if (activeFilter === 'fire4') {
+                setActiveFilter('all');
+              } else {
+                setActiveFilter('fire4');
+              }
+            }}
+            style={{
+              textAlign: 'center',
+              padding: theme.spacing.sm,
+              backgroundColor: activeFilter === 'fire4' ? getFireLevelStyle(4).primary : getFireLevelStyle(4).background,
+              borderRadius: theme.borderRadius.md,
+              border: `2px solid ${activeFilter === 'fire4' ? getFireLevelStyle(4).primary : getFireLevelStyle(4).border}`,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: activeFilter === 'fire4' ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: activeFilter === 'fire4' ? theme.ui.shadow.md : theme.ui.shadow.sm
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== 'fire4') {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== 'fire4') {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            <div style={{
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: activeFilter === 'fire4' ? 'white' : getFireLevelStyle(4).primary
+            }}>
+              {fire4Tickers.length}
+            </div>
+            <div style={{
+              fontSize: theme.typography.fontSize.xs,
+              color: activeFilter === 'fire4' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
+              fontWeight: theme.typography.fontWeight.medium
+            }}>
+              🔥🔥🔥🔥
+            </div>
+          </div>
+
+          <div 
+            onClick={() => {
               if (activeFilter === 'fire3') {
                 setActiveFilter('all');
               } else {
@@ -703,54 +802,6 @@ const Dashboard: React.FC = () => {
               fontWeight: theme.typography.fontWeight.medium
             }}>
               🔥
-            </div>
-          </div>
-
-          <div 
-            onClick={() => {
-              if (activeFilter === 'minimal') {
-                setActiveFilter('all');
-              } else {
-                setActiveFilter('minimal');
-              }
-            }}
-            style={{
-              textAlign: 'center',
-              padding: theme.spacing.sm,
-              backgroundColor: activeFilter === 'minimal' ? '#ffc107' : '#fff8cd',
-              borderRadius: theme.borderRadius.md,
-              border: `2px solid ${activeFilter === 'minimal' ? '#ffc107' : '#ffe69c'}`,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: activeFilter === 'minimal' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: activeFilter === 'minimal' ? theme.ui.shadow.md : theme.ui.shadow.sm
-            }}
-            onMouseEnter={(e) => {
-              if (activeFilter !== 'minimal') {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (activeFilter !== 'minimal') {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            <div style={{
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: activeFilter === 'minimal' ? 'white' : '#ffc107'
-            }}>
-              {minimalTickers.length}
-            </div>
-            <div style={{
-              fontSize: theme.typography.fontSize.xs,
-              color: activeFilter === 'minimal' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
-              fontWeight: theme.typography.fontWeight.medium
-            }}>
-              🌡️ Minimal
             </div>
           </div>
 
