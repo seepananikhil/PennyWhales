@@ -11,9 +11,12 @@ interface LazyStockCardProps {
     timestamp: string;
   };
   isHolding: boolean;
+  isInWatchlist?: boolean;
   onToggleHolding: (ticker: string) => void;
+  onToggleWatchlist?: (ticker: string) => void;
   onOpenChart: (ticker: string) => void;
   onLoadLivePrice?: (ticker: string) => Promise<void>;
+  showWatchButton?: boolean;
 }
 
 const LazyStockCard: React.FC<LazyStockCardProps> = ({
@@ -21,9 +24,12 @@ const LazyStockCard: React.FC<LazyStockCardProps> = ({
   stock,
   livePrice,
   isHolding,
+  isInWatchlist = false,
   onToggleHolding,
+  onToggleWatchlist,
   onOpenChart,
-  onLoadLivePrice
+  onLoadLivePrice,
+  showWatchButton = true
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [hasLoadedPrice, setHasLoadedPrice] = useState(false);
@@ -70,8 +76,11 @@ const LazyStockCard: React.FC<LazyStockCardProps> = ({
           stock={stock}
           livePrice={livePrice}
           isHolding={isHolding}
+          isInWatchlist={isInWatchlist}
           onToggleHolding={onToggleHolding}
+          onToggleWatchlist={onToggleWatchlist}
           onOpenChart={onOpenChart}
+          showWatchButton={showWatchButton}
         />
       ) : (
         // Placeholder while not visible or loading

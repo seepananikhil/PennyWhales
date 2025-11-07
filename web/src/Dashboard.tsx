@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import api from './api';
 import { Stock } from './types';
 import { theme, getFireLevelStyle } from './theme';
-import StockCard from './components/StockCard';
 import LazyStockCard from './components/LazyStockCard';
 import TickerModal from './components/TickerModal';
 
@@ -15,6 +14,9 @@ const Dashboard: React.FC = () => {
     timestamp: string;
   }>>(new Map());
   const [holdings, setHoldings] = useState<Set<string>>(new Set());
+  const [watchlists, setWatchlists] = useState<any[]>([]);
+  const [activeWatchlistId, setActiveWatchlistId] = useState<string>('');
+  const [watchlistStocks, setWatchlistStocks] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -32,8 +34,14 @@ const Dashboard: React.FC = () => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    if (activeWatchlistId) {
+      loadActiveWatchlist();
+    }
+  }, [activeWatchlistId]);
+
   const loadData = async () => {
-    await Promise.all([loadTickers(), loadStockData(), loadHoldings()]);
+    await Promise.all([loadTickers(), loadStockData(), loadHoldings(), loadWatchlists()]);
   };
 
   const loadTickers = async () => {
@@ -86,6 +94,38 @@ const Dashboard: React.FC = () => {
       setHoldings(new Set(holdingsArray));
     } catch (err) {
       console.error('Error loading holdings:', err);
+    }
+  };
+
+  const loadWatchlists = async () => {
+    try {
+      const data = await api.getWatchlists();
+      console.log('Loaded watchlists:', data.watchlists);
+      setWatchlists(data.watchlists || []);
+      
+      // Set first watchlist as active if none selected
+      if (data.watchlists && data.watchlists.length > 0 && !activeWatchlistId) {
+        console.log('Setting active watchlist to:', data.watchlists[0].id);
+        const watchlistId = data.watchlists[0].id;
+        setActiveWatchlistId(watchlistId);
+        loadActiveWatchlist(watchlistId);
+      }
+    } catch (err) {
+      console.error('Error loading watchlists:', err);
+    }
+  };
+
+  const loadActiveWatchlist = async (watchlistId?: string) => {
+    try {
+      const id = watchlistId || activeWatchlistId;
+      if (!id) return;
+      
+      console.log('Loading active watchlist:', id);
+      const watchlist = await api.getWatchlist(id);
+      console.log('Loaded watchlist:', watchlist);
+      setWatchlistStocks(new Set(watchlist.stocks || []));
+    } catch (err) {
+      console.error('Error loading active watchlist:', err);
     }
   };
 
@@ -199,6 +239,34 @@ const Dashboard: React.FC = () => {
       }
     } catch (err) {
       console.error('Error toggling holding:', err);
+    }
+  };
+
+  const handleToggleWatchlist = async (ticker: string) => {
+    try {
+      if (!activeWatchlistId) {
+        console.warn('No active watchlist selected');
+        return;
+      }
+
+      const isInWatchlist = watchlistStocks.has(ticker);
+      if (isInWatchlist) {
+        const result = await api.removeFromWatchlist(activeWatchlistId, [ticker]);
+        if (result.success) {
+          setWatchlistStocks(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(ticker);
+            return newSet;
+          });
+        }
+      } else {
+        const result = await api.addToWatchlist(activeWatchlistId, [ticker]);
+        if (result.success) {
+          setWatchlistStocks(prev => new Set(prev).add(ticker));
+        }
+      }
+    } catch (err) {
+      console.error('Error toggling watchlist:', err);
     }
   };
 
@@ -1123,9 +1191,12 @@ const Dashboard: React.FC = () => {
                       stock={stock}
                       livePrice={livePrice}
                       isHolding={holdings.has(ticker)}
+                      isInWatchlist={watchlistStocks.has(ticker)}
                       onToggleHolding={handleToggleHolding}
+                      onToggleWatchlist={handleToggleWatchlist}
                       onOpenChart={handleOpenChart}
                       onLoadLivePrice={loadLivePriceForTicker}
+                      showWatchButton={watchlists.length > 0}
                     />
                   );
                 }

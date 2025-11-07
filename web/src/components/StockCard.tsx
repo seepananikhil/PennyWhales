@@ -3,6 +3,19 @@ import { Stock } from '../types';
 import { theme, getFireLevelStyle } from '../theme';
 import api from '../api';
 
+// Custom eye icons as React components
+const EyeIcon = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+  </svg>
+);
+
+const EyeOffIcon = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+  </svg>
+);
+
 interface StockCardProps {
   stock: Stock;
   livePrice?: {
@@ -11,20 +24,26 @@ interface StockCardProps {
     timestamp: string;
   };
   isHolding: boolean;
+  isInWatchlist?: boolean;
   onToggleHolding: (ticker: string) => void;
+  onToggleWatchlist?: (ticker: string) => void;
   onOpenChart: (ticker: string) => void;
   borderColor?: string;
   showHoldingStar?: boolean;
+  showWatchButton?: boolean;
 }
 
 const StockCard: React.FC<StockCardProps> = ({
   stock,
   livePrice,
   isHolding,
+  isInWatchlist = false,
   onToggleHolding,
+  onToggleWatchlist,
   onOpenChart,
   borderColor,
-  showHoldingStar = true
+  showHoldingStar = true,
+  showWatchButton = true
 }) => {
   const [currentPrice, setCurrentPrice] = useState(livePrice?.price || stock.price);
   const [priceChange, setPriceChange] = useState(livePrice?.priceChange || 0);
@@ -207,6 +226,76 @@ const StockCard: React.FC<StockCardProps> = ({
               title="Click to mark as holding"
             >
               ☆
+            </span>
+          )}
+          {showWatchButton && onToggleWatchlist && isInWatchlist && (
+            <span 
+              style={{ 
+                color: "#dc3545", 
+                marginLeft: "6px",
+                cursor: "pointer",
+                fontSize: "1.1rem",
+                backgroundColor: "#f8d7da",
+                padding: "4px 6px",
+                borderRadius: "12px",
+                border: "1px solid #f5c6cb",
+                boxShadow: "0 1px 3px rgba(220,53,69,0.3)",
+                display: "inline-flex",
+                alignItems: "center",
+                transition: "all 0.2s ease"
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log('Watch button clicked for:', stock.ticker, 'isInWatchlist:', isInWatchlist, 'onToggleWatchlist:', !!onToggleWatchlist);
+                onToggleWatchlist!(stock.ticker);
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.1)";
+                e.currentTarget.style.boxShadow = "0 2px 6px rgba(220,53,69,0.4)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "0 1px 3px rgba(220,53,69,0.3)";
+              }}
+              title="Remove from watchlist"
+            >
+              <EyeOffIcon size={14} />
+            </span>
+          )}
+          {showWatchButton && onToggleWatchlist && !isInWatchlist && (
+            <span 
+              style={{ 
+                color: "#17a2b8", 
+                marginLeft: "6px",
+                cursor: "pointer",
+                fontSize: "1.1rem",
+                backgroundColor: "#d1ecf1",
+                padding: "4px 6px",
+                borderRadius: "12px",
+                border: "1px solid #bee5eb",
+                boxShadow: "0 1px 2px rgba(23,162,184,0.3)",
+                display: "inline-flex",
+                alignItems: "center",
+                transition: "all 0.2s ease"
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log('Watch button clicked for:', stock.ticker, 'isInWatchlist:', isInWatchlist, 'onToggleWatchlist:', !!onToggleWatchlist);
+                onToggleWatchlist!(stock.ticker);
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.1)";
+                e.currentTarget.style.backgroundColor = "#bee5eb";
+                e.currentTarget.style.color = "#0c5460";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.backgroundColor = "#d1ecf1";
+                e.currentTarget.style.color = "#17a2b8";
+              }}
+              title="Add to watchlist"
+            >
+              <EyeIcon size={14} />
             </span>
           )}
           {stock.is_new && (

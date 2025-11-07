@@ -4282,17 +4282,19 @@
   "settings": {},
   "watchlists": [
     {
-      "id": "watchlist_1762071737661",
-      "name": "bynd",
+      "id": "watchlist_1762493035427",
+      "name": "watch",
       "stocks": [
-        "AAPL",
-        "GOOGL",
-        "MSFT",
-        "TSLA",
-        "NVDA"
+        "FATE",
+        "DCGO",
+        "ALLO",
+        "GERN",
+        "HAIN",
+        "MVIS",
+        "HRTX"
       ],
-      "created": "2025-11-02T08:22:17.661Z",
-      "updated": "2025-11-02T08:22:17.661Z"
+      "created": "2025-11-07T05:23:55.427Z",
+      "updated": "2025-11-07T05:51:09.187Z"
     }
   ],
   "holdings": {

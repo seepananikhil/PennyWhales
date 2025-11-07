@@ -37,6 +37,14 @@ const Sidebar: React.FC<SidebarProps> = ({
           <span className="nav-text">Dashboard</span>
         </NavLink>
         
+        <NavLink
+          to="/watchlist"
+          className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+          title="Watchlist"
+        >
+          <span className="nav-icon">👀</span>
+          <span className="nav-text">Watchlist</span>
+        </NavLink>
 
         <NavLink
           to="/scans"

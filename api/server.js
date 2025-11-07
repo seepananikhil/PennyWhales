@@ -347,7 +347,48 @@ app.get('/api/holdings/:ticker', async (req, res) => {
 app.get('/api/watchlists', async (req, res) => {
   try {
     const watchlists = await dbService.getWatchlists();
-    res.json({ watchlists, count: watchlists.length });
+    const scanResults = await dbService.getScanResults();
+    const stockData = new Map();
+    
+    // Create a map of stock data for quick lookup
+    if (scanResults && scanResults.stocks) {
+      scanResults.stocks.forEach(stock => {
+        stockData.set(stock.ticker, stock);
+      });
+    }
+    
+    // Add stock data to each watchlist
+    const watchlistsWithStockData = watchlists.map(watchlist => {
+      const stocksWithFullData = watchlist.stocks.map(ticker => {
+        const stock = stockData.get(ticker);
+        return stock ? {
+          ticker: stock.ticker,
+          price: stock.price,
+          previous_close: stock.previous_close,
+          blackrock_pct: stock.blackrock_pct,
+          vanguard_pct: stock.vanguard_pct,
+          fire_level: stock.fire_level,
+          previous_fire_level: stock.previous_fire_level,
+          fire_level_changed: stock.fire_level_changed
+        } : {
+          ticker: ticker,
+          price: null,
+          previous_close: null,
+          blackrock_pct: null,
+          vanguard_pct: null,
+          fire_level: null,
+          previous_fire_level: null,
+          fire_level_changed: null
+        };
+      });
+      
+      return {
+        ...watchlist,
+        stockData: stocksWithFullData
+      };
+    });
+    
+    res.json({ watchlists: watchlistsWithStockData, count: watchlistsWithStockData.length });
   } catch (error) {
     console.error('Error getting watchlists:', error);
     res.status(500).json({ error: 'Failed to get watchlists' });
@@ -363,7 +404,45 @@ app.get('/api/watchlists/:id', async (req, res) => {
       return res.status(404).json({ error: 'Watchlist not found' });
     }
     
-    res.json(watchlist);
+    // Add stock data to the watchlist
+    const scanResults = await dbService.getScanResults();
+    const stockData = new Map();
+    
+    if (scanResults && scanResults.stocks) {
+      scanResults.stocks.forEach(stock => {
+        stockData.set(stock.ticker, stock);
+      });
+    }
+
+    const stocksWithFullData = watchlist.stocks.map(ticker => {
+      const stock = stockData.get(ticker);
+      return stock ? {
+        ticker: stock.ticker,
+        price: stock.price,
+        previous_close: stock.previous_close,
+        blackrock_pct: stock.blackrock_pct,
+        vanguard_pct: stock.vanguard_pct,
+        fire_level: stock.fire_level,
+        previous_fire_level: stock.previous_fire_level,
+        fire_level_changed: stock.fire_level_changed
+      } : {
+        ticker: ticker,
+        price: null,
+        previous_close: null,
+        blackrock_pct: null,
+        vanguard_pct: null,
+        fire_level: null,
+        previous_fire_level: null,
+        fire_level_changed: null
+      };
+    });
+
+    const watchlistWithStockData = {
+      ...watchlist,
+      stockData: stocksWithFullData
+    };
+    
+    res.json(watchlistWithStockData);
   } catch (error) {
     console.error('Error getting watchlist:', error);
     res.status(500).json({ error: 'Failed to get watchlist' });

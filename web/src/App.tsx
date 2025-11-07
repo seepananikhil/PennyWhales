@@ -4,6 +4,7 @@ import './App.css';
 import { ThemeProvider, useTheme } from './ThemeContext';
 import Dashboard from './Dashboard';
 import Scans from './Scans';
+import Watchlist from './Watchlist';
 import Sidebar from './components/Sidebar';
 
 const AppContent: React.FC = () => {
@@ -23,6 +24,7 @@ const AppContent: React.FC = () => {
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/scans" element={<Scans />} />
+              <Route path="/watchlist" element={<Watchlist />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
