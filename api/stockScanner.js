@@ -60,6 +60,38 @@ class StockScanner {
     }
   }
 
+  // Get market cap from Nasdaq summary
+  async getMarketCap(ticker) {
+    try {
+      const response = await fetch(
+        `https://api.nasdaq.com/api/quote/${ticker}/summary?assetclass=stocks`,
+        {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        }
+      );
+
+      if (!response.ok) return null;
+      const data = await response.json();
+      
+      // Extract market cap from summary data
+      const marketCapValue = data?.data?.summaryData?.MarketCap?.value;
+      if (!marketCapValue) return null;
+      
+      // Parse market cap - API returns raw dollar amounts as strings with commas
+      // Remove commas, convert to millions and round to 1 decimal for storage
+      const cleanValue = String(marketCapValue).replace(/,/g, '');
+      const marketCapDollars = parseFloat(cleanValue);
+      const marketCapInMillions = Math.round(marketCapDollars / 100000) / 10; // Round to 1 decimal
+      
+      return marketCapInMillions;
+    } catch (error) {
+      console.error(`Error fetching market cap for ${ticker}:`, error);
+      return null;
+    }
+  }
+
   // Parse BlackRock and Vanguard holdings
   parseHoldings(data) {
     if (!data?.data?.holdingsTransactions?.table?.rows) {
@@ -148,6 +180,9 @@ class StockScanner {
 
       const { blackrock, vanguard, blackrockMarketValue, vanguardMarketValue } = this.parseHoldings(holdingsData);
 
+      // Get market cap
+      const marketCap = await this.getMarketCap(ticker);
+
       // Always return the stock data regardless of holding percentages
       // The fire level calculation will handle the rating (including 0 for no fire)
       return {
@@ -157,7 +192,8 @@ class StockScanner {
         blackrock_pct: blackrock,
         vanguard_pct: vanguard,
         blackrock_market_value: blackrockMarketValue, // Store as number (in millions)
-        vanguard_market_value: vanguardMarketValue     // Store as number (in millions)
+        vanguard_market_value: vanguardMarketValue,     // Store as number (in millions)
+        market_cap: marketCap // Market cap in millions
       };
     } catch (error) {
       console.error(`Error analyzing ${ticker}:`, error);

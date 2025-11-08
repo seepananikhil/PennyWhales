@@ -6,6 +6,7 @@ export interface Stock {
   vanguard_pct: number;
   blackrock_market_value?: number; // Market value in millions (numeric)
   vanguard_market_value?: number; // Market value in millions (numeric)
+  market_cap?: number; // Market capitalization in millions
   blackrock_source: string;
   vanguard_source: string;
   data_quality: string;

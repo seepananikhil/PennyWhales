@@ -31,6 +31,8 @@ interface StockCardProps {
   borderColor?: string;
   showHoldingStar?: boolean;
   showWatchButton?: boolean;
+  showDeleteButton?: boolean;
+  onDeleteTicker?: (ticker: string) => void;
 }
 
 const StockCard: React.FC<StockCardProps> = ({
@@ -43,12 +45,15 @@ const StockCard: React.FC<StockCardProps> = ({
   onOpenChart,
   borderColor,
   showHoldingStar = true,
-  showWatchButton = true
+  showWatchButton = true,
+  showDeleteButton = true,
+  onDeleteTicker
 }) => {
   const [currentPrice, setCurrentPrice] = useState(livePrice?.price || stock.price);
   const [priceChange, setPriceChange] = useState(livePrice?.priceChange || 0);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(livePrice ? new Date(livePrice.timestamp) : null);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
 
   const fireLevel = stock.fire_level || 0;
   const fireStyle = getFireLevelStyle(fireLevel);
@@ -151,20 +156,45 @@ const StockCard: React.FC<StockCardProps> = ({
           marginBottom: "6px",
         }}
       >
-        <span
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <span
+            style={{
+              fontWeight: "bold",
+              fontSize: "1rem",
+              color: "#333",
+              textTransform: "uppercase",
+            }}
+          >
+            {stock.ticker}
+          </span>
+          <span style={{ fontSize: "1rem" }}>
+            {getFireEmoji(fireLevel)}
+          </span>
+          {stock.is_new && (
+            <span style={{ 
+              color: "#28a745", 
+              fontSize: "0.75rem",
+              fontWeight: "600",
+              backgroundColor: "#d4edda",
+              padding: "2px 6px",
+              borderRadius: "8px",
+              border: "1px solid #c3e6cb"
+            }}>
+              NEW
+            </span>
+          )}
+        </div>
+        <div
           style={{
-            fontWeight: "bold",
-            fontSize: "1rem",
-            color: "#333",
-            textTransform: "uppercase",
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
           }}
         >
-          {stock.ticker}
           {showHoldingStar && isHolding && (
             <span 
               style={{ 
                 color: "#ffd700", 
-                marginLeft: "6px",
                 cursor: "pointer",
                 fontSize: "1.3rem",
                 backgroundColor: "#fff3cd",
@@ -196,7 +226,6 @@ const StockCard: React.FC<StockCardProps> = ({
             <span 
               style={{ 
                 color: "#999", 
-                marginLeft: "6px",
                 cursor: "pointer",
                 fontSize: "1.3rem",
                 backgroundColor: "#f8f9fa",
@@ -232,7 +261,6 @@ const StockCard: React.FC<StockCardProps> = ({
             <span 
               style={{ 
                 color: "#dc3545", 
-                marginLeft: "6px",
                 cursor: "pointer",
                 fontSize: "1.1rem",
                 backgroundColor: "#f8d7da",
@@ -266,7 +294,6 @@ const StockCard: React.FC<StockCardProps> = ({
             <span 
               style={{ 
                 color: "#17a2b8", 
-                marginLeft: "6px",
                 cursor: "pointer",
                 fontSize: "1.1rem",
                 backgroundColor: "#d1ecf1",
@@ -298,22 +325,53 @@ const StockCard: React.FC<StockCardProps> = ({
               <EyeIcon size={14} />
             </span>
           )}
-          {stock.is_new && (
-            <span style={{ color: "#28a745", marginLeft: "4px" }}>
-              NEW
+          {showDeleteButton && onDeleteTicker && (
+            <span 
+              style={{ 
+                color: deleteConfirm ? "#dc3545" : "#6c757d", 
+                cursor: "pointer",
+                fontSize: "1.1rem",
+                backgroundColor: deleteConfirm ? "#f8d7da" : "#f8f9fa",
+                padding: "4px 6px",
+                borderRadius: "12px",
+                border: deleteConfirm ? "1px solid #f5c6cb" : "1px solid #dee2e6",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                display: "inline-flex",
+                alignItems: "center",
+                transition: "all 0.2s ease"
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (deleteConfirm) {
+                  onDeleteTicker(stock.ticker);
+                  setDeleteConfirm(false);
+                } else {
+                  setDeleteConfirm(true);
+                  // Reset after 3 seconds
+                  setTimeout(() => setDeleteConfirm(false), 3000);
+                }
+              }}
+              onMouseEnter={(e) => {
+                if (!deleteConfirm) {
+                  e.currentTarget.style.transform = "scale(1.1)";
+                  e.currentTarget.style.backgroundColor = "#f8d7da";
+                  e.currentTarget.style.borderColor = "#f5c6cb";
+                  e.currentTarget.style.color = "#dc3545";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!deleteConfirm) {
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.backgroundColor = "#f8f9fa";
+                  e.currentTarget.style.borderColor = "#dee2e6";
+                  e.currentTarget.style.color = "#6c757d";
+                }
+              }}
+              title={deleteConfirm ? "Click again to confirm" : "Remove from ticker list"}
+            >
+              {deleteConfirm ? "✓" : "🗑️"}
             </span>
           )}
-        </span>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-          }}
-        >
-          <span style={{ fontSize: "1rem" }}>
-            {getFireEmoji(fireLevel)}
-          </span>
         </div>
       </div>
       
@@ -352,6 +410,24 @@ const StockCard: React.FC<StockCardProps> = ({
             }}
           >
             ({priceChange > 0 ? "+" : ""}{priceChange.toFixed(2)}%)
+          </span>
+        )}
+        
+        {stock.market_cap && stock.market_cap > 0 && (
+          <span
+            style={{
+              fontSize: theme.typography.fontSize.xs,
+              color: "#888",
+              fontWeight: "500",
+              marginLeft: "8px",
+            }}
+          >
+            {(() => {
+              const mcap = Number(stock.market_cap);
+              return mcap >= 1000 
+                ? `$${(mcap / 1000).toFixed(1)}B` 
+                : `$${Math.round(mcap)}M`;
+            })()}
           </span>
         )}
       </div>

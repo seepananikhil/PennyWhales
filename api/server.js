@@ -649,29 +649,7 @@ app.get('/api/watchlists', async (req, res) => {
     const watchlistsWithStockData = watchlists.map(watchlist => {
       const stocksWithFullData = watchlist.stocks.map(ticker => {
         const stock = stockData.get(ticker);
-        return stock ? {
-          ticker: stock.ticker,
-          price: stock.price,
-          previous_close: stock.previous_close,
-          blackrock_pct: stock.blackrock_pct,
-          vanguard_pct: stock.vanguard_pct,
-          blackrock_market_value: stock.blackrock_market_value,
-          vanguard_market_value: stock.vanguard_market_value,
-          fire_level: stock.fire_level,
-          previous_fire_level: stock.previous_fire_level,
-          fire_level_changed: stock.fire_level_changed
-        } : {
-          ticker: ticker,
-          price: null,
-          previous_close: null,
-          blackrock_pct: null,
-          vanguard_pct: null,
-          blackrock_market_value: null,
-          vanguard_market_value: null,
-          fire_level: null,
-          previous_fire_level: null,
-          fire_level_changed: null
-        };
+        return stock || { ticker };
       });
       
       return {
@@ -708,29 +686,7 @@ app.get('/api/watchlists/:id', async (req, res) => {
 
     const stocksWithFullData = watchlist.stocks.map(ticker => {
       const stock = stockData.get(ticker);
-      return stock ? {
-        ticker: stock.ticker,
-        price: stock.price,
-        previous_close: stock.previous_close,
-        blackrock_pct: stock.blackrock_pct,
-        vanguard_pct: stock.vanguard_pct,
-        blackrock_market_value: stock.blackrock_market_value,
-        vanguard_market_value: stock.vanguard_market_value,
-        fire_level: stock.fire_level,
-        previous_fire_level: stock.previous_fire_level,
-        fire_level_changed: stock.fire_level_changed
-      } : {
-        ticker: ticker,
-        price: null,
-        previous_close: null,
-        blackrock_pct: null,
-        vanguard_pct: null,
-        blackrock_market_value: null,
-        vanguard_market_value: null,
-        fire_level: null,
-        previous_fire_level: null,
-        fire_level_changed: null
-      };
+      return stock || { ticker };
     });
 
     const watchlistWithStockData = {

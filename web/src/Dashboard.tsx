@@ -262,6 +262,33 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleDeleteTicker = async (ticker: string) => {
+    try {
+      await api.removeTicker(ticker);
+      // Remove from local state
+      setStockData(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(ticker);
+        return newMap;
+      });
+      // Remove from tickers list
+      setTickers(prev => prev.filter(t => t !== ticker));
+      // Also remove from holdings and watchlist if present
+      setHoldings(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(ticker);
+        return newSet;
+      });
+      setWatchlistStocks(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(ticker);
+        return newSet;
+      });
+    } catch (err) {
+      console.error('Error deleting ticker:', err);
+    }
+  };
+
   const handleToggleWatchlist = async (ticker: string) => {
     try {
       if (!activeWatchlistId) {
@@ -433,21 +460,19 @@ const Dashboard: React.FC = () => {
         const stock = stockData.get(ticker);
         if (!stock) return false;
         
-        // Calculate combined market value in millions
-        const blackrockValue = stock.blackrock_market_value || 0;
-        const vanguardValue = stock.vanguard_market_value || 0;
-        const combinedValue = blackrockValue + vanguardValue;
+       
+        const marketCap = stock.market_cap || 0;
         
         return Array.from(multiFilters.marketValueFilters).some(marketValueFilter => {
           switch (marketValueFilter) {
             case 'under10':
-              return combinedValue < 10;
+              return marketCap < 10;
             case '10to50':
-              return combinedValue >= 10 && combinedValue < 50;
+              return marketCap >= 10 && marketCap  < 50;
             case '50to100':
-              return combinedValue >= 50 && combinedValue < 100;
+              return marketCap >= 50 && marketCap < 100;
             case 'over100':
-              return combinedValue >= 100;
+              return marketCap >= 100;
             default:
               return true;
           }
@@ -522,15 +547,15 @@ const Dashboard: React.FC = () => {
           const priceChangeAscB = livePriceData.get(b)?.priceChange || 0;
           return priceChangeAscA - priceChangeAscB;
         case 'market-value-desc':
-          // Sort by combined market value (highest first)
-          const marketValueA = (stockA.blackrock_market_value || 0) + (stockA.vanguard_market_value || 0);
-          const marketValueB = (stockB.blackrock_market_value || 0) + (stockB.vanguard_market_value || 0);
-          return marketValueB - marketValueA;
+          // Sort by market cap (highest first)
+          const marketCapA = stockA.market_cap || 0;
+          const marketCapB = stockB.market_cap || 0;
+          return marketCapB - marketCapA;
         case 'market-value-asc':
-          // Sort by combined market value (lowest first)
-          const marketValueAscA = (stockA.blackrock_market_value || 0) + (stockA.vanguard_market_value || 0);
-          const marketValueAscB = (stockB.blackrock_market_value || 0) + (stockB.vanguard_market_value || 0);
-          return marketValueAscA - marketValueAscB;
+          // Sort by market cap (lowest first)
+          const marketCapAscA = stockA.market_cap || 0;
+          const marketCapAscB = stockB.market_cap || 0;
+          return marketCapAscA - marketCapAscB;
         default:
           // Default to combined VG + BR (highest first)
           const defaultA = stockA.vanguard_pct + stockA.blackrock_pct;
@@ -1545,6 +1570,8 @@ const Dashboard: React.FC = () => {
                       onOpenChart={handleOpenChart}
                       onLoadLivePrice={loadLivePriceForTicker}
                       showWatchButton={watchlists.length > 0}
+                      showDeleteButton={true}
+                      onDeleteTicker={handleDeleteTicker}
                     />
                   );
                 }
