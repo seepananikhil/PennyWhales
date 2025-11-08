@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import api from './api';
 import { Stock } from './types';
 import { theme, getFireLevelStyle } from './theme';
-import LazyStockCard from './components/LazyStockCard';
 import TickerModal from './components/TickerModal';
+import ChartView from './components/ChartView';
+import GridView from './components/GridView';
 
 const Dashboard: React.FC = () => {
   const [tickers, setTickers] = useState<string[]>([]);
@@ -39,6 +40,8 @@ const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [topGainers, setTopGainers] = useState<string[]>([]);
   const [topLosers, setTopLosers] = useState<string[]>([]);
+  const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
+  const [showChartView, setShowChartView] = useState<boolean>(true);
 
   useEffect(() => {
     loadData();
@@ -614,6 +617,16 @@ const Dashboard: React.FC = () => {
             gap: theme.spacing.md
           }}>
             🎯 Dashboard
+            <span style={{
+              fontSize: theme.typography.fontSize.base,
+              backgroundColor: theme.status.success,
+              color: 'white',
+              padding: `${theme.spacing.xs} ${theme.spacing.md}`,
+              borderRadius: theme.borderRadius.md,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}>
+              {filteredStocks.length} {filteredStocks.length === 1 ? 'Stock' : 'Stocks'}
+            </span>
             {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0) && (
               <span style={{
                 fontSize: theme.typography.fontSize.sm,
@@ -628,6 +641,32 @@ const Dashboard: React.FC = () => {
             )}
           </h1>
           <div style={{ display: 'flex', gap: theme.spacing.md, alignItems: 'center' }}>
+            {/* Chart View Toggle */}
+            <button
+              onClick={() => setShowChartView(!showChartView)}
+              style={{
+                padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+                border: 'none',
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: showChartView ? theme.status.success : theme.status.info,
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.semibold,
+                transition: `all ${theme.transition.normal}`,
+                boxShadow: theme.ui.shadow.sm
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }}
+            >
+              {showChartView ? '📊 Chart Mode' : '📋 Grid Mode'}
+            </button>
             {/* Search Input */}
             <input
               type="text"
@@ -1469,116 +1508,38 @@ const Dashboard: React.FC = () => {
 
         {tickersWithData.length > 0 || (activeFilter === 'holdings' && holdingTickers.length > 0) ? (
           <>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: theme.spacing.md,
-              height: 'fit-content'
-            }}>
-              {filteredStocks.map(ticker => {
-                const stock = stockData.get(ticker);
-                const livePrice = livePriceData.get(ticker);
-                
-                // For holdings without stock data, show a placeholder card
-                if (!stock && activeFilter === 'holdings') {
-                  return (
-                    <div
-                      key={ticker}
-                      style={{
-                        padding: theme.spacing.md,
-                        backgroundColor: theme.ui.surface,
-                        borderRadius: theme.borderRadius.lg,
-                        border: `1px solid ${theme.ui.border}`,
-                        boxShadow: theme.ui.shadow.sm,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: theme.spacing.sm
-                      }}
-                    >
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}>
-                        <h3 style={{
-                          margin: 0,
-                          fontSize: theme.typography.fontSize.lg,
-                          fontWeight: theme.typography.fontWeight.bold,
-                          color: theme.ui.text.primary
-                        }}>
-                          {ticker}
-                        </h3>
-                        <button
-                          onClick={() => handleToggleHolding(ticker)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            fontSize: '1.2rem',
-                            cursor: 'pointer',
-                            padding: theme.spacing.xs
-                          }}
-                          title="Remove from holdings"
-                        >
-                          ⭐
-                        </button>
-                      </div>
-                      <div style={{
-                        fontSize: theme.typography.fontSize.sm,
-                        color: theme.ui.text.secondary,
-                        fontStyle: 'italic'
-                      }}>
-                        No scan data available
-                      </div>
-                      <button
-                        onClick={() => handleOpenChart(ticker)}
-                        style={{
-                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                          border: `1px solid ${theme.ui.border}`,
-                          borderRadius: theme.borderRadius.md,
-                          backgroundColor: theme.ui.surface,
-                          color: theme.ui.text.primary,
-                          cursor: 'pointer',
-                          fontSize: theme.typography.fontSize.sm,
-                          fontWeight: theme.typography.fontWeight.medium,
-                          transition: `all ${theme.transition.normal}`
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = theme.ui.background;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = theme.ui.surface;
-                        }}
-                      >
-                        📈 View Chart
-                      </button>
-                    </div>
-                  );
-                }
-                
-                // For stocks with data, show the lazy-loaded StockCard
-                if (stock) {
-                  return (
-                    <LazyStockCard
-                      key={ticker}
-                      ticker={ticker}
-                      stock={stock}
-                      livePrice={livePrice}
-                      isHolding={holdings.has(ticker)}
-                      isInWatchlist={watchlistStocks.has(ticker)}
-                      onToggleHolding={handleToggleHolding}
-                      onToggleWatchlist={handleToggleWatchlist}
-                      onOpenChart={handleOpenChart}
-                      onLoadLivePrice={loadLivePriceForTicker}
-                      showWatchButton={watchlists.length > 0}
-                      showDeleteButton={true}
-                      onDeleteTicker={handleDeleteTicker}
-                    />
-                  );
-                }
-                
-                return null;
-              })}
-            </div>
+            {showChartView ? (
+              <ChartView
+                stocks={filteredStocks}
+                stockData={stockData}
+                livePriceData={livePriceData}
+                holdings={holdings}
+                watchlistStocks={watchlistStocks}
+                onToggleHolding={handleToggleHolding}
+                onToggleWatchlist={handleToggleWatchlist}
+                onDeleteTicker={handleDeleteTicker}
+                onLoadLivePrice={loadLivePriceForTicker}
+                showWatchButton={watchlists.length > 0}
+                showDeleteButton={true}
+                tradingViewChartUrl="https://www.tradingview.com/chart/StTMbjgz/?symbol="
+              />
+            ) : (
+              <GridView
+                stocks={filteredStocks}
+                stockData={stockData}
+                livePriceData={livePriceData}
+                holdings={holdings}
+                watchlistStocks={watchlistStocks}
+                onToggleHolding={handleToggleHolding}
+                onToggleWatchlist={handleToggleWatchlist}
+                onOpenChart={handleOpenChart}
+                onDeleteTicker={handleDeleteTicker}
+                onLoadLivePrice={loadLivePriceForTicker}
+                showWatchButton={watchlists.length > 0}
+                showDeleteButton={true}
+                activeFilter={activeFilter}
+              />
+            )}
           </>
         ) : (
           <div style={{

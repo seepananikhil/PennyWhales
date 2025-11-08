@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { theme, getFireLevelStyle } from './theme';
 import api from './api';
 import { Stock } from './types';
-import LazyStockCard from './components/LazyStockCard';
+import ChartView from './components/ChartView';
+import GridView from './components/GridView';
 
 const Watchlist: React.FC = () => {
   const [watchlists, setWatchlists] = useState<any[]>([]);
@@ -19,6 +20,8 @@ const Watchlist: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedPriceFilter, setSelectedPriceFilter] = useState<string | null>(null);
+  const [showChartView, setShowChartView] = useState<boolean>(true);
+  const [livePriceData, setLivePriceData] = useState<Map<string, { price: number; priceChange: number; timestamp: string }>>(new Map());
 
   useEffect(() => {
     loadData();
@@ -222,6 +225,21 @@ const Watchlist: React.FC = () => {
     window.open(`https://www.tradingview.com/chart/?symbol=${ticker}`, '_blank');
   };
 
+  const loadLivePriceForTicker = async (ticker: string) => {
+    // Placeholder function - implement live price fetching if needed
+    console.log('Live price requested for:', ticker);
+  };
+
+  const handleDeleteTicker = async (ticker: string) => {
+    try {
+      await api.removeTicker(ticker);
+      // Refresh watchlist data
+      await loadActiveWatchlist();
+    } catch (err) {
+      console.error('Error deleting ticker:', err);
+    }
+  };
+
   const getFilteredAndSortedStocks = (): Stock[] => {
     console.log('getFilteredAndSortedStocks - activeWatchlist:', activeWatchlist);
     if (!activeWatchlist?.stockData) return [];
@@ -373,6 +391,32 @@ const Watchlist: React.FC = () => {
             👀 Watchlist
           </h1>
           <div style={{ display: 'flex', gap: theme.spacing.md, alignItems: 'center' }}>
+            {/* View Toggle Button */}
+            <button
+              onClick={() => setShowChartView(!showChartView)}
+              style={{
+                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                border: `1px solid ${theme.ui.border}`,
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: theme.ui.surface,
+                color: theme.ui.text.primary,
+                cursor: 'pointer',
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.medium,
+                transition: `all ${theme.transition.normal}`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: theme.spacing.xs
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = theme.ui.background;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = theme.ui.surface;
+              }}
+            >
+              {showChartView ? '📊 Grid View' : '📈 Chart View'}
+            </button>
             {/* Search Input */}
             <input
               type="text"
@@ -400,135 +444,8 @@ const Watchlist: React.FC = () => {
                 e.currentTarget.style.boxShadow = 'none';
               }}
             />
-            <button
-              onClick={() => setShowCreateModal(true)}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-                border: 'none',
-                borderRadius: theme.borderRadius.md,
-                backgroundColor: theme.status.info,
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.semibold,
-                transition: `all ${theme.transition.normal}`
-              }}
-            >
-              ➕ New Watchlist
-            </button>
           </div>
         </div>
-
-        {/* Watchlist Selector */}
-        {watchlists.length > 0 && (
-          <div style={{
-            display: 'flex',
-            gap: theme.spacing.md,
-            marginBottom: theme.spacing.md,
-            alignItems: 'center',
-            flexWrap: 'wrap'
-          }}>
-            <label style={{
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.medium,
-              color: theme.ui.text.primary
-            }}>
-              Watchlist:
-            </label>
-            {watchlists.map(watchlist => (
-              <button
-                key={watchlist.id || watchlist._id}
-                onClick={() => setActiveWatchlistId(watchlist.id || watchlist._id)}
-                style={{
-                  padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                  border: `2px solid ${activeWatchlistId === (watchlist.id || watchlist._id) ? theme.status.info : theme.ui.border}`,
-                  borderRadius: theme.borderRadius.md,
-                  backgroundColor: activeWatchlistId === (watchlist.id || watchlist._id) ? theme.status.info : theme.ui.surface,
-                  color: activeWatchlistId === (watchlist.id || watchlist._id) ? 'white' : theme.ui.text.primary,
-                  cursor: 'pointer',
-                  fontSize: theme.typography.fontSize.sm,
-                  fontWeight: theme.typography.fontWeight.medium,
-                  transition: `all ${theme.transition.normal}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: theme.spacing.sm
-                }}
-              >
-                {watchlist.name}
-                <span style={{
-                  backgroundColor: activeWatchlistId === (watchlist.id || watchlist._id) ? 'rgba(255,255,255,0.2)' : theme.ui.background,
-                  padding: `2px 6px`,
-                  borderRadius: theme.borderRadius.sm,
-                  fontSize: theme.typography.fontSize.xs
-                }}>
-                  {watchlist.stocks?.length || 0}
-                </span>
-                {watchlists.length > 1 && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteWatchlist(watchlist.id || watchlist._id);
-                    }}
-                    style={{
-                      border: 'none',
-                      background: 'none',
-                      color: 'inherit',
-                      cursor: 'pointer',
-                      padding: '2px',
-                      opacity: 0.7
-                    }}
-                  >
-                    ×
-                  </button>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Add Stock Section */}
-        {activeWatchlist && (
-          <div style={{
-            display: 'flex',
-            gap: theme.spacing.md,
-            marginBottom: theme.spacing.md,
-            alignItems: 'center'
-          }}>
-            <input
-              type="text"
-              placeholder="Add ticker (e.g., AAPL)"
-              value={newTickerInput}
-              onChange={(e) => setNewTickerInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddStock()}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                border: `1px solid ${theme.ui.border}`,
-                borderRadius: theme.borderRadius.md,
-                backgroundColor: theme.ui.surface,
-                color: theme.ui.text.primary,
-                fontSize: theme.typography.fontSize.sm,
-                fontFamily: theme.typography.fontFamily,
-                width: '200px'
-              }}
-            />
-            <button
-              onClick={handleAddStock}
-              disabled={!newTickerInput.trim()}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                border: 'none',
-                borderRadius: theme.borderRadius.md,
-                backgroundColor: newTickerInput.trim() ? theme.status.success : theme.ui.border,
-                color: 'white',
-                cursor: newTickerInput.trim() ? 'pointer' : 'not-allowed',
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.medium
-              }}
-            >
-              Add Stock
-            </button>
-          </div>
-        )}
 
         {/* Stats */}
         {activeWatchlist && (
@@ -681,29 +598,6 @@ const Watchlist: React.FC = () => {
                 fontWeight: theme.typography.fontWeight.medium
               }}>
                 ⭐ Holdings
-              </div>
-            </div>
-
-            <div style={{
-              textAlign: 'center',
-              padding: theme.spacing.sm,
-              backgroundColor: theme.ui.background,
-              borderRadius: theme.borderRadius.md,
-              border: `1px solid ${theme.ui.border}`
-            }}>
-              <div style={{
-                fontSize: theme.typography.fontSize.lg,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.ui.text.primary
-              }}>
-                {stocksWithData}
-              </div>
-              <div style={{
-                fontSize: theme.typography.fontSize.xs,
-                color: theme.ui.text.secondary,
-                fontWeight: theme.typography.fontWeight.medium
-              }}>
-                With Data
               </div>
             </div>
           </div>
@@ -886,27 +780,40 @@ const Watchlist: React.FC = () => {
             </p>
           </div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(auto-fit, 280px)`,
-            gap: theme.spacing.md,
-            height: 'fit-content',
-            justifyContent: 'start'
-          }}>
-            {filteredStocks.map((stock: Stock) => (
-              <LazyStockCard
-                key={stock.ticker}
-                ticker={stock.ticker}
-                stock={stock}
-                isHolding={holdings.has(stock.ticker)}
-                isInWatchlist={watchlistStocks.has(stock.ticker)}
+          <>
+            {showChartView ? (
+              <ChartView
+                stocks={filteredStocks.map(s => s.ticker)}
+                stockData={stockData}
+                livePriceData={livePriceData}
+                holdings={holdings}
+                watchlistStocks={watchlistStocks}
+                onToggleHolding={handleToggleHolding}
+                onToggleWatchlist={handleToggleWatchlist}
+                onDeleteTicker={handleDeleteTicker}
+                onLoadLivePrice={loadLivePriceForTicker}
+                showWatchButton={true}
+                showDeleteButton={false}
+                tradingViewChartUrl="https://www.tradingview.com/chart/StTMbjgz/?symbol="
+              />
+            ) : (
+              <GridView
+                stocks={filteredStocks.map(s => s.ticker)}
+                stockData={stockData}
+                livePriceData={livePriceData}
+                holdings={holdings}
+                watchlistStocks={watchlistStocks}
                 onToggleHolding={handleToggleHolding}
                 onToggleWatchlist={handleToggleWatchlist}
                 onOpenChart={handleOpenChart}
-                showWatchButton={true} // Show watch button to allow unwatch functionality
+                onDeleteTicker={handleDeleteTicker}
+                onLoadLivePrice={loadLivePriceForTicker}
+                showWatchButton={true}
+                showDeleteButton={false}
+                activeFilter={activeFilter}
               />
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
 
