@@ -40,7 +40,6 @@ const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [topGainers, setTopGainers] = useState<string[]>([]);
   const [topLosers, setTopLosers] = useState<string[]>([]);
-  const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
   const [showChartView, setShowChartView] = useState<boolean>(true);
 
   useEffect(() => {

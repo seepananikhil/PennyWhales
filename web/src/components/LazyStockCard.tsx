@@ -19,6 +19,7 @@ interface LazyStockCardProps {
   showWatchButton?: boolean;
   showDeleteButton?: boolean;
   onDeleteTicker?: (ticker: string) => void;
+  isSelected?: boolean;
 }
 
 const LazyStockCard: React.FC<LazyStockCardProps> = ({
@@ -33,7 +34,8 @@ const LazyStockCard: React.FC<LazyStockCardProps> = ({
   onLoadLivePrice,
   showWatchButton = true,
   showDeleteButton = false,
-  onDeleteTicker
+  onDeleteTicker,
+  isSelected = false
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [hasLoadedPrice, setHasLoadedPrice] = useState(false);
@@ -87,6 +89,7 @@ const LazyStockCard: React.FC<LazyStockCardProps> = ({
           showWatchButton={showWatchButton}
           showDeleteButton={showDeleteButton}
           onDeleteTicker={onDeleteTicker}
+          isSelected={isSelected}
         />
       ) : (
         // Placeholder while not visible or loading

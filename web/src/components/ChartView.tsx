@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Stock } from '../types';
-import { theme } from '../theme';
+import { theme, getFireLevelStyle } from '../theme';
 import LazyStockCard from './LazyStockCard';
 
 interface ChartViewProps {
@@ -40,6 +40,34 @@ const ChartView: React.FC<ChartViewProps> = ({
     stocks.length > 0 ? stocks[0] : null
   );
 
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && stocks.length > 0) {
+        e.preventDefault(); // Prevent page scroll
+        const currentIndex = selectedTicker ? stocks.indexOf(selectedTicker) : -1;
+        const nextIndex = (currentIndex + 1) % stocks.length;
+        setSelectedTicker(stocks[nextIndex]);
+        
+        // Scroll the selected card into view
+        const cardElement = document.querySelector(`[data-ticker="${stocks[nextIndex]}"]`);
+        if (cardElement) {
+          cardElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [stocks, selectedTicker]);
+
+  // Auto-select first item when stocks change
+  useEffect(() => {
+    if (stocks.length > 0 && !selectedTicker) {
+      setSelectedTicker(stocks[0]);
+    }
+  }, [stocks, selectedTicker]);
+
   return (
     <div style={{
       display: 'flex',
@@ -60,6 +88,7 @@ const ChartView: React.FC<ChartViewProps> = ({
           overflowY: 'auto',
           borderRight: `1px solid ${theme.ui.border}`,
           paddingRight: theme.spacing.md,
+          paddingBottom: theme.spacing.xxl,
           display: 'flex',
           flexDirection: 'column',
           gap: theme.spacing.sm
@@ -70,16 +99,18 @@ const ChartView: React.FC<ChartViewProps> = ({
             
             if (!stock) return null;
             
+            const isSelected = selectedTicker === ticker;
+            
             return (
               <div 
                 key={ticker}
+                data-ticker={ticker}
                 onClick={() => setSelectedTicker(ticker)}
                 style={{
-                  border: selectedTicker === ticker ? `3px solid ${theme.status.info}` : 'none',
                   borderRadius: theme.borderRadius.md,
                   cursor: 'pointer',
                   transition: `all ${theme.transition.normal}`,
-                  boxShadow: selectedTicker === ticker ? theme.ui.shadow.lg : 'none'
+                  boxShadow: isSelected ? theme.ui.shadow.lg : 'none',
                 }}
               >
                 <LazyStockCard
@@ -97,6 +128,7 @@ const ChartView: React.FC<ChartViewProps> = ({
                   showWatchButton={showWatchButton}
                   showDeleteButton={showDeleteButton}
                   onDeleteTicker={onDeleteTicker}
+                  isSelected={isSelected}
                 />
               </div>
             );

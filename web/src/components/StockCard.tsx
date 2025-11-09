@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Stock } from '../types';
 import { theme, getFireLevelStyle } from '../theme';
 import api from '../api';
+import { SiTradingview } from "react-icons/si";
 
 // Custom eye icons as React components
 const EyeIcon = ({ size = 16 }: { size?: number }) => (
@@ -33,6 +34,7 @@ interface StockCardProps {
   showWatchButton?: boolean;
   showDeleteButton?: boolean;
   onDeleteTicker?: (ticker: string) => void;
+  isSelected?: boolean;
 }
 
 const StockCard: React.FC<StockCardProps> = ({
@@ -47,7 +49,8 @@ const StockCard: React.FC<StockCardProps> = ({
   showHoldingStar = true,
   showWatchButton = true,
   showDeleteButton = true,
-  onDeleteTicker
+  onDeleteTicker,
+  isSelected = false
 }) => {
   const [currentPrice, setCurrentPrice] = useState(livePrice?.price || stock.price);
   const [priceChange, setPriceChange] = useState(livePrice?.priceChange || 0);
@@ -57,7 +60,12 @@ const StockCard: React.FC<StockCardProps> = ({
 
   const fireLevel = stock.fire_level || 0;
   const fireStyle = getFireLevelStyle(fireLevel);
-  const cardBorderColor = fireLevel > 0 ? fireStyle.border : (borderColor || theme.ui.border);
+  const cardBorderColor = isSelected 
+    ? (fireLevel > 0 ? fireStyle.primary : theme.status.info)
+    : (fireLevel > 0 ? fireStyle.border : (borderColor || theme.ui.border));
+  const cardBackgroundColor = isSelected 
+    ? (fireLevel > 0 ? fireStyle.background : "#e3f2fd")
+    : (fireLevel > 0 ? fireStyle.background : "#f8f9fa");
 
   // Fetch live price data via proxy API
   const fetchLivePrice = async () => {
@@ -131,12 +139,12 @@ const StockCard: React.FC<StockCardProps> = ({
         onClick={() => onOpenChart(stock.ticker)}
         style={{
           padding: "12px",
-          backgroundColor: fireLevel > 0 ? fireStyle.background : "#f8f9fa",
-          border: `2px solid ${cardBorderColor}`,
+          backgroundColor: cardBackgroundColor,
+          border: `${isSelected ? '3px' : '2px'} solid ${cardBorderColor}`,
           borderRadius: theme.borderRadius.md,
           cursor: "pointer",
           transition: "all 0.2s ease",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          boxShadow: isSelected ? "0 4px 12px rgba(0,0,0,0.2)" : "0 1px 3px rgba(0,0,0,0.1)",
           fontFamily: theme.typography.fontFamily,
         }}
         onMouseEnter={(e) => {
@@ -145,7 +153,7 @@ const StockCard: React.FC<StockCardProps> = ({
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
+          e.currentTarget.style.boxShadow = isSelected ? "0 4px 12px rgba(0,0,0,0.2)" : "0 1px 3px rgba(0,0,0,0.1)";
         }}
       >
       <div
@@ -372,6 +380,41 @@ const StockCard: React.FC<StockCardProps> = ({
               {deleteConfirm ? "✓" : "🗑️"}
             </span>
           )}
+          {/* TradingView Chart Button */}
+          <span 
+            style={{ 
+              color: "#000000", 
+              cursor: "pointer",
+              fontSize: "1.1rem",
+              backgroundColor: "#E3F2FD",
+              padding: "4px 6px",
+              borderRadius: "12px",
+              border: "1px solid #BBDEFB",
+              boxShadow: "0 1px 2px rgba(41,98,255,0.3)",
+              display: "inline-flex",
+              alignItems: "center",
+              transition: "all 0.2s ease"
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(`https://www.tradingview.com/chart/StTMbjgz/?symbol=${stock.ticker}`, '_blank');
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.1)";
+              e.currentTarget.style.backgroundColor = "#BBDEFB";
+              e.currentTarget.style.color = "#000000";
+              e.currentTarget.style.boxShadow = "0 2px 6px rgba(41,98,255,0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.backgroundColor = "#E3F2FD";
+              e.currentTarget.style.color = "#000000";
+              e.currentTarget.style.boxShadow = "0 1px 2px rgba(41,98,255,0.3)";
+            }}
+            title="View on TradingView"
+          >
+            {SiTradingview({ size: 14 })}
+          </span>
         </div>
       </div>
       
