@@ -6534,6 +6534,16 @@
       "triggeredAt": "2025-11-10T17:35:39.472Z",
       "triggeredPrice": 1.56,
       "updated": "2025-11-10T17:35:39.473Z"
+    },
+    {
+      "id": "alert_1762797657482",
+      "ticker": "SOND",
+      "targetPrice": 0.25,
+      "condition": "above",
+      "active": true,
+      "triggered": false,
+      "created": "2025-11-10T18:00:57.482Z",
+      "triggeredAt": null
     }
   ]
 }

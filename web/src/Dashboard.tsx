@@ -41,8 +41,6 @@ const Dashboard: React.FC = () => {
   const [topGainers, setTopGainers] = useState<string[]>([]);
   const [topLosers, setTopLosers] = useState<string[]>([]);
   const [showChartView, setShowChartView] = useState<boolean>(true);
-  const [performanceTimeframe, setPerformanceTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
-  const [performanceType, setPerformanceType] = useState<'gainers' | 'losers'>('gainers');
 
   useEffect(() => {
     loadData();
@@ -362,12 +360,6 @@ const Dashboard: React.FC = () => {
     // Auto-set activeFilter based on whether we have any filters
     // Check the updated state by calculating hasFilters separately
     setActiveFilter(prev => {
-      // Preserve 'performance' filter - don't override it
-      if (prev === 'performance') {
-        return 'performance';
-      }
-      
-      // If currently on gainers/losers, switch to multifilter when toggling
       const newFiltersSize = (type === 'fire' ? (multiFilters.fireLevels.has(value as number) ? multiFilters.fireLevels.size - 1 : multiFilters.fireLevels.size + 1) : multiFilters.fireLevels.size) +
                              (type === 'price' ? (multiFilters.priceFilters.has(value as string) ? multiFilters.priceFilters.size - 1 : multiFilters.priceFilters.size + 1) : multiFilters.priceFilters.size) +
                              (type === 'marketValue' ? (multiFilters.marketValueFilters.has(value as string) ? multiFilters.marketValueFilters.size - 1 : multiFilters.marketValueFilters.size + 1) : multiFilters.marketValueFilters.size);
@@ -432,68 +424,6 @@ const Dashboard: React.FC = () => {
       case 'holdings':
         stocks = holdingTickers;
         break;
-      case 'gainers':
-        // Filter based on selected timeframe performance
-        if (performanceTimeframe === 'daily') {
-          // Daily - use topGainers from API
-          stocks = topGainers.filter(ticker => tickersWithData.includes(ticker));
-        } else {
-          // Weekly or Monthly - filter by performance data
-          stocks = tickersWithData.filter(ticker => {
-            const stock = stockData.get(ticker);
-            if (!stock?.performance) return false;
-            
-            if (performanceTimeframe === 'weekly') {
-              return (stock.performance.week || 0) > 0;
-            } else {
-              return (stock.performance.month || 0) > 0;
-            }
-          }).sort((a, b) => {
-            const stockA = stockData.get(a);
-            const stockB = stockData.get(b);
-            if (!stockA?.performance || !stockB?.performance) return 0;
-            
-            if (performanceTimeframe === 'weekly') {
-              return (stockB.performance.week || 0) - (stockA.performance.week || 0);
-            } else {
-              return (stockB.performance.month || 0) - (stockA.performance.month || 0);
-            }
-          });
-        }
-        break;
-      case 'losers':
-        // Filter based on selected timeframe performance
-        if (performanceTimeframe === 'daily') {
-          // Daily - use topLosers from API
-          stocks = topLosers.filter(ticker => tickersWithData.includes(ticker));
-        } else {
-          // Weekly or Monthly - filter by performance data
-          stocks = tickersWithData.filter(ticker => {
-            const stock = stockData.get(ticker);
-            if (!stock?.performance) return false;
-            
-            if (performanceTimeframe === 'weekly') {
-              return (stock.performance.week || 0) < 0;
-            } else {
-              return (stock.performance.month || 0) < 0;
-            }
-          }).sort((a, b) => {
-            const stockA = stockData.get(a);
-            const stockB = stockData.get(b);
-            if (!stockA?.performance || !stockB?.performance) return 0;
-            
-            if (performanceTimeframe === 'weekly') {
-              return (stockA.performance.week || 0) - (stockB.performance.week || 0);
-            } else {
-              return (stockA.performance.month || 0) - (stockB.performance.month || 0);
-            }
-          });
-        }
-        break;
-      case 'performance':
-        // Start with all stocks that have data
-        stocks = tickersWithData;
-        break;
       default:
         stocks = tickersWithData;
     }
@@ -545,44 +475,6 @@ const Dashboard: React.FC = () => {
       });
     }
 
-    // Apply performance sorting/filtering if active
-    if (activeFilter === 'performance') {
-      if (performanceTimeframe === 'daily') {
-        // Daily - filter to only stocks in topGainers/topLosers
-        const topList = performanceType === 'gainers' ? topGainers : topLosers;
-        stocks = stocks.filter(ticker => topList.includes(ticker));
-        // Sort by position in top list
-        stocks.sort((a, b) => topList.indexOf(a) - topList.indexOf(b));
-      } else {
-        // Weekly or Monthly - filter by performance data
-        stocks = stocks.filter(ticker => {
-          const stock = stockData.get(ticker);
-          if (!stock?.performance) return false;
-          
-          const perfValue = performanceTimeframe === 'weekly' 
-            ? (stock.performance.week || 0)
-            : (stock.performance.month || 0);
-          
-          return performanceType === 'gainers' ? perfValue > 0 : perfValue < 0;
-        }).sort((a, b) => {
-          const stockA = stockData.get(a);
-          const stockB = stockData.get(b);
-          if (!stockA?.performance || !stockB?.performance) return 0;
-          
-          const perfA = performanceTimeframe === 'weekly' 
-            ? (stockA.performance.week || 0)
-            : (stockA.performance.month || 0);
-          const perfB = performanceTimeframe === 'weekly'
-            ? (stockB.performance.week || 0)
-            : (stockB.performance.month || 0);
-          
-          return performanceType === 'gainers' 
-            ? perfB - perfA  // Highest to lowest for gainers
-            : perfA - perfB; // Lowest to highest for losers
-        });
-      }
-    }
-    
     // Filter by search query if provided
     if (searchQuery.trim()) {
       // Split by comma, space, or newline to support multiple tickers
@@ -667,6 +559,40 @@ const Dashboard: React.FC = () => {
           const marketCapAscA = stockA.market_cap || 0;
           const marketCapAscB = stockB.market_cap || 0;
           return marketCapAscA - marketCapAscB;
+        case 'daily-gainers':
+          // Sort by daily gainers (from topGainers list)
+          // Stocks not in list get pushed to end
+          const indexA_gainers = topGainers.indexOf(a);
+          const indexB_gainers = topGainers.indexOf(b);
+          if (indexA_gainers === -1 && indexB_gainers === -1) return 0;
+          if (indexA_gainers === -1) return 1;
+          if (indexB_gainers === -1) return -1;
+          return indexA_gainers - indexB_gainers;
+        case 'daily-losers':
+          // Sort by daily losers (from topLosers list)
+          // Stocks not in list get pushed to end
+          const indexA_losers = topLosers.indexOf(a);
+          const indexB_losers = topLosers.indexOf(b);
+          if (indexA_losers === -1 && indexB_losers === -1) return 0;
+          if (indexA_losers === -1) return 1;
+          if (indexB_losers === -1) return -1;
+          return indexA_losers - indexB_losers;
+        case 'weekly-gainers':
+          // Sort by weekly performance (highest gains first)
+          if (!stockA?.performance || !stockB?.performance) return 0;
+          return (stockB.performance.week || 0) - (stockA.performance.week || 0);
+        case 'weekly-losers':
+          // Sort by weekly performance (lowest/most negative first)
+          if (!stockA?.performance || !stockB?.performance) return 0;
+          return (stockA.performance.week || 0) - (stockB.performance.week || 0);
+        case 'monthly-gainers':
+          // Sort by monthly performance (highest gains first)
+          if (!stockA?.performance || !stockB?.performance) return 0;
+          return (stockB.performance.month || 0) - (stockA.performance.month || 0);
+        case 'monthly-losers':
+          // Sort by monthly performance (lowest/most negative first)
+          if (!stockA?.performance || !stockB?.performance) return 0;
+          return (stockA.performance.month || 0) - (stockB.performance.month || 0);
         default:
           // Default to combined VG + BR (highest first)
           const defaultA = stockA.vanguard_pct + stockA.blackrock_pct;
@@ -1334,27 +1260,38 @@ const Dashboard: React.FC = () => {
             🏆 Over $2
           </button>
 
-          {/* Compact Performance Filter */}
+          {/* Compact Performance Sort */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-            backgroundColor: activeFilter === 'performance' ? '#E3F2FD' : theme.ui.surface,
-            border: `2px solid ${activeFilter === 'performance' ? '#2196F3' : theme.ui.border}`,
+            backgroundColor: (sortBy === 'daily-gainers' || sortBy === 'daily-losers' || sortBy === 'weekly-gainers' || sortBy === 'weekly-losers' || sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') ? '#E3F2FD' : theme.ui.surface,
+            border: `2px solid ${(sortBy === 'daily-gainers' || sortBy === 'daily-losers' || sortBy === 'weekly-gainers' || sortBy === 'weekly-losers' || sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') ? '#2196F3' : theme.ui.border}`,
             borderRadius: theme.borderRadius.md,
-            boxShadow: activeFilter === 'performance' ? '0 4px 8px rgba(33, 150, 243, 0.3)' : theme.ui.shadow.sm,
+            boxShadow: (sortBy === 'daily-gainers' || sortBy === 'daily-losers' || sortBy === 'weekly-gainers' || sortBy === 'weekly-losers' || sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') ? '0 4px 8px rgba(33, 150, 243, 0.3)' : theme.ui.shadow.sm,
             transition: `all ${theme.transition.normal}`,
             fontFamily: theme.typography.fontFamily
           }}>
             {/* Timeframe Toggle */}
             <div style={{ display: 'flex', gap: '2px', backgroundColor: '#f8f9fa', borderRadius: theme.borderRadius.sm, padding: '2px' }}>
               <button
-                onClick={() => setPerformanceTimeframe('daily')}
+                onClick={() => {
+                  // Toggle daily: if already on daily-gainers/losers, turn off, otherwise set to daily-gainers
+                  if (sortBy === 'daily-gainers' || sortBy === 'daily-losers') {
+                    setSortBy('');
+                  } else if (sortBy === 'weekly-gainers' || sortBy === 'monthly-gainers') {
+                    setSortBy('daily-gainers');
+                  } else if (sortBy === 'weekly-losers' || sortBy === 'monthly-losers') {
+                    setSortBy('daily-losers');
+                  } else {
+                    setSortBy('daily-gainers');
+                  }
+                }}
                 style={{
                   padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                  backgroundColor: performanceTimeframe === 'daily' ? '#2196F3' : 'transparent',
-                  color: performanceTimeframe === 'daily' ? 'white' : theme.ui.text.primary,
+                  backgroundColor: (sortBy === 'daily-gainers' || sortBy === 'daily-losers') ? '#2196F3' : 'transparent',
+                  color: (sortBy === 'daily-gainers' || sortBy === 'daily-losers') ? 'white' : theme.ui.text.primary,
                   border: 'none',
                   borderRadius: theme.borderRadius.sm,
                   cursor: 'pointer',
@@ -1367,11 +1304,22 @@ const Dashboard: React.FC = () => {
                 D
               </button>
               <button
-                onClick={() => setPerformanceTimeframe('weekly')}
+                onClick={() => {
+                  // Toggle weekly
+                  if (sortBy === 'weekly-gainers' || sortBy === 'weekly-losers') {
+                    setSortBy('');
+                  } else if (sortBy === 'daily-gainers' || sortBy === 'monthly-gainers') {
+                    setSortBy('weekly-gainers');
+                  } else if (sortBy === 'daily-losers' || sortBy === 'monthly-losers') {
+                    setSortBy('weekly-losers');
+                  } else {
+                    setSortBy('weekly-gainers');
+                  }
+                }}
                 style={{
                   padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                  backgroundColor: performanceTimeframe === 'weekly' ? '#2196F3' : 'transparent',
-                  color: performanceTimeframe === 'weekly' ? 'white' : theme.ui.text.primary,
+                  backgroundColor: (sortBy === 'weekly-gainers' || sortBy === 'weekly-losers') ? '#2196F3' : 'transparent',
+                  color: (sortBy === 'weekly-gainers' || sortBy === 'weekly-losers') ? 'white' : theme.ui.text.primary,
                   border: 'none',
                   borderRadius: theme.borderRadius.sm,
                   cursor: 'pointer',
@@ -1384,11 +1332,22 @@ const Dashboard: React.FC = () => {
                 W
               </button>
               <button
-                onClick={() => setPerformanceTimeframe('monthly')}
+                onClick={() => {
+                  // Toggle monthly
+                  if (sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') {
+                    setSortBy('');
+                  } else if (sortBy === 'daily-gainers' || sortBy === 'weekly-gainers') {
+                    setSortBy('monthly-gainers');
+                  } else if (sortBy === 'daily-losers' || sortBy === 'weekly-losers') {
+                    setSortBy('monthly-losers');
+                  } else {
+                    setSortBy('monthly-gainers');
+                  }
+                }}
                 style={{
                   padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                  backgroundColor: performanceTimeframe === 'monthly' ? '#2196F3' : 'transparent',
-                  color: performanceTimeframe === 'monthly' ? 'white' : theme.ui.text.primary,
+                  backgroundColor: (sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') ? '#2196F3' : 'transparent',
+                  color: (sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') ? 'white' : theme.ui.text.primary,
                   border: 'none',
                   borderRadius: theme.borderRadius.sm,
                   cursor: 'pointer',
@@ -1405,18 +1364,27 @@ const Dashboard: React.FC = () => {
             {/* Gainers Button */}
             <button
               onClick={() => {
-                setPerformanceType('gainers');
-                if (activeFilter === 'performance' && performanceType === 'gainers') {
-                  // Toggle off
-                  setActiveFilter('all');
+                // Toggle gainers based on current timeframe
+                if (sortBy === 'daily-gainers') {
+                  setSortBy('');
+                } else if (sortBy === 'weekly-gainers') {
+                  setSortBy('');
+                } else if (sortBy === 'monthly-gainers') {
+                  setSortBy('');
+                } else if (sortBy === 'daily-losers') {
+                  setSortBy('daily-gainers');
+                } else if (sortBy === 'weekly-losers') {
+                  setSortBy('weekly-gainers');
+                } else if (sortBy === 'monthly-losers') {
+                  setSortBy('monthly-gainers');
                 } else {
-                  setActiveFilter('performance');
+                  setSortBy('daily-gainers');
                 }
               }}
               style={{
                 padding: `${theme.spacing.xs} ${theme.spacing.md}`,
-                backgroundColor: activeFilter === 'performance' && performanceType === 'gainers' ? '#28a745' : 'transparent',
-                color: activeFilter === 'performance' && performanceType === 'gainers' ? 'white' : '#28a745',
+                backgroundColor: (sortBy === 'daily-gainers' || sortBy === 'weekly-gainers' || sortBy === 'monthly-gainers') ? '#28a745' : 'transparent',
+                color: (sortBy === 'daily-gainers' || sortBy === 'weekly-gainers' || sortBy === 'monthly-gainers') ? 'white' : '#28a745',
                 border: `2px solid #28a745`,
                 borderRadius: theme.borderRadius.sm,
                 cursor: 'pointer',
@@ -1433,18 +1401,27 @@ const Dashboard: React.FC = () => {
             {/* Losers Button */}
             <button
               onClick={() => {
-                setPerformanceType('losers');
-                if (activeFilter === 'performance' && performanceType === 'losers') {
-                  // Toggle off
-                  setActiveFilter('all');
+                // Toggle losers based on current timeframe
+                if (sortBy === 'daily-losers') {
+                  setSortBy('');
+                } else if (sortBy === 'weekly-losers') {
+                  setSortBy('');
+                } else if (sortBy === 'monthly-losers') {
+                  setSortBy('');
+                } else if (sortBy === 'daily-gainers') {
+                  setSortBy('daily-losers');
+                } else if (sortBy === 'weekly-gainers') {
+                  setSortBy('weekly-losers');
+                } else if (sortBy === 'monthly-gainers') {
+                  setSortBy('monthly-losers');
                 } else {
-                  setActiveFilter('performance');
+                  setSortBy('daily-losers');
                 }
               }}
               style={{
                 padding: `${theme.spacing.xs} ${theme.spacing.md}`,
-                backgroundColor: activeFilter === 'performance' && performanceType === 'losers' ? '#dc3545' : 'transparent',
-                color: activeFilter === 'performance' && performanceType === 'losers' ? 'white' : '#dc3545',
+                backgroundColor: (sortBy === 'daily-losers' || sortBy === 'weekly-losers' || sortBy === 'monthly-losers') ? '#dc3545' : 'transparent',
+                color: (sortBy === 'daily-losers' || sortBy === 'weekly-losers' || sortBy === 'monthly-losers') ? 'white' : '#dc3545',
                 border: `2px solid #dc3545`,
                 borderRadius: theme.borderRadius.sm,
                 cursor: 'pointer',
