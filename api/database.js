@@ -21,6 +21,7 @@ class DatabaseService {
     // Initialize default data structure
     this.db.data = this.db.data || {
       tickers: [],
+      rejectedTickers: [],
       scanResults: {
         stocks: [],
         summary: {
@@ -35,15 +36,7 @@ class DatabaseService {
         timestamp: null,
         new_stocks_only: false
       },
-      watchlists: [
-        {
-          id: 'default',
-          name: 'My Watchlist',
-          stocks: ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'NVDA'],
-          created: new Date().toISOString(),
-          updated: new Date().toISOString()
-        }
-      ],
+      watchlists: [],
       holdings: {
         stocks: [], // Array of ticker symbols user is holding
         last_updated: null
@@ -60,6 +53,11 @@ class DatabaseService {
         stocks: [], // Array of ticker symbols user is holding
         last_updated: null
       };
+    }
+
+    // Ensure rejectedTickers section exists for existing databases
+    if (!this.db.data.rejectedTickers) {
+      this.db.data.rejectedTickers = [];
     }
 
     await this.db.write();
@@ -126,6 +124,39 @@ class DatabaseService {
     await this.db.write();
     console.log(`📝 Updated ticker list (${this.db.data.tickers.length} tickers)`);
     return this.db.data.tickers;
+  }
+
+  // Rejected Tickers Management (for stocks with fire_level <= 0)
+  async getRejectedTickers() {
+    await this.init();
+    return this.db.data.rejectedTickers || [];
+  }
+
+  async addRejectedTickers(tickers) {
+    await this.init();
+    const added = [];
+    
+    for (const ticker of tickers) {
+      const normalizedTicker = ticker.toUpperCase().trim();
+      if (!this.db.data.rejectedTickers.includes(normalizedTicker)) {
+        this.db.data.rejectedTickers.push(normalizedTicker);
+        added.push(normalizedTicker);
+      }
+    }
+    
+    if (added.length > 0) {
+      await this.db.write();
+      console.log(`🚫 Added ${added.length} rejected tickers`);
+    }
+    
+    return added;
+  }
+
+  async clearRejectedTickers() {
+    await this.init();
+    this.db.data.rejectedTickers = [];
+    await this.db.write();
+    console.log('🗑️ Cleared rejected tickers');
   }
 
   // Holdings Management

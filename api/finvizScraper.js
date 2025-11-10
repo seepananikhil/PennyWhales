@@ -50,18 +50,8 @@ async function scrapeFinvizScreener(url = 'https://finviz.com/screener.ashx?v=43
           const match = onclick.match(/t=([A-Z]+)/);
           const tickerSymbol = match ? match[1] : ticker;
           
-          // Extract Perf Month from data-boxover attribute
-          let perfMonth = null;
-          if (dataBoxover) {
-            const perfMatch = dataBoxover.match(/Perf Month:\s*([-+]?\d+\.?\d*)%/);
-            if (perfMatch) {
-              perfMonth = parseFloat(perfMatch[1]);
-            }
-          }
-          
           stocks.push({
-            ticker: tickerSymbol,
-            perfMonth: perfMonth
+            ticker: tickerSymbol
           });
         }
       } catch (err) {
@@ -89,73 +79,57 @@ async function getFinvizTickers(url) {
 }
 
 /**
- * Scrape multiple pages from Finviz screener
- * @param {string} baseUrl - Base Finviz screener URL
- * @param {number} maxPages - Maximum number of pages to scrape
- * @returns {Promise<Array>} Array of stock objects from all pages
+ * Get performance data for a ticker from Finviz
+ * @param {string} ticker - Stock ticker symbol
+ * @returns {Promise<Object>} Performance data (week, month, year)
  */
-async function scrapeFinvizMultiplePages(baseUrl, maxPages = 5) {
-  const allStocks = [];
-  
-  for (let page = 1; page <= maxPages; page++) {
-    const offset = (page - 1) * 20; // Finviz shows 20 results per page
-    const url = `${baseUrl}&r=${offset + 1}`;
-    
-    console.log(`Scraping page ${page}...`);
-    
-    try {
-      const stocks = await scrapeFinvizScreener(url);
-      
-      if (stocks.length === 0) {
-        console.log(`No more results found at page ${page}`);
-        break;
+async function getFinvizPerformance(ticker) {
+  try {
+    const response = await axios.get(
+      `https://finviz.com/quote.ashx?t=${ticker}&p=d`,
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
       }
-      
-      allStocks.push(...stocks);
-      
-      // Add delay to be respectful to the server
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-    } catch (error) {
-      console.error(`Error scraping page ${page}:`, error.message);
-      break;
+    );
+
+    if (response.status !== 200) return null;
+    const html = response.data;
+    
+    // Parse performance data from HTML
+    const performance = {
+      week: null,
+      month: null,
+      year: null
+    };
+
+    // Find performance table rows - updated regex to match new HTML structure
+    // The percentage is in a <span> tag within the next <td> after the label
+    const perfWeekMatch = html.match(/Perf Week<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<span[^>]*>([-+]?\d+\.?\d*%)<\/span>/);
+    const perfMonthMatch = html.match(/Perf Month<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<span[^>]*>([-+]?\d+\.?\d*%)<\/span>/);
+    const perfYearMatch = html.match(/Perf Year<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<span[^>]*>([-+]?\d+\.?\d*%)<\/span>/);
+
+    if (perfWeekMatch) {
+      performance.week = parseFloat(perfWeekMatch[1].replace('%', ''));
     }
+    if (perfMonthMatch) {
+      performance.month = parseFloat(perfMonthMatch[1].replace('%', ''));
+    }
+    if (perfYearMatch) {
+      performance.year = parseFloat(perfYearMatch[1].replace('%', ''));
+    }
+
+    return performance;
+  } catch (error) {
+    console.error(`Error fetching Finviz performance for ${ticker}:`, error.message);
+    return null;
   }
-  
-  return allStocks;
 }
 
 // Export functions
 module.exports = {
   scrapeFinvizScreener,
   getFinvizTickers,
-  scrapeFinvizMultiplePages
+  getFinvizPerformance
 };
-
-// CLI usage
-if (require.main === module) {
-  const url = process.argv[2] || 'https://finviz.com/screener.ashx?v=431&f=exch_nasd,sh_instown_o10,sh_price_u3&o=-perf4w';
-  
-  scrapeFinvizScreener(url)
-    .then(stocks => {
-      console.log('\n=== Finviz Screener Results ===\n');
-      console.log(JSON.stringify(stocks, null, 2));
-      console.log(`\nTotal stocks: ${stocks.length}`);
-      console.log('\nTickers:', stocks.map(s => s.ticker).join(', '));
-      
-      // Show stats
-      const withPerfData = stocks.filter(s => s.perfMonth !== null).length;
-      console.log(`\nStocks with Perf Month data: ${withPerfData}`);
-      
-      if (withPerfData > 0) {
-        const avgPerf = stocks
-          .filter(s => s.perfMonth !== null)
-          .reduce((sum, s) => sum + s.perfMonth, 0) / withPerfData;
-        console.log(`Average Perf Month: ${avgPerf.toFixed(2)}%`);
-      }
-    })
-    .catch(err => {
-      console.error('Failed to scrape Finviz:', err);
-      process.exit(1);
-    });
-}

@@ -77,84 +77,6 @@ async function autoPopulateHotPicks() {
   }
 }
 
-// Run daily scan at 6am IST
-async function runDailyScan() {
-  if (scanState.scanning) {
-    console.log('⏭️ Scan already in progress, skipping scheduled scan');
-    return;
-  }
-
-  try {
-    console.log('⏰ Starting scheduled daily scan at 6am IST...');
-    
-    // Step 1: Fetch Finviz data
-    console.log('📊 Fetching top performers from Finviz...');
-    const finvizStocks = await scrapeFinvizScreener();
-    
-    if (finvizStocks && finvizStocks.length > 0) {
-      const finvizTickers = finvizStocks.map(s => s.ticker);
-      console.log(`✅ Fetched ${finvizTickers.length} tickers from Finviz`);
-      
-      // Step 2: Add tickers to the list (only qualifying ones will be added)
-      console.log(`🎯 Adding ${finvizTickers.length} tickers to scan list...`);
-      const added = await dbService.addTickers(finvizTickers);
-      console.log(`✅ Added ${added.length} new tickers to the list`);
-    } else {
-      console.log('⚠️ No data fetched from Finviz, proceeding with existing tickers');
-    }
-    
-    // Step 3: Start the scan
-    scanState.scanning = true;
-    scanState.error = null;
-    scanState.progress = { current: 0, total: 0, percentage: 0 };
-
-    // Create new scanner instance
-    currentScanner = new StockScanner();
-    
-    // Set up progress callback
-    currentScanner.onProgress = (progress) => {
-      scanState.progress = progress;
-      console.log(`Daily scan progress: ${progress.current}/${progress.total} (${progress.percentage}%)`);
-    };
-
-    // Get previous fire stocks and run scan on them
-    const previousResults = await dbService.getScanResults();
-    const previousFireStocks = previousResults?.stocks?.filter(s => s.fire_level && s.fire_level > 0) || [];
-    
-    if (previousFireStocks.length === 0) {
-      console.log('⚠️ No previous fire stocks found. Running full scan instead...');
-      await currentScanner.scan();
-    } else {
-      const fireStockTickers = previousFireStocks.map(s => s.ticker);
-      console.log(`🔥 Scanning ${fireStockTickers.length} fire stocks`);
-      await currentScanner.scanTickers(fireStockTickers, previousFireStocks);
-    }
-
-    scanState.scanning = false;
-    scanState.last_scan = new Date().toISOString();
-    
-    // Auto-populate Hot Picks watchlist after scan completes
-    await autoPopulateHotPicks();
-    
-    console.log('✅ Scheduled daily scan completed successfully');
-  } catch (error) {
-    scanState.scanning = false;
-    scanState.error = error.message;
-    console.error('❌ Scheduled daily scan failed:', error);
-  }
-}
-
-// Schedule daily scan at 6:00 AM IST (which is 0:30 UTC)
-// IST is UTC+5:30, so 6:00 AM IST = 0:30 AM UTC
-cron.schedule('30 0 * * *', () => {
-  console.log('⏰ Cron triggered: Running scheduled daily scan at 6:00 AM IST');
-  runDailyScan();
-}, {
-  timezone: "UTC"
-});
-
-console.log('⏰ Scheduled daily scan at 6:00 AM IST (0:30 AM UTC)');
-
 // API Routes
 
 // Start scan
@@ -164,72 +86,129 @@ app.post('/api/scan/start', async (req, res) => {
   }
 
   try {
-    const { fireStocksOnly = false } = req.body;
-    
     scanState.scanning = true;
     scanState.error = null;
     scanState.progress = { current: 0, total: 0, percentage: 0 };
 
-    // Create new scanner instance
-    currentScanner = new StockScanner();
-    
-    // Set up progress callback
-    currentScanner.onProgress = (progress) => {
-      scanState.progress = progress;
-      const scanType = fireStocksOnly ? 'Fire stocks' : 'Full scan';
-      console.log(`${scanType} progress: ${progress.current}/${progress.total} (${progress.percentage}%)`);
-    };
+    res.json({ success: true, message: 'Scan started successfully' });
 
-    if (fireStocksOnly) {
-      // Fire stocks only scan
-      const previousResults = await dbService.getScanResults();
-      const previousFireStocks = previousResults?.stocks?.filter(s => s.fire_level && s.fire_level > 0) || [];
-      
-      if (previousFireStocks.length === 0) {
-        scanState.scanning = false;
-        return res.json({ success: false, message: 'No previous fire stocks found. Run a full scan first.' });
-      }
-
-      const fireStockTickers = previousFireStocks.map(s => s.ticker);
-      console.log(`🔥 Starting fire stocks scan for ${fireStockTickers.length} fire stocks: ${fireStockTickers.join(', ')}`);
-
-      res.json({ success: true, message: `Fire stocks scan started for ${fireStockTickers.length} fire stocks` });
-
-      // Run fire stocks scan asynchronously
+    // Run scan asynchronously
+    (async () => {
       try {
-        const results = await currentScanner.scanTickers(fireStockTickers, previousFireStocks);
-        scanState.scanning = false;
-        scanState.last_scan = new Date().toISOString();
+        // Step 1: Fetch Finviz data
+        console.log('📊 Fetching top performers from Finviz...');
+        const finvizStocks = await scrapeFinvizScreener();
+        
+        let tickersToScan = [];
+        
+        if (finvizStocks && finvizStocks.length > 0) {
+          const finvizTickers = finvizStocks.map(s => s.ticker.toUpperCase().trim());
+          console.log(`✅ Fetched ${finvizTickers.length} tickers from Finviz`);
+          
+          // Get rejected tickers to filter them out
+          const rejectedTickers = await dbService.getRejectedTickers();
+          console.log(`🚫 Found ${rejectedTickers.length} rejected tickers to skip`);
+          
+          // Filter out rejected tickers
+          tickersToScan = finvizTickers.filter(ticker => !rejectedTickers.includes(ticker));
+          console.log(`🎯 Will scan ${tickersToScan.length} tickers (${finvizTickers.length - tickersToScan.length} rejected tickers skipped)`);
+        } else {
+          console.log('⚠️ No data fetched from Finviz, using existing tickers');
+          const allTickers = await dbService.getTickers();
+          const rejectedTickers = await dbService.getRejectedTickers();
+          tickersToScan = allTickers.filter(ticker => !rejectedTickers.includes(ticker));
+        }
+
+        if (tickersToScan.length === 0) {
+          console.log('⚠️ No tickers to scan');
+          scanState.scanning = false;
+          return;
+        }
+
+        // Step 2: Scan the tickers
+        console.log(`� Starting scan for ${tickersToScan.length} tickers...`);
+        
+        const scanner = new StockScanner();
+        const { calculateFireLevel } = require('./fireUtils');
+        
+        scanState.progress = { current: 0, total: tickersToScan.length, percentage: 0 };
+        
+        const qualifyingStocks = [];
+        const rejectedTickersToAdd = [];
+        
+        for (let i = 0; i < tickersToScan.length; i++) {
+          const ticker = tickersToScan[i];
+          
+          try {
+            const result = await scanner.analyzeTicker(ticker);
+            
+            if (result) {
+              result.fire_level = calculateFireLevel(result);
+              
+              if (result.fire_level > 0) {
+                qualifyingStocks.push(result);
+                console.log(`✅ ${ticker}: fire_level=${result.fire_level}`);
+              } else {
+                rejectedTickersToAdd.push(ticker);
+                console.log(`🚫 ${ticker}: fire_level=0 (rejected)`);
+              }
+            }
+          } catch (error) {
+            console.error(`❌ Error scanning ${ticker}:`, error.message);
+          }
+          
+          // Update progress
+          scanState.progress = {
+            current: i + 1,
+            total: tickersToScan.length,
+            percentage: Math.round(((i + 1) / tickersToScan.length) * 100)
+          };
+        }
+        
+        // Step 3: Add rejected tickers to rejected collection
+        if (rejectedTickersToAdd.length > 0) {
+          await dbService.addRejectedTickers(rejectedTickersToAdd);
+          console.log(`🚫 Added ${rejectedTickersToAdd.length} tickers to rejected list`);
+        }
+        
+        // Step 4: Add qualifying tickers to tickers list
+        if (qualifyingStocks.length > 0) {
+          const qualifyingTickers = qualifyingStocks.map(s => s.ticker);
+          await dbService.addTickers(qualifyingTickers);
+          console.log(`✅ Added ${qualifyingTickers.length} qualifying tickers`);
+        }
+        
+        // Step 5: Save scan results
+        const scanResults = {
+          stocks: qualifyingStocks,
+          summary: {
+            total_processed: tickersToScan.length,
+            qualifying_count: qualifyingStocks.length,
+            rejected_count: rejectedTickersToAdd.length,
+            fire_level_3: qualifyingStocks.filter(s => s.fire_level === 3).length,
+            fire_level_2: qualifyingStocks.filter(s => s.fire_level === 2).length,
+            fire_level_1: qualifyingStocks.filter(s => s.fire_level === 1).length,
+            total_fire_stocks: qualifyingStocks.length
+          }
+        };
+        
+        await dbService.saveScanResults(scanResults);
         
         // Auto-populate Hot Picks watchlist after scan completes
         await autoPopulateHotPicks();
         
-        console.log('✅ Fire stocks scan completed successfully');
-      } catch (error) {
-        scanState.scanning = false;
-        scanState.error = error.message;
-        console.error('❌ Fire stocks scan failed:', error);
-      }
-    } else {
-      // Full scan
-      res.json({ success: true, message: 'Full scan started successfully' });
-
-      // Run full scan asynchronously
-      try {
-        const results = await currentScanner.scan();
         scanState.scanning = false;
         scanState.last_scan = new Date().toISOString();
         
-        // Auto-populate Hot Picks watchlist after scan completes
-        await autoPopulateHotPicks();
+        console.log('✅ Scan completed successfully');
+        console.log(`📊 Results: ${qualifyingStocks.length} qualifying, ${rejectedTickersToAdd.length} rejected`);
         
-        console.log('✅ Full scan completed successfully');
       } catch (error) {
         scanState.scanning = false;
         scanState.error = error.message;
-        console.error('❌ Full scan failed:', error);
+        console.error('❌ Scan failed:', error);
       }
-    }
+    })();
 
   } catch (error) {
     scanState.scanning = false;
@@ -439,55 +418,24 @@ app.get('/api/tickers', async (req, res) => {
   }
 });
 
-app.post('/api/tickers', async (req, res) => {
+// Rejected Tickers Endpoints
+app.get('/api/rejected-tickers', async (req, res) => {
   try {
-    const { ticker, tickers } = req.body;
-    
-    if (ticker) {
-      // Add single ticker - scan first to check if it qualifies
-      console.log(`🎯 Scanning ${ticker} to check if it qualifies...`);
-      const scanner = new StockScanner();
-      const scanResult = await scanner.scanNewTickers([ticker]);
-      
-      if (scanResult.stocks.length > 0) {
-        const added = await dbService.addTicker(ticker);
-        if (added) {
-          res.json({ 
-            success: true, 
-            message: `Added qualifying ticker: ${ticker.toUpperCase()}`,
-            fire_level: scanResult.stocks[0].fire_level
-          });
-        } else {
-          res.status(400).json({ error: 'Ticker already exists' });
-        }
-      } else {
-        res.status(400).json({ 
-          error: `Ticker ${ticker.toUpperCase()} does not qualify (fire_level === 0)`,
-          rejected: true
-        });
-      }
-    } else if (tickers && Array.isArray(tickers)) {
-      // Add multiple tickers - scan first to check which qualify
-      console.log(`🎯 Scanning ${tickers.length} tickers to check which qualify...`);
-      const scanner = new StockScanner();
-      const scanResult = await scanner.scanNewTickers(tickers);
-      
-      const qualifiedTickers = scanResult.stocks.map(s => s.ticker);
-      const added = await dbService.addTickers(qualifiedTickers);
-      
-      res.json({ 
-        success: true, 
-        added: added.length,
-        rejected: tickers.length - added.length,
-        tickers: added,
-        message: `${added.length} qualifying tickers added (${tickers.length - added.length} rejected)`
-      });
-    } else {
-      res.status(400).json({ error: 'Invalid request. Provide ticker or tickers array' });
-    }
+    const rejectedTickers = await dbService.getRejectedTickers();
+    res.json({ rejectedTickers, count: rejectedTickers.length });
   } catch (error) {
-    console.error('Error adding ticker(s):', error);
-    res.status(500).json({ error: 'Failed to add ticker(s)' });
+    console.error('Error getting rejected tickers:', error);
+    res.status(500).json({ error: 'Failed to get rejected tickers' });
+  }
+});
+
+app.delete('/api/rejected-tickers', async (req, res) => {
+  try {
+    await dbService.clearRejectedTickers();
+    res.json({ success: true, message: 'Rejected tickers cleared successfully' });
+  } catch (error) {
+    console.error('Error clearing rejected tickers:', error);
+    res.status(500).json({ error: 'Failed to clear rejected tickers' });
   }
 });
 
@@ -814,7 +762,7 @@ app.delete('/api/watchlists/:id/stocks', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Stock Scanner API running on port ${PORT}`);
   console.log(`📊 Pure JavaScript implementation - no Python required!`);
-  console.log(`📅 Using LowDB for data storage`);
+  console.log(`🗄️ Using MongoDB with Prisma ORM for data storage`);
   console.log(`🎯 Ticker management available at /api/tickers`);
   console.log(`⭐ Holdings management available at /api/holdings`);
 });

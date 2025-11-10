@@ -1,0 +1,9 @@
+{
+  "watch": ["*.js", "prisma/schema.prisma"],
+  "ext": "js,json,prisma",
+  "ignore": ["node_modules/", "*.log"],
+  "env": {
+    "NODE_OPTIONS": "--openssl-legacy-provider"
+  },
+  "delay": 1000
+}

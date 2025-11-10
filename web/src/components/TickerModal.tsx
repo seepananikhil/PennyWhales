@@ -31,7 +31,7 @@ const TickerModal: React.FC<TickerModalProps> = ({
   const handleScan = async () => {
     const newTickers = bulkText
       .split(/[,\s\n]+/)
-      .map(ticker => ticker.trim().toUpperCase())
+      .map(ticker => ticker.trim().replace(/['"]/g, '').toUpperCase())
       .filter(ticker => ticker.length > 0);
     
     if (newTickers.length === 0) return;
@@ -91,7 +91,7 @@ const TickerModal: React.FC<TickerModalProps> = ({
   const handleSave = () => {
     const newTickers = bulkText
       .split(/[,\s\n]+/)
-      .map(ticker => ticker.trim().toUpperCase())
+      .map(ticker => ticker.trim().replace(/['"]/g, '').toUpperCase())
       .filter(ticker => ticker.length > 0);
     
     if (replaceMode) {
@@ -106,7 +106,7 @@ const TickerModal: React.FC<TickerModalProps> = ({
   const handleAddDirectly = () => {
     const newTickers = bulkText
       .split(/[,\s\n]+/)
-      .map(ticker => ticker.trim().toUpperCase())
+      .map(ticker => ticker.trim().replace(/['"]/g, '').toUpperCase())
       .filter(ticker => ticker.length > 0);
     
     if (newTickers.length === 0) return;
@@ -124,7 +124,7 @@ const TickerModal: React.FC<TickerModalProps> = ({
   const handleConfirmReplace = () => {
     const newTickers = bulkText
       .split(/[,\s\n]+/)
-      .map(ticker => ticker.trim().toUpperCase())
+      .map(ticker => ticker.trim().replace(/['"]/g, '').toUpperCase())
       .filter(ticker => ticker.length > 0);
     
     onSave(newTickers);

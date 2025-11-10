@@ -484,10 +484,18 @@ const Dashboard: React.FC = () => {
     
     // Filter by search query if provided
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      stocks = stocks.filter(ticker => 
-        ticker.toLowerCase().includes(query)
-      );
+      // Split by comma, space, or newline to support multiple tickers
+      // Also remove quotes and other special characters
+      const queries = searchQuery
+        .split(/[,\s\n]+/)
+        .map(q => q.trim().replace(/['"]/g, '').toLowerCase())
+        .filter(q => q.length > 0);
+      
+      if (queries.length > 0) {
+        stocks = stocks.filter(ticker => 
+          queries.some(query => ticker.toLowerCase().includes(query))
+        );
+      }
     }
     
     // Sort stocks based on selected sort option
