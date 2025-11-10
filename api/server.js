@@ -439,58 +439,6 @@ app.delete('/api/rejected-tickers', async (req, res) => {
   }
 });
 
-app.post('/api/tickers', async (req, res) => {
-  try {
-    const { ticker, tickers } = req.body;
-    
-    if (ticker) {
-      // Add single ticker - scan first to check if it qualifies
-      console.log(`🎯 Scanning ${ticker} to check if it qualifies...`);
-      const scanner = new StockScanner();
-      const scanResult = await scanner.scanNewTickers([ticker]);
-      
-      if (scanResult.stocks.length > 0) {
-        const added = await dbService.addTicker(ticker);
-        if (added) {
-          res.json({ 
-            success: true, 
-            message: `Added qualifying ticker: ${ticker.toUpperCase()}`,
-            fire_level: scanResult.stocks[0].fire_level
-          });
-        } else {
-          res.status(400).json({ error: 'Ticker already exists' });
-        }
-      } else {
-        res.status(400).json({ 
-          error: `Ticker ${ticker.toUpperCase()} does not qualify (fire_level === 0)`,
-          rejected: true
-        });
-      }
-    } else if (tickers && Array.isArray(tickers)) {
-      // Add multiple tickers - scan first to check which qualify
-      console.log(`🎯 Scanning ${tickers.length} tickers to check which qualify...`);
-      const scanner = new StockScanner();
-      const scanResult = await scanner.scanNewTickers(tickers);
-      
-      const qualifiedTickers = scanResult.stocks.map(s => s.ticker);
-      const added = await dbService.addTickers(qualifiedTickers);
-      
-      res.json({ 
-        success: true, 
-        added: added.length,
-        rejected: tickers.length - added.length,
-        tickers: added,
-        message: `${added.length} qualifying tickers added (${tickers.length - added.length} rejected)`
-      });
-    } else {
-      res.status(400).json({ error: 'Invalid request. Provide ticker or tickers array' });
-    }
-  } catch (error) {
-    console.error('Error adding ticker(s):', error);
-    res.status(500).json({ error: 'Failed to add ticker(s)' });
-  }
-});
-
 app.put('/api/tickers', async (req, res) => {
   try {
     const { tickers } = req.body;
