@@ -6,6 +6,7 @@ const cron = require('node-cron');
 const StockScanner = require('./stockScanner');
 const dbService = require('./database');
 const { getStockPriceData } = require('./priceUtils');
+const { scrapeFinvizScreener } = require('./finvizScraper');
 
 // Make fetch available for Node.js if not available
 if (typeof fetch === 'undefined') {
@@ -85,6 +86,24 @@ async function runDailyScan() {
 
   try {
     console.log('⏰ Starting scheduled daily scan at 6am IST...');
+    
+    // Step 1: Fetch Finviz data
+    console.log('📊 Fetching top performers from Finviz...');
+    const finvizStocks = await scrapeFinvizScreener();
+    
+    if (finvizStocks && finvizStocks.length > 0) {
+      const finvizTickers = finvizStocks.map(s => s.ticker);
+      console.log(`✅ Fetched ${finvizTickers.length} tickers from Finviz`);
+      
+      // Step 2: Add tickers to the list (only qualifying ones will be added)
+      console.log(`🎯 Adding ${finvizTickers.length} tickers to scan list...`);
+      const added = await dbService.addTickers(finvizTickers);
+      console.log(`✅ Added ${added.length} new tickers to the list`);
+    } else {
+      console.log('⚠️ No data fetched from Finviz, proceeding with existing tickers');
+    }
+    
+    // Step 3: Start the scan
     scanState.scanning = true;
     scanState.error = null;
     scanState.progress = { current: 0, total: 0, percentage: 0 };
