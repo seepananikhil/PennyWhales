@@ -932,6 +932,33 @@ app.post('/api/alerts/check', async (req, res) => {
   }
 });
 
+// Setup cron job for daily scan at 6am IST
+// IST is UTC+5:30, so 6am IST = 12:30am UTC
+cron.schedule('30 0 * * *', async () => {
+  console.log('⏰ Running scheduled scan at 6am IST...');
+  
+  if (scanState.scanning) {
+    console.log('⚠️ Scan already in progress, skipping scheduled scan');
+    return;
+  }
+
+  try {
+    // Call the scan start endpoint logic
+    const response = await fetch(`http://localhost:${PORT}/api/scan/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    const result = await response.json();
+    console.log('✅ Scheduled scan triggered:', result.message);
+  } catch (error) {
+    console.error('❌ Error triggering scheduled scan:', error.message);
+  }
+}, {
+  scheduled: true,
+  timezone: "Asia/Kolkata"
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Stock Scanner API running on port ${PORT}`);
@@ -940,6 +967,7 @@ app.listen(PORT, () => {
   console.log(`🎯 Ticker management available at /api/tickers`);
   console.log(`⭐ Holdings management available at /api/holdings`);
   console.log(`🔔 Price alerts available at /api/alerts`);
+  console.log(`⏰ Scheduled scan runs daily at 6:00 AM IST`);
   
   // Start alert checker (checks every 5 minutes)
   alertChecker.startPeriodicCheck(5);
