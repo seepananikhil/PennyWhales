@@ -6,7 +6,7 @@ const cheerio = require('cheerio');
  * @param {string} url - Finviz screener URL
  * @returns {Promise<Array>} Array of stock objects
  */
-async function scrapeFinvizScreener(url = 'https://finviz.com/screener.ashx?v=431&f=exch_nasd,sh_instown_o10,sh_price_u3&o=-perf4w') {
+async function scrapeFinvizScreener(url = 'https://finviz.com/screener.ashx?v=411&f=exch_nasd,sh_price_u3&o=-change') {
   try {
     console.log('Fetching Finviz screener data...');
     
@@ -22,60 +22,47 @@ async function scrapeFinvizScreener(url = 'https://finviz.com/screener.ashx?v=43
     const $ = cheerio.load(response.data);
     const stocks = [];
     
-    // Finviz uses a specific nested table structure
-    const selector = '#screener-table > td > table > tbody > tr > td > table > tbody > tr > td';
-    const cells = $(selector);
+    // Look for tickers in the screener_tickers class
+    const tickerContainer = $('.screener_tickers');
+    console.log(`Found ${tickerContainer.length} screener_tickers containers`);
     
-    console.log(`Found ${cells.length} cells with data`);
-    
-    if (cells.length === 0) {
-      console.log('No data found. The page might have no results or the structure changed.');
-      return stocks;
-    }
-    
-    // The tickers are in span elements with onclick attributes
-    const tickerCell = cells.first();
-    const tickerSpans = tickerCell.find('span[onclick*="quote.ashx"]');
-    
-    console.log(`Found ${tickerSpans.length} ticker spans`);
-    
-    tickerSpans.each((index, span) => {
-      try {
+    if (tickerContainer.length > 0) {
+      // Get all spans inside the screener_tickers container
+      const tickerSpans = tickerContainer.find('span');
+      console.log(`Found ${tickerSpans.length} ticker spans`);
+      
+      tickerSpans.each((index, span) => {
         const ticker = $(span).text().trim();
-        const onclick = $(span).attr('onclick');
-        const dataBoxover = $(span).attr('data-boxover');
         
-        if (ticker && onclick) {
-          // Extract ticker from onclick attribute
-          const match = onclick.match(/t=([A-Z]+)/);
-          const tickerSymbol = match ? match[1] : ticker;
-          
+        // Validate ticker format (2-5 uppercase letters)
+        if (ticker && ticker.match(/^[A-Z]{2,5}$/)) {
           stocks.push({
-            ticker: tickerSymbol
+            ticker: ticker
           });
         }
-      } catch (err) {
-        console.error(`Error parsing ticker ${index}:`, err.message);
-      }
-    });
+      });
+    } else {
+      console.log('No screener_tickers container found');
+    }
     
-    console.log(`Successfully scraped ${stocks.length} stocks from Finviz`);
-    return stocks;
+    // Remove duplicates
+    const uniqueStocks = [];
+    const seenTickers = new Set();
+    
+    for (const stock of stocks) {
+      if (!seenTickers.has(stock.ticker)) {
+        seenTickers.add(stock.ticker);
+        uniqueStocks.push(stock);
+      }
+    }
+    
+    console.log(`Successfully scraped ${uniqueStocks.length} unique stocks from Finviz`);
+    return uniqueStocks;
     
   } catch (error) {
     console.error('Error scraping Finviz:', error.message);
     throw error;
   }
-}
-
-/**
- * Get just the tickers from Finviz screener
- * @param {string} url - Finviz screener URL
- * @returns {Promise<Array<string>>} Array of ticker symbols
- */
-async function getFinvizTickers(url) {
-  const stocks = await scrapeFinvizScreener(url);
-  return stocks.map(stock => stock.ticker);
 }
 
 /**
@@ -130,6 +117,5 @@ async function getFinvizPerformance(ticker) {
 // Export functions
 module.exports = {
   scrapeFinvizScreener,
-  getFinvizTickers,
   getFinvizPerformance
 };

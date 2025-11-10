@@ -490,7 +490,9 @@ app.patch('/api/tickers', async (req, res) => {
     const scanResult = await scanner.scanNewTickers(tickers);
     
     // Only add tickers that qualified (have fire_level > 0) to the tickers list
-    const qualifiedTickers = scanResult.stocks.map(s => s.ticker);
+    const qualifiedTickers = scanResult.stocks
+      .filter(s => s.fire_level > 0)
+      .map(s => s.ticker);
     const added = await dbService.addTickers(qualifiedTickers);
     
     if (added.length > 0) {

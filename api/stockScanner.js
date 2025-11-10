@@ -263,6 +263,15 @@ class StockScanner {
         })
         .filter(stock => stock.fire_level > 0); // Remove stocks with fire_level -1 or 0
 
+      // Add NEW stocks that aren't in the existing results but have fire_level > 0
+      stocks.forEach(newStock => {
+        const existsInCurrent = currentResults.stocks.some(s => s.ticker === newStock.ticker);
+        if (!existsInCurrent && newStock.fire_level > 0) {
+          mergedStocks.push(newStock);
+          console.log(`🆕 Added new qualifying stock: ${newStock.ticker} (Fire:${newStock.fire_level})`);
+        }
+      });
+
       // Identify tickers that lost fire and need to be removed (fire_level -1 or 0)
       const removedTickers = currentResults.stocks
         .filter(stock => updatedStocksMap.has(stock.ticker) && updatedStocksMap.get(stock.ticker).fire_level <= 0)
