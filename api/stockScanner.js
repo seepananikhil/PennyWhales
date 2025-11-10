@@ -92,6 +92,51 @@ class StockScanner {
     }
   }
 
+  // Get performance data from Finviz
+  async getFinvizPerformance(ticker) {
+    try {
+      const response = await fetch(
+        `https://finviz.com/quote.ashx?t=${ticker}&p=d`,
+        {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        }
+      );
+
+      if (!response.ok) return null;
+      const html = await response.text();
+      
+      // Parse performance data from HTML
+      const performance = {
+        week: null,
+        month: null,
+        year: null
+      };
+
+      // Find performance table rows - updated regex to match new HTML structure
+      // The percentage is in a <span> tag within the next <td> after the label
+      const perfWeekMatch = html.match(/Perf Week<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<span[^>]*>([-+]?\d+\.?\d*%)<\/span>/);
+      const perfMonthMatch = html.match(/Perf Month<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<span[^>]*>([-+]?\d+\.?\d*%)<\/span>/);
+      const perfYearMatch = html.match(/Perf Year<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<span[^>]*>([-+]?\d+\.?\d*%)<\/span>/);
+
+      if (perfWeekMatch) {
+        performance.week = parseFloat(perfWeekMatch[1].replace('%', ''));
+      }
+      if (perfMonthMatch) {
+        performance.month = parseFloat(perfMonthMatch[1].replace('%', ''));
+      }
+      if (perfYearMatch) {
+        performance.year = parseFloat(perfYearMatch[1].replace('%', ''));
+      }
+
+      return performance;
+    } catch (error) {
+      console.error(`Error fetching Finviz performance for ${ticker}:`, error);
+      return null;
+    }
+  }
+
   // Parse BlackRock and Vanguard holdings
   parseHoldings(data) {
     if (!data?.data?.holdingsTransactions?.table?.rows) {
@@ -183,6 +228,9 @@ class StockScanner {
       // Get market cap
       const marketCap = await this.getMarketCap(ticker);
 
+      // Get performance data from Finviz
+      const performance = await this.getFinvizPerformance(ticker);
+
       // Always return the stock data regardless of holding percentages
       // The fire level calculation will handle the rating (including 0 for no fire)
       return {
@@ -193,7 +241,8 @@ class StockScanner {
         vanguard_pct: vanguard,
         blackrock_market_value: blackrockMarketValue, // Store as number (in millions)
         vanguard_market_value: vanguardMarketValue,     // Store as number (in millions)
-        market_cap: marketCap // Market cap in millions
+        market_cap: marketCap, // Market cap in millions
+        performance: performance || { week: null, month: null, year: null }
       };
     } catch (error) {
       console.error(`Error analyzing ${ticker}:`, error);
