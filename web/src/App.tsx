@@ -5,6 +5,8 @@ import { ThemeProvider, useTheme } from './ThemeContext';
 import Dashboard from './Dashboard';
 import Scans from './Scans';
 import Watchlist from './Watchlist';
+import Alerts from './Alerts';
+import Settings from './Settings';
 import Sidebar from './components/Sidebar';
 
 const AppContent: React.FC = () => {
@@ -25,6 +27,8 @@ const AppContent: React.FC = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/scans" element={<Scans />} />
               <Route path="/watchlist" element={<Watchlist />} />
+              <Route path="/alerts" element={<Alerts />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
@@ -37,7 +41,7 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <ThemeProvider>
-      <AppContent />
+        <AppContent />
     </ThemeProvider>
   );
 };

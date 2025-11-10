@@ -99,8 +99,8 @@ class AlertChecker {
     }
   }
 
-  // Start periodic checking (every 5 minutes)
-  startPeriodicCheck(intervalMinutes = 5) {
+  // Start periodic checking (every 60 minutes)
+  startPeriodicCheck(intervalMinutes = 60) {
     if (this.checkInterval) {
       console.log('⚠️ Alert checker already running');
       return;
@@ -114,7 +114,7 @@ class AlertChecker {
     // Then run periodically
     this.checkInterval = setInterval(() => {
       this.checkAlerts();
-    }, 5 * 60 * 1000);
+    }, intervalMinutes * 60 * 1000);
   }
 
   // Stop periodic checking

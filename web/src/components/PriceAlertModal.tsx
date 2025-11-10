@@ -17,7 +17,7 @@ const PriceAlertModal: React.FC<PriceAlertModalProps> = ({
   currentPrice
 }) => {
   const [targetPrice, setTargetPrice] = useState<string>(currentPrice.toFixed(2));
-  const [condition, setCondition] = useState<'above' | 'below'>('above');
+  const [condition, setCondition] = useState<'above' | 'below'>('below');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [existingAlerts, setExistingAlerts] = useState<any[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(false);
@@ -294,14 +294,6 @@ const PriceAlertModal: React.FC<PriceAlertModalProps> = ({
             ))}
           </div>
         )}
-
-        <div style={{ marginTop: '20px', padding: '12px', backgroundColor: '#e3f2fd', borderRadius: theme.borderRadius.md, fontSize: '0.85rem', color: '#0d47a1' }}>
-          💡 <strong>Tip:</strong> Configure your Telegram chat ID in Settings to receive notifications when alerts trigger.
-          <br />
-          <span style={{ fontSize: '0.8rem', color: '#1565c0', marginTop: '4px', display: 'block' }}>
-            Send <code>/start</code> to your bot on Telegram, then check Settings to get your chat ID.
-          </span>
-        </div>
       </div>
     </div>
   );

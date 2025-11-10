@@ -839,6 +839,26 @@ app.put('/api/alerts/:id', async (req, res) => {
   }
 });
 
+// Get recently triggered alerts (for UI notifications)
+app.get('/api/alerts/triggered/recent', async (req, res) => {
+  try {
+    const minutes = parseInt(req.query.minutes) || 5;
+    const cutoff = new Date(Date.now() - minutes * 60 * 1000).toISOString();
+    
+    const alerts = await dbService.getPriceAlerts();
+    const recentlyTriggered = alerts.filter(alert => 
+      alert.triggered && 
+      alert.triggeredAt && 
+      alert.triggeredAt > cutoff
+    );
+    
+    res.json({ alerts: recentlyTriggered });
+  } catch (error) {
+    console.error('Error getting recent triggered alerts:', error);
+    res.status(500).json({ error: 'Failed to get triggered alerts' });
+  }
+});
+
 // Settings Endpoints
 app.get('/api/settings', async (req, res) => {
   try {

@@ -5786,19 +5786,35 @@
           "year": -97.25
         },
         "fire_level": 1
+      },
+      {
+        "ticker": "KSS",
+        "price": 18.07,
+        "previous_close": 17.01,
+        "blackrock_pct": 16.418024107142855,
+        "vanguard_pct": 10.63238125,
+        "blackrock_market_value": 312.783,
+        "vanguard_market_value": 202.56,
+        "market_cap": 2025.2,
+        "performance": {
+          "week": 9.36,
+          "month": 28.29,
+          "year": 0.99
+        },
+        "fire_level": 5
       }
     ],
     "summary": {
       "total_processed": 884,
-      "qualifying_count": 340,
+      "qualifying_count": 341,
       "rejected_count": 542,
       "fire_level_3": 42,
       "fire_level_2": 124,
       "fire_level_1": 118,
       "total_fire_stocks": 340,
-      "total_scanned_stocks": 340
+      "total_scanned_stocks": 341
     },
-    "timestamp": "2025-11-10T16:26:16.489Z"
+    "timestamp": "2025-11-10T17:26:32.819Z"
   },
   "processedStocks": {
     "stocks": [],
@@ -5829,10 +5845,11 @@
         "LAZR",
         "APLT",
         "ATYR",
-        "FFAI"
+        "FFAI",
+        "SOND"
       ],
       "created": "2025-11-07T15:42:04.412Z",
-      "updated": "2025-11-10T16:26:16.494Z"
+      "updated": "2025-11-10T17:17:43.121Z"
     }
   ],
   "holdings": {
@@ -6487,100 +6504,34 @@
   ],
   "priceAlerts": [
     {
-      "id": "alert_1762792525419",
-      "ticker": "FATE",
-      "targetPrice": 1.06,
-      "condition": "above",
-      "active": false,
-      "triggered": true,
-      "created": "2025-11-10T16:35:25.419Z",
-      "triggeredAt": "2025-11-10T16:40:19.476Z",
-      "triggeredPrice": 1.065,
-      "updated": "2025-11-10T16:40:19.476Z"
-    },
-    {
-      "id": "alert_1762792625898",
-      "ticker": "IRWD",
-      "targetPrice": 2.64,
-      "condition": "above",
-      "active": false,
-      "triggered": true,
-      "created": "2025-11-10T16:37:05.898Z",
-      "triggeredAt": "2025-11-10T16:40:20.049Z",
-      "triggeredPrice": 2.719,
-      "updated": "2025-11-10T16:40:20.049Z"
-    },
-    {
-      "id": "alert_1762793219422",
+      "id": "alert_1762794826117",
       "ticker": "KALA",
-      "targetPrice": 0.72,
-      "condition": "above",
-      "active": false,
-      "triggered": true,
-      "created": "2025-11-10T16:46:59.422Z",
-      "triggeredAt": "2025-11-10T16:47:54.624Z",
-      "triggeredPrice": 0.72,
-      "updated": "2025-11-10T16:47:54.624Z"
-    },
-    {
-      "id": "alert_1762793441344",
-      "ticker": "KALA",
-      "targetPrice": 0.75,
+      "targetPrice": 0.67,
       "condition": "below",
-      "active": false,
-      "triggered": true,
-      "created": "2025-11-10T16:50:41.344Z",
-      "triggeredAt": "2025-11-10T16:50:54.557Z",
-      "triggeredPrice": 0.72,
-      "updated": "2025-11-10T16:50:54.557Z"
+      "active": true,
+      "triggered": false,
+      "created": "2025-11-10T17:13:46.117Z",
+      "triggeredAt": null
     },
     {
-      "id": "alert_1762793623203",
-      "ticker": "IRWD",
-      "targetPrice": 2.48,
-      "condition": "above",
-      "active": false,
-      "triggered": true,
-      "created": "2025-11-10T16:53:43.203Z",
-      "triggeredAt": "2025-11-10T16:54:09.443Z",
-      "triggeredPrice": 2.743,
-      "updated": "2025-11-10T16:54:09.444Z"
-    },
-    {
-      "id": "alert_1762793737201",
-      "ticker": "GORV",
-      "targetPrice": 0.95,
+      "id": "alert_1762794951462",
+      "ticker": "PRTS",
+      "targetPrice": 0.55,
       "condition": "below",
-      "active": false,
-      "triggered": true,
-      "created": "2025-11-10T16:55:37.201Z",
-      "triggeredAt": "2025-11-10T16:55:55.992Z",
-      "triggeredPrice": 0.9,
-      "updated": "2025-11-10T16:55:55.992Z"
+      "active": true,
+      "triggered": false,
+      "created": "2025-11-10T17:15:51.462Z",
+      "triggeredAt": null
     },
     {
-      "id": "alert_1762793833067",
-      "ticker": "KALA",
-      "targetPrice": 0.72,
-      "condition": "above",
-      "active": false,
-      "triggered": true,
-      "created": "2025-11-10T16:57:13.067Z",
-      "triggeredAt": "2025-11-10T16:58:00.811Z",
-      "triggeredPrice": 0.72,
-      "updated": "2025-11-10T16:58:00.811Z"
-    },
-    {
-      "id": "alert_1762793840122",
-      "ticker": "GORV",
-      "targetPrice": 0.95,
+      "id": "alert_1762795863665",
+      "ticker": "REFR",
+      "targetPrice": 1.58,
       "condition": "below",
-      "active": false,
-      "triggered": true,
-      "created": "2025-11-10T16:57:20.122Z",
-      "triggeredAt": "2025-11-10T16:58:01.802Z",
-      "triggeredPrice": 0.907,
-      "updated": "2025-11-10T16:58:01.802Z"
+      "active": true,
+      "triggered": false,
+      "created": "2025-11-10T17:31:03.665Z",
+      "triggeredAt": null
     }
   ]
 }

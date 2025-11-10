@@ -47,12 +47,30 @@ const Sidebar: React.FC<SidebarProps> = ({
         </NavLink>
 
         <NavLink
+          to="/alerts"
+          className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+          title="Price Alerts"
+        >
+          <span className="nav-icon">🔔</span>
+          <span className="nav-text">Alerts</span>
+        </NavLink>
+
+        <NavLink
           to="/scans"
           className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
           title="Stock Scans"
         >
           <span className="nav-icon">🔍</span>
           <span className="nav-text">Scans</span>
+        </NavLink>
+
+        <NavLink
+          to="/settings"
+          className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+          title="Settings"
+        >
+          <span className="nav-icon">⚙️</span>
+          <span className="nav-text">Settings</span>
         </NavLink>
       </nav>
 
