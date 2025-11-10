@@ -50,18 +50,8 @@ async function scrapeFinvizScreener(url = 'https://finviz.com/screener.ashx?v=43
           const match = onclick.match(/t=([A-Z]+)/);
           const tickerSymbol = match ? match[1] : ticker;
           
-          // Extract Perf Month from data-boxover attribute
-          let perfMonth = null;
-          if (dataBoxover) {
-            const perfMatch = dataBoxover.match(/Perf Month:\s*([-+]?\d+\.?\d*)%/);
-            if (perfMatch) {
-              perfMonth = parseFloat(perfMatch[1]);
-            }
-          }
-          
           stocks.push({
-            ticker: tickerSymbol,
-            perfMonth: perfMonth
+            ticker: tickerSymbol
           });
         }
       } catch (err) {
@@ -88,74 +78,8 @@ async function getFinvizTickers(url) {
   return stocks.map(stock => stock.ticker);
 }
 
-/**
- * Scrape multiple pages from Finviz screener
- * @param {string} baseUrl - Base Finviz screener URL
- * @param {number} maxPages - Maximum number of pages to scrape
- * @returns {Promise<Array>} Array of stock objects from all pages
- */
-async function scrapeFinvizMultiplePages(baseUrl, maxPages = 5) {
-  const allStocks = [];
-  
-  for (let page = 1; page <= maxPages; page++) {
-    const offset = (page - 1) * 20; // Finviz shows 20 results per page
-    const url = `${baseUrl}&r=${offset + 1}`;
-    
-    console.log(`Scraping page ${page}...`);
-    
-    try {
-      const stocks = await scrapeFinvizScreener(url);
-      
-      if (stocks.length === 0) {
-        console.log(`No more results found at page ${page}`);
-        break;
-      }
-      
-      allStocks.push(...stocks);
-      
-      // Add delay to be respectful to the server
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-    } catch (error) {
-      console.error(`Error scraping page ${page}:`, error.message);
-      break;
-    }
-  }
-  
-  return allStocks;
-}
-
 // Export functions
 module.exports = {
   scrapeFinvizScreener,
-  getFinvizTickers,
-  scrapeFinvizMultiplePages
+  getFinvizTickers
 };
-
-// CLI usage
-if (require.main === module) {
-  const url = process.argv[2] || 'https://finviz.com/screener.ashx?v=431&f=exch_nasd,sh_instown_o10,sh_price_u3&o=-perf4w';
-  
-  scrapeFinvizScreener(url)
-    .then(stocks => {
-      console.log('\n=== Finviz Screener Results ===\n');
-      console.log(JSON.stringify(stocks, null, 2));
-      console.log(`\nTotal stocks: ${stocks.length}`);
-      console.log('\nTickers:', stocks.map(s => s.ticker).join(', '));
-      
-      // Show stats
-      const withPerfData = stocks.filter(s => s.perfMonth !== null).length;
-      console.log(`\nStocks with Perf Month data: ${withPerfData}`);
-      
-      if (withPerfData > 0) {
-        const avgPerf = stocks
-          .filter(s => s.perfMonth !== null)
-          .reduce((sum, s) => sum + s.perfMonth, 0) / withPerfData;
-        console.log(`Average Perf Month: ${avgPerf.toFixed(2)}%`);
-      }
-    })
-    .catch(err => {
-      console.error('Failed to scrape Finviz:', err);
-      process.exit(1);
-    });
-}

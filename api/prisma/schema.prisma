@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Tickers {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  tickers String[]
+}
+
+model RejectedTickers {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  tickers String[]
+}
+
+model ScanResults {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  stocks    Json[]
+  summary   Json
+  timestamp DateTime?
+}
+
+model Watchlist {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  listId  String   @unique
+  name    String
+  stocks  String[]
+  created DateTime
+  updated DateTime
+}
+
+model Holdings {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  stocks       String[]
+  last_updated DateTime?
+}
+
+model Settings {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  created DateTime
+  version String
+}
+

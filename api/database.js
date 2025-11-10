@@ -1,105 +1,128 @@
-const { Low } = require('lowdb');
-const { JSONFile } = require('lowdb/node');
-const path = require('path');
+const { PrismaClient } = require('@prisma/client');
 
-const DB_FILE = path.join(__dirname, 'database.json');
+const prisma = new PrismaClient();
 
 class DatabaseService {
   constructor() {
-    this.db = null;
     this.initialized = false;
   }
 
   async init() {
     if (this.initialized) return;
 
-    const adapter = new JSONFile(DB_FILE);
-    this.db = new Low(adapter, {});
-
-    await this.db.read();
-
-    // Initialize default data structure
-    this.db.data = this.db.data || {
-      tickers: [],
-      scanResults: {
-        stocks: [],
-        summary: {
-          total_processed: 0,
-          qualifying_count: 0,
-          high_tier: 0,
-          medium_tier: 0,
-          low_tier: 0,
-          under_dollar: 0,
-          premium_count: 0
-        },
-        timestamp: null,
-        new_stocks_only: false
-      },
-      watchlists: [
-        {
-          id: 'default',
-          name: 'My Watchlist',
-          stocks: ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'NVDA'],
-          created: new Date().toISOString(),
-          updated: new Date().toISOString()
-        }
-      ],
-      holdings: {
-        stocks: [], // Array of ticker symbols user is holding
-        last_updated: null
-      },
-      settings: {
-        created: new Date().toISOString(),
-        version: '1.0.0'
+    try {
+      // Test connection
+      await prisma.$connect();
+      
+      // Initialize default data if needed
+      const tickersDoc = await prisma.tickers.findFirst();
+      if (!tickersDoc) {
+        await prisma.tickers.create({
+          data: { tickers: [] }
+        });
       }
-    };
 
-    // Ensure holdings section exists for existing databases
-    if (!this.db.data.holdings) {
-      this.db.data.holdings = {
-        stocks: [], // Array of ticker symbols user is holding
-        last_updated: null
-      };
+      const rejectedTickersDoc = await prisma.rejectedTickers.findFirst();
+      if (!rejectedTickersDoc) {
+        await prisma.rejectedTickers.create({
+          data: { tickers: [] }
+        });
+      }
+
+      const scanDoc = await prisma.scanResults.findFirst();
+      if (!scanDoc) {
+        await prisma.scanResults.create({
+          data: {
+            stocks: [],
+            summary: {
+              total_processed: 0,
+              qualifying_count: 0,
+              total_scanned_stocks: 0
+            },
+            timestamp: null
+          }
+        });
+      }
+
+      const watchlistCount = await prisma.watchlist.count();
+      if (watchlistCount === 0) {
+        await prisma.watchlist.create({
+          data: {
+            listId: 'default',
+            name: 'My Watchlist',
+            stocks: ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'NVDA'],
+            created: new Date(),
+            updated: new Date()
+          }
+        });
+      }
+
+      const holdingsDoc = await prisma.holdings.findFirst();
+      if (!holdingsDoc) {
+        await prisma.holdings.create({
+          data: {
+            stocks: [],
+            last_updated: null
+          }
+        });
+      }
+
+      const settingsDoc = await prisma.settings.findFirst();
+      if (!settingsDoc) {
+        await prisma.settings.create({
+          data: {
+            created: new Date(),
+            version: '1.0.0'
+          }
+        });
+      }
+
+      this.initialized = true;
+      console.log('📊 MongoDB Database initialized with Prisma');
+    } catch (error) {
+      console.error('❌ Database initialization error:', error.message);
+      throw error;
     }
-
-    await this.db.write();
-    this.initialized = true;
-    console.log('📊 Database initialized');
   }
 
   // Ticker Management
   async getTickers() {
     await this.init();
-    return this.db.data.tickers;
+    const tickersDoc = await prisma.tickers.findFirst();
+    return tickersDoc?.tickers || [];
   }
 
   async addTicker(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
     
-    if (!this.db.data.tickers.includes(normalizedTicker)) {
-      this.db.data.tickers.push(normalizedTicker);
-      await this.db.write();
+    const tickersDoc = await prisma.tickers.findFirst();
+    const currentTickers = tickersDoc?.tickers || [];
+    
+    if (!currentTickers.includes(normalizedTicker)) {
+      await prisma.tickers.update({
+        where: { id: tickersDoc.id },
+        data: { tickers: [...currentTickers, normalizedTicker] }
+      });
       console.log(`✅ Added ticker: ${normalizedTicker}`);
       return true;
     }
-    return false; // Already exists
+    return false;
   }
 
   async addTickers(tickers) {
     await this.init();
-    const added = [];
+    const normalizedTickers = tickers.map(t => t.toUpperCase().trim());
     
-    for (const ticker of tickers) {
-      const normalizedTicker = ticker.toUpperCase().trim();
-      if (!this.db.data.tickers.includes(normalizedTicker)) {
-        this.db.data.tickers.push(normalizedTicker);
-        added.push(normalizedTicker);
-      }
-    }
+    const tickersDoc = await prisma.tickers.findFirst();
+    const currentTickers = tickersDoc?.tickers || [];
+    const added = normalizedTickers.filter(t => !currentTickers.includes(t));
     
     if (added.length > 0) {
-      await this.db.write();
+      await prisma.tickers.update({
+        where: { id: tickersDoc.id },
+        data: { tickers: [...currentTickers, ...added] }
+      });
       console.log(`✅ Added ${added.length} new tickers`);
     }
     
@@ -109,184 +132,312 @@ class DatabaseService {
   async removeTicker(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
-    const index = this.db.data.tickers.indexOf(normalizedTicker);
     
-    if (index > -1) {
-      this.db.data.tickers.splice(index, 1);
-      await this.db.write();
+    const tickersDoc = await prisma.tickers.findFirst();
+    const currentTickers = tickersDoc?.tickers || [];
+    
+    if (currentTickers.includes(normalizedTicker)) {
+      const filteredTickers = currentTickers.filter(t => t !== normalizedTicker);
+      await prisma.tickers.update({
+        where: { id: tickersDoc.id },
+        data: { tickers: filteredTickers }
+      });
       console.log(`🗑️ Removed ticker: ${normalizedTicker}`);
       return true;
     }
-    return false; // Not found
+    return false;
   }
 
   async updateTickers(tickers) {
     await this.init();
-    this.db.data.tickers = tickers.map(t => t.toUpperCase().trim());
-    await this.db.write();
-    console.log(`📝 Updated ticker list (${this.db.data.tickers.length} tickers)`);
-    return this.db.data.tickers;
+    const normalizedTickers = tickers.map(t => t.toUpperCase().trim());
+    
+    const tickersDoc = await prisma.tickers.findFirst();
+    await prisma.tickers.update({
+      where: { id: tickersDoc.id },
+      data: { tickers: normalizedTickers }
+    });
+    
+    console.log(`📝 Updated ticker list (${normalizedTickers.length} tickers)`);
+    return normalizedTickers;
+  }
+
+  // Rejected Tickers Management
+  async getRejectedTickers() {
+    await this.init();
+    const rejectedDoc = await prisma.rejectedTickers.findFirst();
+    return rejectedDoc?.tickers || [];
+  }
+
+  async addRejectedTickers(tickers) {
+    await this.init();
+    const normalizedTickers = tickers.map(t => t.toUpperCase().trim());
+    
+    const rejectedDoc = await prisma.rejectedTickers.findFirst();
+    const currentRejected = rejectedDoc?.tickers || [];
+    const newRejected = normalizedTickers.filter(t => !currentRejected.includes(t));
+    
+    if (newRejected.length > 0) {
+      await prisma.rejectedTickers.update({
+        where: { id: rejectedDoc.id },
+        data: { tickers: [...currentRejected, ...newRejected] }
+      });
+      console.log(`🚫 Added ${newRejected.length} rejected tickers`);
+    }
+    
+    return newRejected;
+  }
+
+  async clearRejectedTickers() {
+    await this.init();
+    const rejectedDoc = await prisma.rejectedTickers.findFirst();
+    if (rejectedDoc) {
+      await prisma.rejectedTickers.update({
+        where: { id: rejectedDoc.id },
+        data: { tickers: [] }
+      });
+      console.log('🗑️ Cleared rejected tickers');
+    }
   }
 
   // Holdings Management
   async getHoldings() {
     await this.init();
-    return this.db.data.holdings.stocks || [];
+    const holdingsDoc = await prisma.holdings.findFirst();
+    return holdingsDoc?.stocks || [];
   }
 
   async addHolding(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
     
-    if (!this.db.data.holdings.stocks.includes(normalizedTicker)) {
-      this.db.data.holdings.stocks.push(normalizedTicker);
-      this.db.data.holdings.last_updated = new Date().toISOString();
-      await this.db.write();
+    const holdingsDoc = await prisma.holdings.findFirst();
+    const currentHoldings = holdingsDoc?.stocks || [];
+    
+    if (!currentHoldings.includes(normalizedTicker)) {
+      await prisma.holdings.update({
+        where: { id: holdingsDoc.id },
+        data: {
+          stocks: [...currentHoldings, normalizedTicker],
+          last_updated: new Date()
+        }
+      });
       console.log(`⭐ Added to holdings: ${normalizedTicker}`);
       return true;
     }
-    return false; // Already exists
+    return false;
   }
 
   async removeHolding(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
-    const index = this.db.data.holdings.stocks.indexOf(normalizedTicker);
     
-    if (index > -1) {
-      this.db.data.holdings.stocks.splice(index, 1);
-      this.db.data.holdings.last_updated = new Date().toISOString();
-      await this.db.write();
+    const holdingsDoc = await prisma.holdings.findFirst();
+    const currentHoldings = holdingsDoc?.stocks || [];
+    
+    if (currentHoldings.includes(normalizedTicker)) {
+      const filteredHoldings = currentHoldings.filter(t => t !== normalizedTicker);
+      await prisma.holdings.update({
+        where: { id: holdingsDoc.id },
+        data: {
+          stocks: filteredHoldings,
+          last_updated: new Date()
+        }
+      });
       console.log(`🗑️ Removed from holdings: ${normalizedTicker}`);
       return true;
     }
-    return false; // Not found
+    return false;
   }
 
   async isHolding(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
-    return this.db.data.holdings.stocks.includes(normalizedTicker);
+    const holdings = await this.getHoldings();
+    return holdings.includes(normalizedTicker);
   }
 
   // Scan Results Management
   async getScanResults() {
     await this.init();
-    return this.db.data.scanResults;
+    const resultsDoc = await prisma.scanResults.findFirst();
+    if (!resultsDoc) {
+      return {
+        stocks: [],
+        summary: {
+          total_processed: 0,
+          qualifying_count: 0,
+          total_scanned_stocks: 0
+        },
+        timestamp: null
+      };
+    }
+    return {
+      stocks: resultsDoc.stocks,
+      summary: resultsDoc.summary,
+      timestamp: resultsDoc.timestamp
+    };
   }
 
   async saveScanResults(results) {
     await this.init();
     
-    // Use the stocks and summary as they come from the scanner
     const stocks = results.stocks || [];
-    
-    // Remove duplicates by ticker, keeping the last occurrence (defensive coding)
     const uniqueStocks = stocks.filter((stock, index, arr) => 
       arr.findIndex(s => s.ticker === stock.ticker) === index
     );
     
-    // Save results with minimal processing
-    this.db.data.scanResults = {
-      ...results,
+    const scanData = {
       stocks: uniqueStocks,
       summary: {
         ...results.summary,
         total_scanned_stocks: uniqueStocks.length
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date()
     };
     
-    await this.db.write();
+    const existingDoc = await prisma.scanResults.findFirst();
+    if (existingDoc) {
+      await prisma.scanResults.update({
+        where: { id: existingDoc.id },
+        data: scanData
+      });
+    } else {
+      await prisma.scanResults.create({ data: scanData });
+    }
+    
     console.log(`💾 Saved scan results (${uniqueStocks.length} stocks)`);
-    return this.db.data.scanResults;
+    return scanData;
   }
 
   async clearScanResults() {
     await this.init();
     
-    // Clear scan results with minimal structure
-    this.db.data.scanResults = {
-      stocks: [],
-      summary: {
-        total_processed: 0,
-        qualifying_count: 0,
-        total_scanned_stocks: 0
-      },
-      timestamp: null
-    };
+    const existingDoc = await prisma.scanResults.findFirst();
+    if (existingDoc) {
+      await prisma.scanResults.update({
+        where: { id: existingDoc.id },
+        data: {
+          stocks: [],
+          summary: {
+            total_processed: 0,
+            qualifying_count: 0,
+            total_scanned_stocks: 0
+          },
+          timestamp: null
+        }
+      });
+    }
     
-    await this.db.write();
     console.log('🗑️ Cleared scan results');
   }
 
   // Watchlist functions
   async getWatchlists() {
     await this.init();
-    return this.db.data.watchlists || [];
+    const watchlists = await prisma.watchlist.findMany();
+    return watchlists.map(w => ({
+      id: w.listId,
+      name: w.name,
+      stocks: w.stocks,
+      created: w.created.toISOString(),
+      updated: w.updated.toISOString()
+    }));
   }
 
   async getWatchlist(id) {
     await this.init();
-    return this.db.data.watchlists?.find(watchlist => watchlist.id === id) || null;
+    const watchlist = await prisma.watchlist.findUnique({
+      where: { listId: id }
+    });
+    if (!watchlist) return null;
+    return {
+      id: watchlist.listId,
+      name: watchlist.name,
+      stocks: watchlist.stocks,
+      created: watchlist.created.toISOString(),
+      updated: watchlist.updated.toISOString()
+    };
   }
 
   async createWatchlist(name, stocks = []) {
     await this.init();
-    const id = `watchlist_${Date.now()}`;
-    const watchlist = {
-      id,
-      name,
-      stocks: stocks.map(s => s.toUpperCase().trim()),
-      created: new Date().toISOString(),
-      updated: new Date().toISOString()
-    };
-
-    if (!this.db.data.watchlists) {
-      this.db.data.watchlists = [];
-    }
-
-    this.db.data.watchlists.push(watchlist);
-    await this.db.write();
+    const listId = `watchlist_${Date.now()}`;
+    const watchlist = await prisma.watchlist.create({
+      data: {
+        listId,
+        name,
+        stocks: stocks.map(s => s.toUpperCase().trim()),
+        created: new Date(),
+        updated: new Date()
+      }
+    });
     console.log(`📋 Created watchlist: ${name}`);
-    return watchlist;
+    return {
+      id: watchlist.listId,
+      name: watchlist.name,
+      stocks: watchlist.stocks,
+      created: watchlist.created.toISOString(),
+      updated: watchlist.updated.toISOString()
+    };
   }
 
   async updateWatchlist(id, updates) {
     await this.init();
-    const watchlistIndex = this.db.data.watchlists?.findIndex(w => w.id === id);
+    const existing = await prisma.watchlist.findUnique({
+      where: { listId: id }
+    });
     
-    if (watchlistIndex === -1) {
+    if (!existing) {
       throw new Error('Watchlist not found');
     }
 
-    this.db.data.watchlists[watchlistIndex] = {
-      ...this.db.data.watchlists[watchlistIndex],
+    const updateData = {
       ...updates,
-      updated: new Date().toISOString()
+      updated: new Date()
     };
 
     if (updates.stocks) {
-      this.db.data.watchlists[watchlistIndex].stocks = updates.stocks.map(s => s.toUpperCase().trim());
+      updateData.stocks = updates.stocks.map(s => s.toUpperCase().trim());
     }
 
-    await this.db.write();
+    const watchlist = await prisma.watchlist.update({
+      where: { listId: id },
+      data: updateData
+    });
+
     console.log(`📋 Updated watchlist: ${id}`);
-    return this.db.data.watchlists[watchlistIndex];
+    return {
+      id: watchlist.listId,
+      name: watchlist.name,
+      stocks: watchlist.stocks,
+      created: watchlist.created.toISOString(),
+      updated: watchlist.updated.toISOString()
+    };
   }
 
   async deleteWatchlist(id) {
     await this.init();
-    const watchlistIndex = this.db.data.watchlists?.findIndex(w => w.id === id);
+    const watchlist = await prisma.watchlist.findUnique({
+      where: { listId: id }
+    });
     
-    if (watchlistIndex === -1) {
+    if (!watchlist) {
       throw new Error('Watchlist not found');
     }
 
-    const deleted = this.db.data.watchlists.splice(watchlistIndex, 1)[0];
-    await this.db.write();
-    console.log(`📋 Deleted watchlist: ${deleted.name}`);
-    return deleted;
+    await prisma.watchlist.delete({
+      where: { listId: id }
+    });
+    
+    console.log(`📋 Deleted watchlist: ${watchlist.name}`);
+    return {
+      id: watchlist.listId,
+      name: watchlist.name,
+      stocks: watchlist.stocks,
+      created: watchlist.created.toISOString(),
+      updated: watchlist.updated.toISOString()
+    };
   }
 
   async addToWatchlist(id, stocks) {
@@ -327,16 +478,17 @@ class DatabaseService {
   async migrateAddFireLevels() {
     await this.init();
     
-    if (!this.db.data.scanResults || !this.db.data.scanResults.stocks) {
+    const scanResults = await this.getScanResults();
+    
+    if (!scanResults || !scanResults.stocks) {
       console.log('No scan results to migrate');
       return { migrated: 0 };
     }
 
-    // Import calculateFireLevel only for this legacy migration
     const { calculateFireLevel } = require('./fireUtils');
     
     let migrated = 0;
-    const stocks = this.db.data.scanResults.stocks;
+    const stocks = scanResults.stocks;
 
     for (let stock of stocks) {
       if (stock.fire_level === undefined) {
@@ -346,20 +498,19 @@ class DatabaseService {
     }
 
     if (migrated > 0) {
-      // Update summary with fire level counts
       const fireLevel3 = stocks.filter(s => s.fire_level === 3).length;
       const fireLevel2 = stocks.filter(s => s.fire_level === 2).length;
       const fireLevel1 = stocks.filter(s => s.fire_level === 1).length;
       
-      this.db.data.scanResults.summary = {
-        ...this.db.data.scanResults.summary,
+      scanResults.summary = {
+        ...scanResults.summary,
         fire_level_3: fireLevel3,
         fire_level_2: fireLevel2,
         fire_level_1: fireLevel1,
         total_fire_stocks: fireLevel3 + fireLevel2 + fireLevel1
       };
 
-      await this.db.write();
+      await this.saveScanResults(scanResults);
       console.log(`🔥 Migrated ${migrated} stocks with fire levels`);
     }
 
@@ -369,22 +520,76 @@ class DatabaseService {
   // Utility functions
   async getStats() {
     await this.init();
+    const tickers = await this.getTickers();
+    const scanResults = await this.getScanResults();
+    
     return {
-      totalTickers: this.db.data.tickers?.length || 0,
-      lastScan: this.db.data.scanResults?.timestamp || null,
-      qualifyingStocks: this.db.data.scanResults?.stocks?.length || 0
+      totalTickers: tickers.length,
+      lastScan: scanResults.timestamp || null,
+      qualifyingStocks: scanResults.stocks?.length || 0
     };
   }
 
   async exportData() {
     await this.init();
-    return JSON.stringify(this.db.data, null, 2);
+    const tickers = await this.getTickers();
+    const scanResults = await this.getScanResults();
+    const watchlists = await this.getWatchlists();
+    const holdings = await this.getHoldings();
+    const settings = await prisma.settings.findFirst();
+    
+    return JSON.stringify({
+      tickers,
+      scanResults,
+      watchlists,
+      holdings: { stocks: holdings, last_updated: new Date().toISOString() },
+      settings: settings ? {
+        created: settings.created.toISOString(),
+        version: settings.version
+      } : null
+    }, null, 2);
   }
 
   async importData(data) {
     await this.init();
-    this.db.data = data;
-    await this.db.write();
+    
+    if (data.tickers) {
+      await this.updateTickers(data.tickers);
+    }
+    if (data.scanResults) {
+      await this.saveScanResults(data.scanResults);
+    }
+    if (data.watchlists) {
+      // Clear existing and insert new
+      const existing = await prisma.watchlist.findMany();
+      for (const w of existing) {
+        await prisma.watchlist.delete({ where: { listId: w.listId } });
+      }
+      for (const w of data.watchlists) {
+        await prisma.watchlist.create({
+          data: {
+            listId: w.id,
+            name: w.name,
+            stocks: w.stocks,
+            created: new Date(w.created),
+            updated: new Date(w.updated)
+          }
+        });
+      }
+    }
+    if (data.holdings && data.holdings.stocks) {
+      const holdingsDoc = await prisma.holdings.findFirst();
+      if (holdingsDoc) {
+        await prisma.holdings.update({
+          where: { id: holdingsDoc.id },
+          data: {
+            stocks: data.holdings.stocks,
+            last_updated: new Date()
+          }
+        });
+      }
+    }
+    
     console.log('📥 Imported data to database');
   }
 }
