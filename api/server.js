@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
@@ -7,6 +9,8 @@ const StockScanner = require('./stockScanner');
 const dbService = require('./database');
 const { getStockPriceData } = require('./priceUtils');
 const { scrapeFinvizScreener } = require('./finvizScraper');
+const alertChecker = require('./alertChecker');
+const telegramService = require('./telegramService');
 
 // Make fetch available for Node.js if not available
 if (typeof fetch === 'undefined') {
@@ -760,6 +764,154 @@ app.delete('/api/watchlists/:id/stocks', async (req, res) => {
   }
 });
 
+// Price Alerts Endpoints
+app.get('/api/alerts', async (req, res) => {
+  try {
+    const alerts = await dbService.getPriceAlerts();
+    res.json({ alerts, count: alerts.length });
+  } catch (error) {
+    console.error('Error getting alerts:', error);
+    res.status(500).json({ error: 'Failed to get alerts' });
+  }
+});
+
+app.get('/api/alerts/ticker/:ticker', async (req, res) => {
+  try {
+    const { ticker } = req.params;
+    const alerts = await dbService.getAlertsByTicker(ticker);
+    res.json({ alerts, count: alerts.length });
+  } catch (error) {
+    console.error('Error getting alerts for ticker:', error);
+    res.status(500).json({ error: 'Failed to get alerts' });
+  }
+});
+
+app.post('/api/alerts', async (req, res) => {
+  try {
+    const { ticker, targetPrice, condition } = req.body;
+    
+    if (!ticker || !targetPrice || !condition) {
+      return res.status(400).json({ error: 'ticker, targetPrice, and condition are required' });
+    }
+    
+    if (!['above', 'below'].includes(condition)) {
+      return res.status(400).json({ error: 'condition must be "above" or "below"' });
+    }
+    
+    const alert = await dbService.addPriceAlert({ ticker, targetPrice, condition });
+    res.json({ success: true, alert });
+  } catch (error) {
+    console.error('Error creating alert:', error);
+    res.status(500).json({ error: 'Failed to create alert' });
+  }
+});
+
+app.delete('/api/alerts/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const removed = await dbService.removePriceAlert(id);
+    
+    if (removed) {
+      res.json({ success: true, message: `Removed alert: ${id}` });
+    } else {
+      res.status(404).json({ error: 'Alert not found' });
+    }
+  } catch (error) {
+    console.error('Error removing alert:', error);
+    res.status(500).json({ error: 'Failed to remove alert' });
+  }
+});
+
+app.put('/api/alerts/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    const alert = await dbService.updatePriceAlert(id, updates);
+    res.json({ success: true, alert });
+  } catch (error) {
+    console.error('Error updating alert:', error);
+    if (error.message === 'Alert not found') {
+      res.status(404).json({ error: 'Alert not found' });
+    } else {
+      res.status(500).json({ error: 'Failed to update alert' });
+    }
+  }
+});
+
+// Settings Endpoints
+app.get('/api/settings', async (req, res) => {
+  try {
+    const settings = await dbService.getSettings();
+    res.json(settings);
+  } catch (error) {
+    console.error('Error getting settings:', error);
+    res.status(500).json({ error: 'Failed to get settings' });
+  }
+});
+
+app.put('/api/settings', async (req, res) => {
+  try {
+    const updates = req.body;
+    const settings = await dbService.updateSettings(updates);
+    res.json({ success: true, settings });
+  } catch (error) {
+    console.error('Error updating settings:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
+// Test Telegram notification
+app.post('/api/test-telegram', async (req, res) => {
+  try {
+    const { chatId } = req.body;
+    
+    if (!chatId) {
+      return res.status(400).json({ error: 'chatId is required' });
+    }
+    
+    const result = await telegramService.sendTestMessage(chatId);
+    res.json(result);
+  } catch (error) {
+    console.error('Error sending test message:', error);
+    res.status(500).json({ error: 'Failed to send test message' });
+  }
+});
+
+// Get Telegram bot info
+app.get('/api/telegram/bot-info', async (req, res) => {
+  try {
+    const result = await telegramService.getBotInfo();
+    res.json(result);
+  } catch (error) {
+    console.error('Error getting bot info:', error);
+    res.status(500).json({ error: 'Failed to get bot info' });
+  }
+});
+
+// Get Telegram updates (to find chat ID)
+app.get('/api/telegram/updates', async (req, res) => {
+  try {
+    const result = await telegramService.getUpdates();
+    res.json(result);
+  } catch (error) {
+    console.error('Error getting updates:', error);
+    res.status(500).json({ error: 'Failed to get updates' });
+  }
+});
+
+// Manually trigger alert check
+app.post('/api/alerts/check', async (req, res) => {
+  try {
+    // Run check in background
+    alertChecker.checkAlerts();
+    res.json({ success: true, message: 'Alert check triggered' });
+  } catch (error) {
+    console.error('Error triggering alert check:', error);
+    res.status(500).json({ error: 'Failed to trigger alert check' });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Stock Scanner API running on port ${PORT}`);
@@ -767,6 +919,10 @@ app.listen(PORT, () => {
   console.log(`🗄️ Using MongoDB with Prisma ORM for data storage`);
   console.log(`🎯 Ticker management available at /api/tickers`);
   console.log(`⭐ Holdings management available at /api/holdings`);
+  console.log(`🔔 Price alerts available at /api/alerts`);
+  
+  // Start alert checker (checks every 5 minutes)
+  alertChecker.startPeriodicCheck(5);
 });
 
 module.exports = app;

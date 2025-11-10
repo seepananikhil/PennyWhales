@@ -212,6 +212,58 @@ export const api = {
     
     const response = await axios.get(`${API_BASE}/api/movers/all?${params.toString()}`);
     return response.data;
+  },
+
+  // Price Alerts
+  getAlerts: async (): Promise<{ alerts: any[]; count: number }> => {
+    const response = await axios.get(`${API_BASE}/api/alerts`);
+    return response.data;
+  },
+
+  getAlertsByTicker: async (ticker: string): Promise<{ alerts: any[]; count: number }> => {
+    const response = await axios.get(`${API_BASE}/api/alerts/ticker/${ticker}`);
+    return response.data;
+  },
+
+  createAlert: async (ticker: string, targetPrice: number, condition: 'above' | 'below'): Promise<{ success: boolean; alert: any }> => {
+    const response = await axios.post(`${API_BASE}/api/alerts`, { ticker, targetPrice, condition });
+    return response.data;
+  },
+
+  deleteAlert: async (alertId: string): Promise<{ success: boolean; message: string }> => {
+    const response = await axios.delete(`${API_BASE}/api/alerts/${alertId}`);
+    return response.data;
+  },
+
+  updateAlert: async (alertId: string, updates: any): Promise<{ success: boolean; alert: any }> => {
+    const response = await axios.put(`${API_BASE}/api/alerts/${alertId}`, updates);
+    return response.data;
+  },
+
+  // Settings
+  getSettings: async (): Promise<any> => {
+    const response = await axios.get(`${API_BASE}/api/settings`);
+    return response.data;
+  },
+
+  updateSettings: async (updates: any): Promise<{ success: boolean; settings: any }> => {
+    const response = await axios.put(`${API_BASE}/api/settings`, updates);
+    return response.data;
+  },
+
+  sendTestTelegram: async (chatId: string): Promise<{ success: boolean; messageId?: string; error?: string }> => {
+    const response = await axios.post(`${API_BASE}/api/test-telegram`, { chatId });
+    return response.data;
+  },
+
+  getTelegramBotInfo: async (): Promise<{ success: boolean; bot?: any; error?: string }> => {
+    const response = await axios.get(`${API_BASE}/api/telegram/bot-info`);
+    return response.data;
+  },
+
+  getTelegramUpdates: async (): Promise<{ success: boolean; updates?: any[]; error?: string }> => {
+    const response = await axios.get(`${API_BASE}/api/telegram/updates`);
+    return response.data;
   }
 };
 

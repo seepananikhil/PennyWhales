@@ -41,9 +41,12 @@ class DatabaseService {
         stocks: [], // Array of ticker symbols user is holding
         last_updated: null
       },
+      priceAlerts: [], // Price alerts for stocks
       settings: {
         created: new Date().toISOString(),
-        version: '1.0.0'
+        version: '1.0.0',
+        telegramChatId: null, // User's Telegram chat ID for alerts
+        telegramBotToken: null // Optional: Store bot token (or use env var)
       }
     };
 
@@ -58,6 +61,11 @@ class DatabaseService {
     // Ensure rejectedTickers section exists for existing databases
     if (!this.db.data.rejectedTickers) {
       this.db.data.rejectedTickers = [];
+    }
+
+    // Ensure priceAlerts section exists for existing databases
+    if (!this.db.data.priceAlerts) {
+      this.db.data.priceAlerts = [];
     }
 
     await this.db.write();
@@ -417,6 +425,91 @@ class DatabaseService {
     this.db.data = data;
     await this.db.write();
     console.log('📥 Imported data to database');
+  }
+
+  // Price Alerts Management
+  async getPriceAlerts() {
+    await this.init();
+    return this.db.data.priceAlerts || [];
+  }
+
+  async addPriceAlert(alert) {
+    await this.init();
+    const newAlert = {
+      id: `alert_${Date.now()}`,
+      ticker: alert.ticker.toUpperCase().trim(),
+      targetPrice: alert.targetPrice,
+      condition: alert.condition, // 'above' or 'below'
+      active: true,
+      triggered: false,
+      created: new Date().toISOString(),
+      triggeredAt: null
+    };
+
+    this.db.data.priceAlerts.push(newAlert);
+    await this.db.write();
+    console.log(`🔔 Added price alert: ${newAlert.ticker} ${newAlert.condition} $${newAlert.targetPrice}`);
+    return newAlert;
+  }
+
+  async removePriceAlert(alertId) {
+    await this.init();
+    const index = this.db.data.priceAlerts.findIndex(a => a.id === alertId);
+    
+    if (index > -1) {
+      const removed = this.db.data.priceAlerts.splice(index, 1)[0];
+      await this.db.write();
+      console.log(`🗑️ Removed price alert: ${alertId}`);
+      return removed;
+    }
+    return null;
+  }
+
+  async updatePriceAlert(alertId, updates) {
+    await this.init();
+    const alertIndex = this.db.data.priceAlerts.findIndex(a => a.id === alertId);
+    
+    if (alertIndex === -1) {
+      throw new Error('Alert not found');
+    }
+
+    this.db.data.priceAlerts[alertIndex] = {
+      ...this.db.data.priceAlerts[alertIndex],
+      ...updates,
+      updated: new Date().toISOString()
+    };
+
+    await this.db.write();
+    console.log(`🔔 Updated price alert: ${alertId}`);
+    return this.db.data.priceAlerts[alertIndex];
+  }
+
+  async getActivePriceAlerts() {
+    await this.init();
+    return this.db.data.priceAlerts.filter(a => a.active && !a.triggered);
+  }
+
+  async getAlertsByTicker(ticker) {
+    await this.init();
+    const normalizedTicker = ticker.toUpperCase().trim();
+    return this.db.data.priceAlerts.filter(a => a.ticker === normalizedTicker);
+  }
+
+  // Settings Management
+  async getSettings() {
+    await this.init();
+    return this.db.data.settings;
+  }
+
+  async updateSettings(updates) {
+    await this.init();
+    this.db.data.settings = {
+      ...this.db.data.settings,
+      ...updates
+    };
+    await this.db.write();
+    console.log('⚙️ Updated settings');
+    return this.db.data.settings;
   }
 }
 

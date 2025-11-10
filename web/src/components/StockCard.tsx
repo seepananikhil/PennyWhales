@@ -3,6 +3,9 @@ import { Stock } from '../types';
 import { theme, getFireLevelStyle } from '../theme';
 import api from '../api';
 import { SiTradingview } from "react-icons/si";
+import { FaBell, FaBellSlash } from "react-icons/fa";
+import { MdDelete, MdDeleteForever } from "react-icons/md";
+import PriceAlertModal from './PriceAlertModal';
 
 // Custom eye icons as React components
 const EyeIcon = ({ size = 16 }: { size?: number }) => (
@@ -57,6 +60,9 @@ const StockCard: React.FC<StockCardProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(livePrice ? new Date(livePrice.timestamp) : null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [hasAlerts, setHasAlerts] = useState(false);
+  const [alertCheckKey, setAlertCheckKey] = useState(0);
 
   const fireLevel = stock.fire_level || 0;
   const fireStyle = getFireLevelStyle(fireLevel);
@@ -66,6 +72,26 @@ const StockCard: React.FC<StockCardProps> = ({
   const cardBackgroundColor = isSelected 
     ? (fireLevel > 0 ? fireStyle.background : "#e3f2fd")
     : (fireLevel > 0 ? fireStyle.background : "#f8f9fa");
+
+  // Check if this stock has active alerts
+  useEffect(() => {
+    const checkAlerts = async () => {
+      try {
+        const result = await api.getAlertsByTicker(stock.ticker);
+        const activeAlerts = result.alerts.some((a: any) => a.active && !a.triggered);
+        setHasAlerts(activeAlerts);
+      } catch (error) {
+        console.error('Error checking alerts:', error);
+      }
+    };
+    checkAlerts();
+  }, [stock.ticker, alertCheckKey]); // Re-check when alertCheckKey changes
+
+  const handleAlertModalClose = () => {
+    setShowAlertModal(false);
+    // Trigger re-check of alerts when modal closes
+    setAlertCheckKey(prev => prev + 1);
+  };
 
   // Fetch live price data via proxy API
   const fetchLivePrice = async () => {
@@ -338,7 +364,7 @@ const StockCard: React.FC<StockCardProps> = ({
               style={{ 
                 color: deleteConfirm ? "#dc3545" : "#6c757d", 
                 cursor: "pointer",
-                fontSize: "1.1rem",
+                fontSize: "1.2rem",
                 backgroundColor: deleteConfirm ? "#f8d7da" : "#f8f9fa",
                 padding: "4px 6px",
                 borderRadius: "12px",
@@ -377,7 +403,7 @@ const StockCard: React.FC<StockCardProps> = ({
               }}
               title={deleteConfirm ? "Click again to confirm" : "Remove from ticker list"}
             >
-              {deleteConfirm ? "✓" : "🗑️"}
+              {deleteConfirm ? MdDeleteForever({}) : MdDelete({})}
             </span>
           )}
           {/* TradingView Chart Button */}
@@ -414,6 +440,41 @@ const StockCard: React.FC<StockCardProps> = ({
             title="View on TradingView"
           >
             {SiTradingview({ size: 14 })}
+          </span>
+          {/* Price Alert Bell Button */}
+          <span 
+            style={{ 
+              color: hasAlerts ? "#DC2626" : "#FFA500", 
+              cursor: "pointer",
+              fontSize: "1.1rem",
+              backgroundColor: hasAlerts ? "#FEE2E2" : "#FFF4E6",
+              padding: "4px 6px",
+              borderRadius: "12px",
+              border: hasAlerts ? "1px solid #FCA5A5" : "1px solid #FFD8A8",
+              boxShadow: hasAlerts ? "0 1px 2px rgba(220,38,38,0.3)" : "0 1px 2px rgba(255,165,0,0.3)",
+              display: "inline-flex",
+              alignItems: "center",
+              transition: "all 0.2s ease"
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowAlertModal(true);
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.1)";
+              e.currentTarget.style.backgroundColor = hasAlerts ? "#FCA5A5" : "#FFD8A8";
+              e.currentTarget.style.color = hasAlerts ? "#991B1B" : "#D97706";
+              e.currentTarget.style.boxShadow = hasAlerts ? "0 2px 6px rgba(220,38,38,0.4)" : "0 2px 6px rgba(255,165,0,0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.backgroundColor = hasAlerts ? "#FEE2E2" : "#FFF4E6";
+              e.currentTarget.style.color = hasAlerts ? "#DC2626" : "#FFA500";
+              e.currentTarget.style.boxShadow = hasAlerts ? "0 1px 2px rgba(220,38,38,0.3)" : "0 1px 2px rgba(255,165,0,0.3)";
+            }}
+            title={hasAlerts ? "View/manage price alerts" : "Set price alert"}
+          >
+            {hasAlerts ? FaBellSlash({ size: 14 }) : FaBell({ size: 14 })}
           </span>
         </div>
       </div>
@@ -514,6 +575,14 @@ const StockCard: React.FC<StockCardProps> = ({
         </span>
       </div>
     </div>
+    
+    {/* Price Alert Modal */}
+    <PriceAlertModal
+      isOpen={showAlertModal}
+      onClose={handleAlertModalClose}
+      ticker={stock.ticker}
+      currentPrice={currentPrice}
+    />
     </>
   );
 };
