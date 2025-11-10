@@ -11,7 +11,9 @@
     "start": "concurrently \"npm run start-api\" \"npm run start-web\"",
     "start-api": "cd api && npm start",
     "start-web": "cd web && npm start",
-    "build": "cd web && npm run build",
+    "build": "cd web && npm install && npm run build",
+    "vercel-build": "cd web && npm install && npm run build",
+    "deploy": "vercel --prod",
     "test-scanner": "cd api && node -e \"const Scanner = require('./stockScanner'); const s = new Scanner(); s.scan().then(() => console.log('Done')).catch(console.error)\"",
     "scan-python": "python3 scanner_pro_enhanced.py"
   },
