@@ -574,6 +574,72 @@ const StockCard: React.FC<StockCardProps> = ({
           )}
         </span>
       </div>
+
+      {/* Performance Metrics */}
+      {stock.performance && (
+        <div
+          style={{
+            marginTop: "8px",
+            paddingTop: "8px",
+            borderTop: "1px solid #e9ecef",
+            display: "flex",
+            justifyContent: "space-around",
+            gap: "8px",
+          }}
+        >
+          <div style={{ textAlign: "center", flex: 1 }}>
+            <div style={{ 
+              fontSize: theme.typography.fontSize.xs, 
+              color: "#888",
+              fontWeight: "600",
+              marginBottom: "2px"
+            }}>
+              Week
+            </div>
+            <div style={{ 
+              fontSize: theme.typography.fontSize.sm, 
+              fontWeight: "bold",
+              color: stock.performance.week > 0 ? "#28a745" : stock.performance.week < 0 ? "#dc3545" : "#6c757d"
+            }}>
+              {stock.performance.week > 0 ? "+" : ""}{stock.performance.week.toFixed(1)}%
+            </div>
+          </div>
+          <div style={{ textAlign: "center", flex: 1 }}>
+            <div style={{ 
+              fontSize: theme.typography.fontSize.xs, 
+              color: "#888",
+              fontWeight: "600",
+              marginBottom: "2px"
+            }}>
+              Month
+            </div>
+            <div style={{ 
+              fontSize: theme.typography.fontSize.sm, 
+              fontWeight: "bold",
+              color: stock.performance.month > 0 ? "#28a745" : stock.performance.month < 0 ? "#dc3545" : "#6c757d"
+            }}>
+              {stock.performance.month > 0 ? "+" : ""}{stock.performance.month.toFixed(1)}%
+            </div>
+          </div>
+          <div style={{ textAlign: "center", flex: 1 }}>
+            <div style={{ 
+              fontSize: theme.typography.fontSize.xs, 
+              color: "#888",
+              fontWeight: "600",
+              marginBottom: "2px"
+            }}>
+              Year
+            </div>
+            <div style={{ 
+              fontSize: theme.typography.fontSize.sm, 
+              fontWeight: "bold",
+              color: stock.performance.year > 0 ? "#28a745" : stock.performance.year < 0 ? "#dc3545" : "#6c757d"
+            }}>
+              {stock.performance.year > 0 ? "+" : ""}{stock.performance.year.toFixed(1)}%
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     
     {/* Price Alert Modal */}

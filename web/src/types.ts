@@ -15,6 +15,11 @@ export interface Stock {
   notes: string;
   fire_level?: number; // 0-3, calculated by API
   is_new?: boolean; // True if this is a new fire stock
+  performance?: {
+    week: number;
+    month: number;
+    year: number;
+  };
 }
 
 export interface ScanResult {

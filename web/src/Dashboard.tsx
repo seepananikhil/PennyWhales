@@ -41,6 +41,8 @@ const Dashboard: React.FC = () => {
   const [topGainers, setTopGainers] = useState<string[]>([]);
   const [topLosers, setTopLosers] = useState<string[]>([]);
   const [showChartView, setShowChartView] = useState<boolean>(true);
+  const [performanceTimeframe, setPerformanceTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [performanceType, setPerformanceType] = useState<'gainers' | 'losers'>('gainers');
 
   useEffect(() => {
     loadData();
@@ -360,6 +362,11 @@ const Dashboard: React.FC = () => {
     // Auto-set activeFilter based on whether we have any filters
     // Check the updated state by calculating hasFilters separately
     setActiveFilter(prev => {
+      // Preserve 'performance' filter - don't override it
+      if (prev === 'performance') {
+        return 'performance';
+      }
+      
       // If currently on gainers/losers, switch to multifilter when toggling
       const newFiltersSize = (type === 'fire' ? (multiFilters.fireLevels.has(value as number) ? multiFilters.fireLevels.size - 1 : multiFilters.fireLevels.size + 1) : multiFilters.fireLevels.size) +
                              (type === 'price' ? (multiFilters.priceFilters.has(value as string) ? multiFilters.priceFilters.size - 1 : multiFilters.priceFilters.size + 1) : multiFilters.priceFilters.size) +
@@ -426,10 +433,66 @@ const Dashboard: React.FC = () => {
         stocks = holdingTickers;
         break;
       case 'gainers':
-        stocks = topGainers.filter(ticker => tickersWithData.includes(ticker));
+        // Filter based on selected timeframe performance
+        if (performanceTimeframe === 'daily') {
+          // Daily - use topGainers from API
+          stocks = topGainers.filter(ticker => tickersWithData.includes(ticker));
+        } else {
+          // Weekly or Monthly - filter by performance data
+          stocks = tickersWithData.filter(ticker => {
+            const stock = stockData.get(ticker);
+            if (!stock?.performance) return false;
+            
+            if (performanceTimeframe === 'weekly') {
+              return (stock.performance.week || 0) > 0;
+            } else {
+              return (stock.performance.month || 0) > 0;
+            }
+          }).sort((a, b) => {
+            const stockA = stockData.get(a);
+            const stockB = stockData.get(b);
+            if (!stockA?.performance || !stockB?.performance) return 0;
+            
+            if (performanceTimeframe === 'weekly') {
+              return (stockB.performance.week || 0) - (stockA.performance.week || 0);
+            } else {
+              return (stockB.performance.month || 0) - (stockA.performance.month || 0);
+            }
+          });
+        }
         break;
       case 'losers':
-        stocks = topLosers.filter(ticker => tickersWithData.includes(ticker));
+        // Filter based on selected timeframe performance
+        if (performanceTimeframe === 'daily') {
+          // Daily - use topLosers from API
+          stocks = topLosers.filter(ticker => tickersWithData.includes(ticker));
+        } else {
+          // Weekly or Monthly - filter by performance data
+          stocks = tickersWithData.filter(ticker => {
+            const stock = stockData.get(ticker);
+            if (!stock?.performance) return false;
+            
+            if (performanceTimeframe === 'weekly') {
+              return (stock.performance.week || 0) < 0;
+            } else {
+              return (stock.performance.month || 0) < 0;
+            }
+          }).sort((a, b) => {
+            const stockA = stockData.get(a);
+            const stockB = stockData.get(b);
+            if (!stockA?.performance || !stockB?.performance) return 0;
+            
+            if (performanceTimeframe === 'weekly') {
+              return (stockA.performance.week || 0) - (stockB.performance.week || 0);
+            } else {
+              return (stockA.performance.month || 0) - (stockB.performance.month || 0);
+            }
+          });
+        }
+        break;
+      case 'performance':
+        // Start with all stocks that have data
+        stocks = tickersWithData;
         break;
       default:
         stocks = tickersWithData;
@@ -480,6 +543,44 @@ const Dashboard: React.FC = () => {
           }
         });
       });
+    }
+
+    // Apply performance sorting/filtering if active
+    if (activeFilter === 'performance') {
+      if (performanceTimeframe === 'daily') {
+        // Daily - filter to only stocks in topGainers/topLosers
+        const topList = performanceType === 'gainers' ? topGainers : topLosers;
+        stocks = stocks.filter(ticker => topList.includes(ticker));
+        // Sort by position in top list
+        stocks.sort((a, b) => topList.indexOf(a) - topList.indexOf(b));
+      } else {
+        // Weekly or Monthly - filter by performance data
+        stocks = stocks.filter(ticker => {
+          const stock = stockData.get(ticker);
+          if (!stock?.performance) return false;
+          
+          const perfValue = performanceTimeframe === 'weekly' 
+            ? (stock.performance.week || 0)
+            : (stock.performance.month || 0);
+          
+          return performanceType === 'gainers' ? perfValue > 0 : perfValue < 0;
+        }).sort((a, b) => {
+          const stockA = stockData.get(a);
+          const stockB = stockData.get(b);
+          if (!stockA?.performance || !stockB?.performance) return 0;
+          
+          const perfA = performanceTimeframe === 'weekly' 
+            ? (stockA.performance.week || 0)
+            : (stockA.performance.month || 0);
+          const perfB = performanceTimeframe === 'weekly'
+            ? (stockB.performance.week || 0)
+            : (stockB.performance.month || 0);
+          
+          return performanceType === 'gainers' 
+            ? perfB - perfA  // Highest to lowest for gainers
+            : perfA - perfB; // Lowest to highest for losers
+        });
+      }
     }
     
     // Filter by search query if provided
@@ -1233,101 +1334,134 @@ const Dashboard: React.FC = () => {
             🏆 Over $2
           </button>
 
-          <button
-            onClick={() => {
-              // Clear multiFilters when switching to gainers
-              setMultiFilters({
-                fireLevels: new Set(),
-                priceFilters: new Set(),
-                marketValueFilters: new Set()
-              });
-              
-              if (activeFilter === 'gainers') {
-                setActiveFilter('all');
-              } else {
-                setActiveFilter('gainers');
-              }
-            }}
-            style={{
-              padding: theme.spacing.md,
-              backgroundColor: activeFilter === 'gainers' ? '#28a745' : theme.ui.surface,
-              color: activeFilter === 'gainers' ? 'white' : '#28a745',
-              border: `2px solid #28a745`,
-              borderRadius: theme.borderRadius.md,
-              textAlign: 'center',
-              boxShadow: activeFilter === 'gainers' ? '0 4px 8px rgba(40, 167, 69, 0.3)' : theme.ui.shadow.sm,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: activeFilter === 'gainers' ? 'translateY(-1px)' : 'none',
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold
-            }}
-            onMouseEnter={(e) => {
-              if (activeFilter !== 'gainers') {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(40, 167, 69, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (activeFilter !== 'gainers') {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            📈 Top Gainers
-          </button>
+          {/* Compact Performance Filter */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+            backgroundColor: activeFilter === 'performance' ? '#E3F2FD' : theme.ui.surface,
+            border: `2px solid ${activeFilter === 'performance' ? '#2196F3' : theme.ui.border}`,
+            borderRadius: theme.borderRadius.md,
+            boxShadow: activeFilter === 'performance' ? '0 4px 8px rgba(33, 150, 243, 0.3)' : theme.ui.shadow.sm,
+            transition: `all ${theme.transition.normal}`,
+            fontFamily: theme.typography.fontFamily
+          }}>
+            {/* Timeframe Toggle */}
+            <div style={{ display: 'flex', gap: '2px', backgroundColor: '#f8f9fa', borderRadius: theme.borderRadius.sm, padding: '2px' }}>
+              <button
+                onClick={() => setPerformanceTimeframe('daily')}
+                style={{
+                  padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                  backgroundColor: performanceTimeframe === 'daily' ? '#2196F3' : 'transparent',
+                  color: performanceTimeframe === 'daily' ? 'white' : theme.ui.text.primary,
+                  border: 'none',
+                  borderRadius: theme.borderRadius.sm,
+                  cursor: 'pointer',
+                  fontSize: theme.typography.fontSize.xs,
+                  fontWeight: theme.typography.fontWeight.semibold,
+                  fontFamily: theme.typography.fontFamily,
+                  transition: `all ${theme.transition.normal}`
+                }}
+              >
+                D
+              </button>
+              <button
+                onClick={() => setPerformanceTimeframe('weekly')}
+                style={{
+                  padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                  backgroundColor: performanceTimeframe === 'weekly' ? '#2196F3' : 'transparent',
+                  color: performanceTimeframe === 'weekly' ? 'white' : theme.ui.text.primary,
+                  border: 'none',
+                  borderRadius: theme.borderRadius.sm,
+                  cursor: 'pointer',
+                  fontSize: theme.typography.fontSize.xs,
+                  fontWeight: theme.typography.fontWeight.semibold,
+                  fontFamily: theme.typography.fontFamily,
+                  transition: `all ${theme.transition.normal}`
+                }}
+              >
+                W
+              </button>
+              <button
+                onClick={() => setPerformanceTimeframe('monthly')}
+                style={{
+                  padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                  backgroundColor: performanceTimeframe === 'monthly' ? '#2196F3' : 'transparent',
+                  color: performanceTimeframe === 'monthly' ? 'white' : theme.ui.text.primary,
+                  border: 'none',
+                  borderRadius: theme.borderRadius.sm,
+                  cursor: 'pointer',
+                  fontSize: theme.typography.fontSize.xs,
+                  fontWeight: theme.typography.fontWeight.semibold,
+                  fontFamily: theme.typography.fontFamily,
+                  transition: `all ${theme.transition.normal}`
+                }}
+              >
+                M
+              </button>
+            </div>
 
-          <button
-            onClick={() => {
-              // Clear multiFilters when switching to losers
-              setMultiFilters({
-                fireLevels: new Set(),
-                priceFilters: new Set(),
-                marketValueFilters: new Set()
-              });
-              
-              if (activeFilter === 'losers') {
-                setActiveFilter('all');
-              } else {
-                setActiveFilter('losers');
-              }
-            }}
-            style={{
-              padding: theme.spacing.md,
-              backgroundColor: activeFilter === 'losers' ? '#dc3545' : theme.ui.surface,
-              color: activeFilter === 'losers' ? 'white' : '#dc3545',
-              border: `2px solid #dc3545`,
-              borderRadius: theme.borderRadius.md,
-              textAlign: 'center',
-              boxShadow: activeFilter === 'losers' ? '0 4px 8px rgba(220, 53, 69, 0.3)' : theme.ui.shadow.sm,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: activeFilter === 'losers' ? 'translateY(-1px)' : 'none',
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold
-            }}
-            onMouseEnter={(e) => {
-              if (activeFilter !== 'losers') {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (activeFilter !== 'losers') {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            📉 Top Losers
-          </button>
+            {/* Gainers Button */}
+            <button
+              onClick={() => {
+                setPerformanceType('gainers');
+                if (activeFilter === 'performance' && performanceType === 'gainers') {
+                  // Toggle off
+                  setActiveFilter('all');
+                } else {
+                  setActiveFilter('performance');
+                }
+              }}
+              style={{
+                padding: `${theme.spacing.xs} ${theme.spacing.md}`,
+                backgroundColor: activeFilter === 'performance' && performanceType === 'gainers' ? '#28a745' : 'transparent',
+                color: activeFilter === 'performance' && performanceType === 'gainers' ? 'white' : '#28a745',
+                border: `2px solid #28a745`,
+                borderRadius: theme.borderRadius.sm,
+                cursor: 'pointer',
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.semibold,
+                fontFamily: theme.typography.fontFamily,
+                transition: `all ${theme.transition.normal}`,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              📈 Gainers
+            </button>
+
+            {/* Losers Button */}
+            <button
+              onClick={() => {
+                setPerformanceType('losers');
+                if (activeFilter === 'performance' && performanceType === 'losers') {
+                  // Toggle off
+                  setActiveFilter('all');
+                } else {
+                  setActiveFilter('performance');
+                }
+              }}
+              style={{
+                padding: `${theme.spacing.xs} ${theme.spacing.md}`,
+                backgroundColor: activeFilter === 'performance' && performanceType === 'losers' ? '#dc3545' : 'transparent',
+                color: activeFilter === 'performance' && performanceType === 'losers' ? 'white' : '#dc3545',
+                border: `2px solid #dc3545`,
+                borderRadius: theme.borderRadius.sm,
+                cursor: 'pointer',
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.semibold,
+                fontFamily: theme.typography.fontFamily,
+                transition: `all ${theme.transition.normal}`,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              📉 Losers
+            </button>
+          </div>
         </div>
 
         {/* Market Value Filter Row */}
-        <div style={{
+        {/* <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
           gap: theme.spacing.md,
@@ -1464,7 +1598,7 @@ const Dashboard: React.FC = () => {
           >
             🏆 Over $100M
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Content Section */}

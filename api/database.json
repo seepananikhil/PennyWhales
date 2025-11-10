@@ -6528,10 +6528,12 @@
       "ticker": "REFR",
       "targetPrice": 1.58,
       "condition": "below",
-      "active": true,
-      "triggered": false,
+      "active": false,
+      "triggered": true,
       "created": "2025-11-10T17:31:03.665Z",
-      "triggeredAt": null
+      "triggeredAt": "2025-11-10T17:35:39.472Z",
+      "triggeredPrice": 1.56,
+      "updated": "2025-11-10T17:35:39.473Z"
     }
   ]
 }
