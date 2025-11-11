@@ -1037,11 +1037,46 @@ app.listen(PORT, () => {
   alertChecker.startPeriodicCheck(5);
 
   // Setup cron job for daily scan at 6:00am IST
-  console.log(`⏰ Scheduled scan set for 6:00 AM IST (runs daily)`);
+  console.log(`⏰ Scheduled scans set for 6:00 AM IST and 8:15 PM IST (runs daily)`);
+  
+  // Morning scan at 6:00 AM IST
   cron.schedule(
-    "5 9 * * *",
+    "0 6 * * *",
     async () => {
-      console.log("⏰ Running scheduled scan at 6:00am IST...");
+      console.log("⏰ Running scheduled scan at 6:00 AM IST...");
+
+      if (scanState.scanning) {
+        console.log("⚠️ Scan already in progress, skipping scheduled scan");
+        return;
+      }
+
+      try {
+        // Call the scan start endpoint logic
+        const response = await fetch(
+          `http://localhost:${PORT}/api/scan/start`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        const result = await response.json();
+        console.log("✅ Scheduled scan triggered:", result.message);
+      } catch (error) {
+        console.error("❌ Error triggering scheduled scan:", error.message);
+      }
+    },
+    {
+      scheduled: true,
+      timezone: "Asia/Kolkata",
+    }
+  );
+
+  // Evening scan at 8:15 PM IST
+  cron.schedule(
+    "15 20 * * *",
+    async () => {
+      console.log("⏰ Running scheduled scan at 8:15 PM IST...");
 
       if (scanState.scanning) {
         console.log("⚠️ Scan already in progress, skipping scheduled scan");
