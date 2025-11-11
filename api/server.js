@@ -267,6 +267,23 @@ app.get("/api/scan/status", (req, res) => {
 app.get("/api/scan/results", async (req, res) => {
   try {
     const results = await dbService.getScanResults();
+    
+    // Filter stocks to only include those with price below $2
+    if (results && results.stocks) {
+      results.stocks = results.stocks.filter(stock => stock.price && stock.price < 2.0);
+      
+      // Update summary counts
+      if (results.summary) {
+        results.summary.qualifying_count = results.stocks.length;
+        results.summary.fire_level_5 = results.stocks.filter((s) => s.fire_level === 5).length;
+        results.summary.fire_level_4 = results.stocks.filter((s) => s.fire_level === 4).length;
+        results.summary.fire_level_3 = results.stocks.filter((s) => s.fire_level === 3).length;
+        results.summary.fire_level_2 = results.stocks.filter((s) => s.fire_level === 2).length;
+        results.summary.fire_level_1 = results.stocks.filter((s) => s.fire_level === 1).length;
+        results.summary.total_fire_stocks = results.stocks.length;
+      }
+    }
+    
     res.json(results);
   } catch (error) {
     console.error("Error getting scan results:", error);

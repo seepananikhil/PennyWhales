@@ -364,7 +364,7 @@ const Dashboard: React.FC = () => {
                              (type === 'price' ? (multiFilters.priceFilters.has(value as string) ? multiFilters.priceFilters.size - 1 : multiFilters.priceFilters.size + 1) : multiFilters.priceFilters.size) +
                              (type === 'marketValue' ? (multiFilters.marketValueFilters.has(value as string) ? multiFilters.marketValueFilters.size - 1 : multiFilters.marketValueFilters.size + 1) : multiFilters.marketValueFilters.size);
       
-      return newFiltersSize > 0 ? 'multifilter' : 'all';
+      return newFiltersSize > 0 ? 'multifilter' : 'anyfire';
     });
   };
 
@@ -796,54 +796,8 @@ const Dashboard: React.FC = () => {
         }}>
           <div 
             onClick={() => {
-              setActiveFilter('all');
-              clearAllFilters();
-            }}
-            style={{
-              textAlign: 'center',
-              padding: theme.spacing.sm,
-              backgroundColor: activeFilter === 'all' ? theme.status.info : theme.ui.background,
-              borderRadius: theme.borderRadius.md,
-              border: `2px solid ${activeFilter === 'all' ? theme.status.info : theme.ui.border}`,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: activeFilter === 'all' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: activeFilter === 'all' ? theme.ui.shadow.md : theme.ui.shadow.sm
-            }}
-            onMouseEnter={(e) => {
-              if (activeFilter !== 'all') {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (activeFilter !== 'all') {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            <div style={{
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: activeFilter === 'all' ? 'white' : theme.ui.text.primary
-            }}>
-              {tickers.length}
-            </div>
-            <div style={{
-              fontSize: theme.typography.fontSize.xs,
-              color: activeFilter === 'all' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
-              fontWeight: theme.typography.fontWeight.medium
-            }}>
-              Total Tickers
-            </div>
-          </div>
-
-
-          <div 
-            onClick={() => {
               if (activeFilter === 'anyfire') {
-                setActiveFilter('all');
+                setActiveFilter('anyfire');
                 clearAllFilters();
               } else {
                 setActiveFilter('anyfire');
@@ -1108,7 +1062,7 @@ const Dashboard: React.FC = () => {
           <div 
             onClick={() => {
               if (activeFilter === 'holdings') {
-                setActiveFilter('all');
+                setActiveFilter('anyfire');
               } else {
                 setActiveFilter('holdings');
               }
@@ -1224,40 +1178,7 @@ const Dashboard: React.FC = () => {
               }
             }}
           >
-            💎 $1 - $2
-          </button>
-
-          <button
-            onClick={() => toggleFilter('price', 'over2')}
-            style={{
-              padding: theme.spacing.md,
-              backgroundColor: multiFilters.priceFilters.has('over2') ? '#6f42c1' : theme.ui.surface,
-              color: multiFilters.priceFilters.has('over2') ? 'white' : '#6f42c1',
-              border: `2px solid #6f42c1`,
-              borderRadius: theme.borderRadius.md,
-              textAlign: 'center',
-              boxShadow: multiFilters.priceFilters.has('over2') ? '0 4px 8px rgba(111, 66, 193, 0.3)' : theme.ui.shadow.sm,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.priceFilters.has('over2') ? 'translateY(-1px)' : 'none',
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.priceFilters.has('over2')) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(111, 66, 193, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.priceFilters.has('over2')) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            🏆 Over $2
+            above $1
           </button>
 
           {/* Compact Performance Sort */}
