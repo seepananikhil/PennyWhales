@@ -227,36 +227,13 @@ const StockCard: React.FC<StockCardProps> = ({
               {stock.ticker}
             </span>
             <span style={{ fontSize: "1rem" }}>{getFireEmoji(fireLevel)}</span>
-            {stock.is_new && (
-              <span
-                style={{
-                  color: "#28a745",
-                  fontSize: "0.7rem",
-                  fontWeight: "600",
-                  backgroundColor: "#d4edda",
-                  padding: "2px 5px",
-                  borderRadius: "6px",
-                  border: "1px solid #c3e6cb",
-                }}
-              >
-                NEW
-              </span>
-            )}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "3px",
-            }}
-          >
             {stock.market_cap && stock.market_cap > 0 && (
               <span
                 style={{
                   fontSize: "0.8rem",
                   color: "#6c757d",
                   fontWeight: "600",
-                  backgroundColor: "#f8f9fa",
+                  backgroundColor: "#fafafa",
                   padding: "2px 6px",
                   borderRadius: "5px",
                   border: "1px solid #e9ecef",
@@ -271,6 +248,14 @@ const StockCard: React.FC<StockCardProps> = ({
                 })()}
               </span>
             )}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "3px",
+            }}
+          >
             {showHoldingStar && isHolding && (
               <span
                 style={{
