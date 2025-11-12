@@ -1033,17 +1033,31 @@ app.listen(PORT, () => {
   console.log(`⭐ Holdings management available at /api/holdings`);
   console.log(`🔔 Price alerts available at /api/alerts`);
 
-  // Start alert checker (checks every 5 minutes)
-  alertChecker.startPeriodicCheck(5);
-
-  // Setup cron job for daily scan at 6:00am IST
-  console.log(`⏰ Scheduled scans set for 6:00 AM IST and 8:15 PM IST (runs daily)`);
+  // Setup hourly alert checking between 8 PM - 3 AM IST
+  console.log(`🔔 Alert checks scheduled every hour from 8 PM to 3 AM IST`);
   
-  // Morning scan at 6:00 AM IST
+  // Check alerts at 8 PM, 9 PM, 10 PM, 11 PM, 12 AM, 1 AM, 2 AM, and 3 AM IST
   cron.schedule(
-    "0 6 * * *",
+    "0 20,21,22,23,0,1,2,3 * * *",
     async () => {
-      console.log("⏰ Running scheduled scan at 6:00 AM IST...");
+      const hour = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata', hour: '2-digit', hour12: false });
+      console.log(`⏰ Running hourly alert check at ${hour}:00 IST...`);
+      await alertChecker.checkAlerts();
+    },
+    {
+      scheduled: true,
+      timezone: "Asia/Kolkata",
+    }
+  );
+
+  // Setup cron job for scans at 8:15 PM and 3:15 AM IST
+  console.log(`⏰ Scheduled scans set for 8:15 PM IST and 3:15 AM IST (runs daily)`);
+  
+  // Evening scan at 8:15 PM IST
+  cron.schedule(
+    "15 20 * * *",
+    async () => {
+      console.log("⏰ Running scheduled scan at 8:15 PM IST...");
 
       if (scanState.scanning) {
         console.log("⚠️ Scan already in progress, skipping scheduled scan");
@@ -1072,11 +1086,11 @@ app.listen(PORT, () => {
     }
   );
 
-  // Evening scan at 8:15 PM IST
+  // Night scan at 3:15 AM IST
   cron.schedule(
-    "15 20 * * *",
+    "15 3 * * *",
     async () => {
-      console.log("⏰ Running scheduled scan at 8:15 PM IST...");
+      console.log("⏰ Running scheduled scan at 3:15 AM IST...");
 
       if (scanState.scanning) {
         console.log("⚠️ Scan already in progress, skipping scheduled scan");
