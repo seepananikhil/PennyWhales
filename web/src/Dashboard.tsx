@@ -436,6 +436,8 @@ const Dashboard: React.FC = () => {
         
         return Array.from(multiFilters.priceFilters).some(priceFilter => {
           switch (priceFilter) {
+            case 'under0.5':
+              return stock.price < 0.6;
             case 'under1':
               return stock.price < 1.0;
             case '1to2':
@@ -1115,6 +1117,39 @@ const Dashboard: React.FC = () => {
           gap: theme.spacing.md,
           marginBottom: theme.spacing.md
         }}>
+          <button
+            onClick={() => toggleFilter('price', 'under0.5')}
+            style={{
+              padding: theme.spacing.md,
+              backgroundColor: multiFilters.priceFilters.has('under0.5') ? '#007bff' : theme.ui.surface,
+              color: multiFilters.priceFilters.has('under0.5') ? 'white' : '#007bff',
+              border: `2px solid #007bff`,
+              borderRadius: theme.borderRadius.md,
+              textAlign: 'center',
+              boxShadow: multiFilters.priceFilters.has('under0.5') ? '0 4px 8px rgba(0, 123, 255, 0.3)' : theme.ui.shadow.sm,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: multiFilters.priceFilters.has('under0.5') ? 'translateY(-1px)' : 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}
+            onMouseEnter={(e) => {
+              if (!multiFilters.priceFilters.has('under0.5')) {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 123, 255, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!multiFilters.priceFilters.has('under0.5')) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            💰 Under $0.5
+          </button>
+
           <button
             onClick={() => toggleFilter('price', 'under1')}
             style={{

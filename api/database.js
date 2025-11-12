@@ -211,7 +211,24 @@ class DatabaseService {
   // Scan Results Management
   async getScanResults() {
     await this.init();
-    return this.db.data.scanResults;
+    
+    // Retry logic for read operations in case of temporary file system issues
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        await this.db.read();
+        return this.db.data.scanResults;
+      } catch (error) {
+        retries--;
+        if (retries === 0) {
+          console.error('Failed to read scan results after retries:', error.message);
+          // Return cached data if available
+          return this.db.data.scanResults || { stocks: [], summary: {}, timestamp: null };
+        }
+        // Wait a bit before retrying
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
   }
 
   async saveScanResults(results) {
@@ -236,9 +253,23 @@ class DatabaseService {
       timestamp: new Date().toISOString()
     };
     
-    await this.db.write();
-    console.log(`💾 Saved scan results (${uniqueStocks.length} stocks)`);
-    return this.db.data.scanResults;
+    // Retry logic for write operations
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        await this.db.write();
+        console.log(`💾 Saved scan results (${uniqueStocks.length} stocks)`);
+        return this.db.data.scanResults;
+      } catch (error) {
+        retries--;
+        if (retries === 0) {
+          console.error('Failed to save scan results after retries:', error.message);
+          throw error;
+        }
+        console.warn(`Write failed, retrying... (${retries} attempts left)`);
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+    }
   }
 
   async clearScanResults() {
