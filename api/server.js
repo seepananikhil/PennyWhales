@@ -65,6 +65,43 @@ async function autoPopulateHotPicks() {
       )}`
     );
 
+    // Check for stocks under $0.70 and send notification
+    const stocksUnder070 = hotPicks.filter((stock) => stock.price < 0.7);
+    if (stocksUnder070.length > 0) {
+      console.log(
+        `🔥 Found ${stocksUnder070.length} hot picks under $0.70!`
+      );
+
+      // Get settings to check if Telegram is enabled
+      const settings = await dbService.getSettings();
+      if (settings.telegramChatId) {
+        const stockList = stocksUnder070
+          .map(
+            (stock) =>
+              `• ${stock.ticker}: $${stock.price.toFixed(
+                2
+              )} (Fire Level ${stock.fire_level})`
+          )
+          .join("\n");
+
+        const message = `🔥 HOT PICKS UNDER $0.70 DETECTED! 🔥\n\n${stockList}\n\nTotal: ${stocksUnder070.length} stocks found`;
+
+        try {
+          await telegramService.sendMessage(settings.telegramChatId, message);
+          console.log("✅ Telegram notification sent for stocks under $0.70");
+        } catch (error) {
+          console.error(
+            "❌ Failed to send Telegram notification:",
+            error.message
+          );
+        }
+      } else {
+        console.log(
+          "⚠️ Telegram chat ID not configured in settings"
+        );
+      }
+    }
+
     // Check if "Hot Picks" watchlist exists
     const watchlists = await dbService.getWatchlists();
     let hotPicksWatchlist = watchlists.find((w) => w.name === "Hot Picks");

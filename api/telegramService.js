@@ -63,6 +63,31 @@ ${emoji} *${ticker}* has ${direction} your target!
     }
   }
 
+  // Generic send message function
+  async sendMessage(chatId, message, parseMode = 'Markdown') {
+    this.init();
+
+    if (!this.baseUrl) {
+      console.error('❌ Telegram service not initialized. Cannot send message.');
+      return { success: false, error: 'Service not configured' };
+    }
+
+    try {
+      const response = await axios.post(`${this.baseUrl}/sendMessage`, {
+        chat_id: chatId,
+        text: message,
+        parse_mode: parseMode,
+        disable_web_page_preview: true
+      });
+
+      console.log(`✅ Telegram message sent to ${chatId}: ${response.data.result.message_id}`);
+      return { success: true, messageId: response.data.result.message_id };
+    } catch (error) {
+      console.error(`❌ Failed to send Telegram message:`, error.response?.data || error.message);
+      return { success: false, error: error.response?.data?.description || error.message };
+    }
+  }
+
   async sendTestMessage(chatId) {
     this.init();
 
