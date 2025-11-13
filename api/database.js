@@ -234,6 +234,10 @@ class DatabaseService {
   async saveScanResults(results) {
     await this.init();
     
+    // Get previous scan results to calculate changes
+    const previousResults = this.db.data.scanResults?.stocks || [];
+    const previousStocksMap = new Map(previousResults.map(s => [s.ticker, s]));
+    
     // Use the stocks and summary as they come from the scanner
     const stocks = results.stocks || [];
     
@@ -242,13 +246,47 @@ class DatabaseService {
       arr.findIndex(s => s.ticker === stock.ticker) === index
     );
     
+    // Add change tracking for institutional holdings
+    const stocksWithChanges = uniqueStocks.map(stock => {
+      const previousStock = previousStocksMap.get(stock.ticker);
+      
+      if (previousStock) {
+        // Calculate actual changes from previous scan
+        const blackrockChange = stock.blackrock_pct - previousStock.blackrock_pct;
+        const vanguardChange = stock.vanguard_pct - previousStock.vanguard_pct;
+        
+        // Only update change if there's an actual difference (not zero/very small)
+        // Otherwise, keep the previous change value
+        const threshold = 0.01; // Consider changes less than 0.01% as unchanged
+        
+        return {
+          ...stock,
+          blackrock_change: Math.abs(blackrockChange) > threshold 
+            ? blackrockChange 
+            : (previousStock.blackrock_change || 0),
+          vanguard_change: Math.abs(vanguardChange) > threshold 
+            ? vanguardChange 
+            : (previousStock.vanguard_change || 0),
+          previous_fire_level: previousStock.fire_level
+        };
+      } else {
+        // New stock - set changes to 0
+        return {
+          ...stock,
+          blackrock_change: 0,
+          vanguard_change: 0,
+          previous_fire_level: null
+        };
+      }
+    });
+    
     // Save results with minimal processing
     this.db.data.scanResults = {
       ...results,
-      stocks: uniqueStocks,
+      stocks: stocksWithChanges,
       summary: {
         ...results.summary,
-        total_scanned_stocks: uniqueStocks.length
+        total_scanned_stocks: stocksWithChanges.length
       },
       timestamp: new Date().toISOString()
     };
@@ -258,7 +296,7 @@ class DatabaseService {
     while (retries > 0) {
       try {
         await this.db.write();
-        console.log(`💾 Saved scan results (${uniqueStocks.length} stocks)`);
+        console.log(`💾 Saved scan results (${stocksWithChanges.length} stocks)`);
         return this.db.data.scanResults;
       } catch (error) {
         retries--;

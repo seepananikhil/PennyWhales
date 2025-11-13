@@ -622,15 +622,37 @@ const StockCard: React.FC<StockCardProps> = ({
             >
               BLACKROCK
             </div>
-            <div
-              style={{
-                fontSize: "1rem",
-                fontWeight: "bold",
-                color: "#4F46E5",
-                marginBottom: "2px",
-              }}
-            >
-              {stock.blackrock_pct.toFixed(1)}%
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <div
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: "bold",
+                  color: "#4F46E5",
+                }}
+              >
+                {stock.blackrock_pct.toFixed(1)}%
+              </div>
+              {stock.blackrock_change !== undefined &&
+                stock.blackrock_change !== 0 && (
+                  <div
+                    style={{
+                      fontSize: "0.7rem",
+                      fontWeight: "600",
+                      color:
+                        stock.blackrock_change > 0 ? "#28a745" : "#dc3545",
+                      backgroundColor:
+                        stock.blackrock_change > 0 ? "#d4edda" : "#f8d7da",
+                      padding: "1px 4px",
+                      borderRadius: "3px",
+                      border: `1px solid ${
+                        stock.blackrock_change > 0 ? "#c3e6cb" : "#f5c6cb"
+                      }`,
+                    }}
+                  >
+                    {stock.blackrock_change > 0 ? "+" : ""}
+                    {stock.blackrock_change.toFixed(2)}%
+                  </div>
+                )}
             </div>
             {stock.blackrock_market_value &&
               stock.blackrock_market_value > 0 && (
@@ -667,15 +689,36 @@ const StockCard: React.FC<StockCardProps> = ({
             >
               VANGUARD
             </div>
-            <div
-              style={{
-                fontSize: "1rem",
-                fontWeight: "bold",
-                color: "#4F46E5",
-                marginBottom: "2px",
-              }}
-            >
-              {stock.vanguard_pct.toFixed(1)}%
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <div
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: "bold",
+                  color: "#4F46E5",
+                }}
+              >
+                {stock.vanguard_pct.toFixed(1)}%
+              </div>
+              {stock.vanguard_change !== undefined &&
+                stock.vanguard_change !== 0 && (
+                  <div
+                    style={{
+                      fontSize: "0.7rem",
+                      fontWeight: "600",
+                      color: stock.vanguard_change > 0 ? "#28a745" : "#dc3545",
+                      backgroundColor:
+                        stock.vanguard_change > 0 ? "#d4edda" : "#f8d7da",
+                      padding: "1px 4px",
+                      borderRadius: "3px",
+                      border: `1px solid ${
+                        stock.vanguard_change > 0 ? "#c3e6cb" : "#f5c6cb"
+                      }`,
+                    }}
+                  >
+                    {stock.vanguard_change > 0 ? "+" : ""}
+                    {stock.vanguard_change.toFixed(2)}%
+                  </div>
+                )}
             </div>
             {stock.vanguard_market_value && stock.vanguard_market_value > 0 && (
               <div

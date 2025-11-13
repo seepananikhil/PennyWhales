@@ -4,6 +4,8 @@ export interface Stock {
   previous_close?: number; // Previous closing price for change tracking
   blackrock_pct: number;
   vanguard_pct: number;
+  blackrock_change?: number; // Change in BlackRock percentage from previous scan
+  vanguard_change?: number; // Change in Vanguard percentage from previous scan
   blackrock_market_value?: number; // Market value in millions (numeric)
   vanguard_market_value?: number; // Market value in millions (numeric)
   market_cap?: number; // Market capitalization in millions
@@ -14,6 +16,7 @@ export interface Stock {
   discrepancy: boolean;
   notes: string;
   fire_level?: number; // 0-3, calculated by API
+  previous_fire_level?: number; // Previous fire level from last scan
   is_new?: boolean; // True if this is a new fire stock
   performance?: {
     week: number;
