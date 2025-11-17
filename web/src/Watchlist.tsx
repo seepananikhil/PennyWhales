@@ -283,6 +283,8 @@ const Watchlist: React.FC = () => {
     if (selectedPriceFilter) {
       stocksWithData = stocksWithData.filter((stock: Stock) => {
         switch (selectedPriceFilter) {
+          case 'under0.5':
+            return stock.price < 0.5;
           case 'under1':
             return stock.price < 1.0;
           case '1to2':
@@ -611,6 +613,33 @@ const Watchlist: React.FC = () => {
             gap: theme.spacing.md,
             marginTop: theme.spacing.md
           }}>
+            <button
+              onClick={() => {
+                if (selectedPriceFilter === 'under0.5') {
+                  setSelectedPriceFilter(null);
+                } else {
+                  setSelectedPriceFilter('under0.5');
+                }
+              }}
+              style={{
+                padding: theme.spacing.md,
+                backgroundColor: selectedPriceFilter === 'under0.5' ? '#dc3545' : theme.ui.surface,
+                color: selectedPriceFilter === 'under0.5' ? 'white' : '#dc3545',
+                border: `2px solid #dc3545`,
+                borderRadius: theme.borderRadius.md,
+                textAlign: 'center',
+                boxShadow: selectedPriceFilter === 'under0.5' ? '0 4px 8px rgba(220, 53, 69, 0.3)' : theme.ui.shadow.sm,
+                cursor: 'pointer',
+                transition: `all ${theme.transition.normal}`,
+                transform: selectedPriceFilter === 'under0.5' ? 'translateY(-1px)' : 'none',
+                fontFamily: theme.typography.fontFamily,
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.semibold
+              }}
+            >
+              🔥 Under $0.50
+            </button>
+
             <button
               onClick={() => {
                 if (selectedPriceFilter === 'under1') {

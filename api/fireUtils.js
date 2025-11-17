@@ -24,39 +24,44 @@ function calculateFireLevel(stock) {
   // FIRE LEVEL 5 - Elite institutional confidence
   if (combinedValue >= 50 ||                    // Massive investment ($50M+)
       combinedPct >= 15 ||                      // Elite percentage (15%+)
-      (blackrockPct >= 10 || vanguardPct >= 10)) { // Major fund strong conviction
+      (blackrockPct >= 10 || vanguardPct >= 10) || // Major fund strong conviction
+      (blackrockValue >= 35 || vanguardValue >= 35)) { // Single fund elite value
     return 5;
   }
   
   // FIRE LEVEL 4 - Very high institutional confidence  
   if (combinedValue >= 30 ||                    // Large investment ($30M+)
       combinedPct >= 10 ||                      // High percentage (10%+)
-      (blackrockPct >= 7 || vanguardPct >= 7)) {    // Single fund strong commitment
+      (blackrockPct >= 7 || vanguardPct >= 7) || // Single fund strong commitment
+      (blackrockValue >= 20 || vanguardValue >= 20)) { // Single fund large value
     return 4;
   }
   
   // FIRE LEVEL 3 - High institutional confidence
   if (combinedValue >= 15 ||                    // Substantial investment ($15M+)
       combinedPct >= 7 ||                       // Good percentage (7%+)
-      (blackrockPct >= 5 || vanguardPct >= 5)) {    // Single fund good commitment
+      (blackrockPct >= 5 || vanguardPct >= 5) || // Single fund good commitment
+      (blackrockValue >= 10 || vanguardValue >= 10)) { // Single fund substantial value
     return 3;
   }
   
   // FIRE LEVEL 2 - Good institutional interest
   if (combinedValue >= 5 ||                     // Decent investment ($5M+)
       combinedPct >= 4 ||                       // Fair percentage (4%+)
-      (blackrockPct >= 3 || vanguardPct >= 3)) {    // Single fund fair commitment
+      (blackrockPct >= 3 || vanguardPct >= 3) || // Single fund fair commitment
+      (blackrockValue >= 3.5 || vanguardValue >= 3.5)) { // Single fund decent value
     return 2;
   }
-  
+
   // FIRE LEVEL 1 - Minimal but meaningful presence
-  if (combinedValue >= 1 ||                     // Some investment ($1M+)
+  if (combinedValue >= 3 ||                     // Some investment ($3M+)
       combinedPct >= 2 ||                       // Basic percentage (2%+)
       (blackrockPct >= 1.5 || vanguardPct >= 1.5)) { // Single fund basic commitment
     return 1;
   }
   
-  return 0; // Below meaningful thresholds
+  
+  return 0; // Below meaningful thresholds - no Fire Level 1 (too much noise)
 }/**
  * Get fire level description
  * @param {number} fireLevel - Fire level (-1, 1-5)

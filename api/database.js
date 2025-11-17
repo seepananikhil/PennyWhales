@@ -251,21 +251,26 @@ class DatabaseService {
       const previousStock = previousStocksMap.get(stock.ticker);
       
       if (previousStock) {
-        // Calculate actual changes from previous scan
-        const blackrockChange = stock.blackrock_pct - previousStock.blackrock_pct;
-        const vanguardChange = stock.vanguard_pct - previousStock.vanguard_pct;
+        // Calculate changes based on PERCENTAGE POINT DIFFERENCE
+        // This tracks real ownership changes (shares bought/sold)
+        const blackrockPctChange = (stock.blackrock_pct || 0) - (previousStock.blackrock_pct || 0);
+        const vanguardPctChange = (stock.vanguard_pct || 0) - (previousStock.vanguard_pct || 0);
         
-        // Only update change if there's an actual difference (not zero/very small)
-        // Otherwise, keep the previous change value
-        const threshold = 0.01; // Consider changes less than 0.01% as unchanged
+        // Only update change if there's a significant percentage point difference
+        // Threshold: 0.05 percentage points (0.05% of shares outstanding)
+        const threshold = 0.05;
+        
+        // Round changes to 2 decimal places
+        const roundedBlackrockChange = Math.round(blackrockPctChange * 100) / 100;
+        const roundedVanguardChange = Math.round(vanguardPctChange * 100) / 100;
         
         return {
           ...stock,
-          blackrock_change: Math.abs(blackrockChange) > threshold 
-            ? blackrockChange 
+          blackrock_change: Math.abs(blackrockPctChange) > threshold 
+            ? roundedBlackrockChange 
             : (previousStock.blackrock_change || 0),
-          vanguard_change: Math.abs(vanguardChange) > threshold 
-            ? vanguardChange 
+          vanguard_change: Math.abs(vanguardPctChange) > threshold 
+            ? roundedVanguardChange 
             : (previousStock.vanguard_change || 0),
           previous_fire_level: previousStock.fire_level
         };
@@ -368,14 +373,26 @@ class DatabaseService {
       throw new Error('Watchlist not found');
     }
 
+    // Handle stocks merging BEFORE spreading updates
+    let mergedStocks = null;
+    if (updates.stocks) {
+      const existingStocks = this.db.data.watchlists[watchlistIndex].stocks || [];
+      const newStocks = updates.stocks.map(s => s.toUpperCase().trim());
+      mergedStocks = [...new Set([...existingStocks, ...newStocks])];
+    }
+
+    // Create a copy of updates without stocks
+    const { stocks, ...otherUpdates } = updates;
+
     this.db.data.watchlists[watchlistIndex] = {
       ...this.db.data.watchlists[watchlistIndex],
-      ...updates,
+      ...otherUpdates,
       updated: new Date().toISOString()
     };
 
-    if (updates.stocks) {
-      this.db.data.watchlists[watchlistIndex].stocks = updates.stocks.map(s => s.toUpperCase().trim());
+    // Apply merged stocks if we have them
+    if (mergedStocks) {
+      this.db.data.watchlists[watchlistIndex].stocks = mergedStocks;
     }
 
     await this.db.write();

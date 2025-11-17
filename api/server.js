@@ -116,12 +116,12 @@ async function autoPopulateHotPicks() {
         `✅ Created Hot Picks watchlist with ${hotPickTickers.length} stocks`
       );
     } else {
-      // Update existing Hot Picks watchlist
+      // Update existing Hot Picks watchlist (will append to existing stocks)
       await dbService.updateWatchlist(hotPicksWatchlist.id, {
         stocks: hotPickTickers,
       });
       console.log(
-        `✅ Updated Hot Picks watchlist with ${hotPickTickers.length} stocks`
+        `✅ Updated Hot Picks watchlist with ${hotPickTickers.length} new hot picks (appended to existing)`
       );
     }
 
@@ -155,6 +155,13 @@ app.post("/api/scan/start", async (req, res) => {
         const finvizStocks = await scrapeFinvizScreener();
 
         let tickersToScan = [];
+        let allTickers = [];
+
+        // Get existing tickers and rejected tickers
+        const existingTickers = await dbService.getTickers();
+        const rejectedTickers = await dbService.getRejectedTickers();
+        console.log(`📋 Found ${existingTickers.length} existing tickers in database`);
+        console.log(`🚫 Found ${rejectedTickers.length} rejected tickers to skip`);
 
         if (finvizStocks && finvizStocks.length > 0) {
           const finvizTickers = finvizStocks.map((s) =>
@@ -162,26 +169,21 @@ app.post("/api/scan/start", async (req, res) => {
           );
           console.log(`✅ Fetched ${finvizTickers.length} tickers from Finviz`);
 
-          // Get rejected tickers to filter them out
-          const rejectedTickers = await dbService.getRejectedTickers();
-          console.log(
-            `🚫 Found ${rejectedTickers.length} rejected tickers to skip`
-          );
+          // Merge existing tickers with Finviz tickers (unique only), excluding rejected ones
+          const combinedTickers = [...new Set([...existingTickers, ...finvizTickers])];
+          allTickers = combinedTickers.filter(ticker => !rejectedTickers.includes(ticker));
+          tickersToScan = allTickers;
+          
+          console.log(`🔄 Merged to ${allTickers.length} non-rejected tickers (from ${existingTickers.length} existing + ${finvizTickers.length} Finviz, ${combinedTickers.length - allTickers.length} rejected excluded)`);
+          console.log(`🎯 Will scan all ${tickersToScan.length} merged tickers`);
 
-          // Filter out rejected tickers
-          tickersToScan = finvizTickers.filter(
-            (ticker) => !rejectedTickers.includes(ticker)
-          );
-          console.log(
-            `🎯 Will scan ${tickersToScan.length} tickers (${
-              finvizTickers.length - tickersToScan.length
-            } rejected tickers skipped)`
-          );
+          // Save merged ticker list to database (without rejected ones)
+          await dbService.updateTickers(allTickers);
+          console.log(`💾 Saved ${allTickers.length} non-rejected tickers to database`);
         } else {
           console.log("⚠️ No data fetched from Finviz, using existing tickers");
-          const allTickers = await dbService.getTickers();
-          const rejectedTickers = await dbService.getRejectedTickers();
-          tickersToScan = allTickers.filter(
+          allTickers = existingTickers;
+          tickersToScan = existingTickers.filter(
             (ticker) => !rejectedTickers.includes(ticker)
           );
         }

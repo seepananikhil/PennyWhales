@@ -84,40 +84,28 @@ class StockScanner {
   }
 
   // Parse BlackRock and Vanguard holdings
-  parseHoldings(data) {
+  parseHoldings(data, marketCap) {
     if (!data?.data?.holdingsTransactions?.table?.rows) {
       return { 
-        blackrock: 0, 
-        vanguard: 0,
         blackrockMarketValue: 0,
-        vanguardMarketValue: 0
+        vanguardMarketValue: 0,
+        blackrockPct: 0,
+        vanguardPct: 0
       };
     }
 
-    let blackrockPct = 0;
-    let vanguardPct = 0;
     let blackrockMarketValue = 0;
     let vanguardMarketValue = 0;
+    let maxBlackrockValue = 0;
+    let maxVanguardValue = 0;
 
     try {
       const holdings = data.data.holdingsTransactions.table.rows;
-      
-      // Get total shares for percentage calculation
-      let totalShares = 0;
-      if (data.data.ownershipSummary?.ShareoutstandingTotal?.value) {
-        const sharesStr = data.data.ownershipSummary.ShareoutstandingTotal.value.replace(/[,\s]/g, '');
-        const match = sharesStr.match(/[\d\.]+/);
-        if (match) {
-          totalShares = parseFloat(match[0]) * 1000000; // Convert millions to actual shares
-        }
-      }
 
       for (const holding of holdings) {
         if (!holding.ownerName) continue;
 
         const ownerName = holding.ownerName.toUpperCase();
-        const sharesHeldStr = holding.sharesHeld?.replace(/[,\s]/g, '') || '0';
-        const sharesHeld = parseFloat(sharesHeldStr) || 0;
         
         // Parse market value (remove $ and commas, convert to number)
         // Note: marketValue from API is in thousands of dollars
@@ -126,19 +114,15 @@ class StockScanner {
         const marketValueThousands = parseFloat(marketValueStr) || 0;
         const marketValue = marketValueThousands / 1000; // Convert thousands to millions
 
-        if (totalShares > 0) {
-          const pctHeld = (sharesHeld / totalShares) * 100;
-
-          if (ownerName.includes('BLACKROCK') || ownerName.includes('BLACK ROCK')) {
-            if (pctHeld > blackrockPct) {
-              blackrockPct = pctHeld;
-              blackrockMarketValue = marketValue;
-            }
-          } else if (ownerName.includes('VANGUARD')) {
-            if (pctHeld > vanguardPct) {
-              vanguardPct = pctHeld;
-              vanguardMarketValue = marketValue;
-            }
+        if (ownerName.includes('BLACKROCK') || ownerName.includes('BLACK ROCK')) {
+          if (marketValue > maxBlackrockValue) {
+            maxBlackrockValue = marketValue;
+            blackrockMarketValue = marketValue;
+          }
+        } else if (ownerName.includes('VANGUARD')) {
+          if (marketValue > maxVanguardValue) {
+            maxVanguardValue = marketValue;
+            vanguardMarketValue = marketValue;
           }
         }
       }
@@ -146,11 +130,21 @@ class StockScanner {
       console.error('Error parsing holdings:', error);
     }
 
+    // Calculate percentages based on market cap and holding values
+    // Round to 2 decimal places
+    let blackrockPct = 0;
+    let vanguardPct = 0;
+    
+    if (marketCap && marketCap > 0) {
+      blackrockPct = Math.round(((blackrockMarketValue / marketCap) * 100) * 100) / 100;
+      vanguardPct = Math.round(((vanguardMarketValue / marketCap) * 100) * 100) / 100;
+    }
+
     return { 
-      blackrock: blackrockPct, 
-      vanguard: vanguardPct,
       blackrockMarketValue: blackrockMarketValue,
-      vanguardMarketValue: vanguardMarketValue
+      vanguardMarketValue: vanguardMarketValue,
+      blackrockPct: blackrockPct,
+      vanguardPct: vanguardPct
     };
   }
 
@@ -169,10 +163,10 @@ class StockScanner {
         return null;
       }
 
-      const { blackrock, vanguard, blackrockMarketValue, vanguardMarketValue } = this.parseHoldings(holdingsData);
-
       // Get market cap
       const marketCap = await this.getMarketCap(ticker);
+
+      const { blackrockMarketValue, vanguardMarketValue, blackrockPct, vanguardPct } = this.parseHoldings(holdingsData, marketCap);
 
       // Get performance data from Finviz
       const performance = await getFinvizPerformance(ticker);
@@ -183,8 +177,8 @@ class StockScanner {
         ticker,
         price: Math.round(priceData.price * 100) / 100, // Round to 2 decimals
         previous_close: Math.round(priceData.previousClose * 100) / 100, // Round to 2 decimals
-        blackrock_pct: blackrock,
-        vanguard_pct: vanguard,
+        blackrock_pct: blackrockPct, // Calculated from market cap and holding value
+        vanguard_pct: vanguardPct,   // Calculated from market cap and holding value
         blackrock_market_value: blackrockMarketValue, // Store as number (in millions)
         vanguard_market_value: vanguardMarketValue,     // Store as number (in millions)
         market_cap: marketCap, // Market cap in millions
