@@ -176,10 +176,6 @@ app.post("/api/scan/start", async (req, res) => {
           
           console.log(`🔄 Merged to ${allTickers.length} non-rejected tickers (from ${existingTickers.length} existing + ${finvizTickers.length} Finviz, ${combinedTickers.length - allTickers.length} rejected excluded)`);
           console.log(`🎯 Will scan all ${tickersToScan.length} merged tickers`);
-
-          // Save merged ticker list to database (without rejected ones)
-          await dbService.updateTickers(allTickers);
-          console.log(`💾 Saved ${allTickers.length} non-rejected tickers to database`);
         } else {
           console.log("⚠️ No data fetched from Finviz, using existing tickers");
           allTickers = existingTickers;
@@ -246,16 +242,7 @@ app.post("/api/scan/start", async (req, res) => {
           );
         }
 
-        // Step 4: Add qualifying tickers to tickers list
-        if (qualifyingStocks.length > 0) {
-          const qualifyingTickers = qualifyingStocks.map((s) => s.ticker);
-          await dbService.addTickers(qualifyingTickers);
-          console.log(
-            `✅ Added ${qualifyingTickers.length} qualifying tickers`
-          );
-        }
-
-        // Step 5: Save scan results
+        // Step 4: Save scan results
         const scanResults = {
           stocks: qualifyingStocks,
           summary: {
@@ -273,6 +260,11 @@ app.post("/api/scan/start", async (req, res) => {
         };
 
         await dbService.saveScanResults(scanResults);
+
+        // Step 5: Update ticker list with only qualifying tickers (remove non-qualifying ones)
+        const qualifyingTickers = qualifyingStocks.map((s) => s.ticker);
+        await dbService.updateTickers(qualifyingTickers);
+        console.log(`💾 Updated ticker list with ${qualifyingTickers.length} qualifying tickers`);
 
         // Auto-populate Hot Picks watchlist after scan completes
         await autoPopulateHotPicks();
