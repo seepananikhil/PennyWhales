@@ -19,6 +19,12 @@ function calculateFireLevel(stock) {
   const vanguardValue = stock.vanguard_market_value || 0;
   const combinedValue = blackrockValue + vanguardValue;
   
+  // // Filter out stocks with market cap less than 20M UNLESS they have strong institutional backing
+  // const marketCap = stock.market_cap || 0;
+  // if (marketCap < 20 && blackrockPct < 2 && vanguardPct < 2) {
+  //   return 0;
+  // }
+  
   // Simple tiered approach - check elite conditions first, then fall through
   
   // FIRE LEVEL 5 - Elite institutional confidence
@@ -55,8 +61,8 @@ function calculateFireLevel(stock) {
 
   // FIRE LEVEL 1 - Minimal but meaningful presence
   if (combinedValue >= 3 ||                     // Some investment ($3M+)
-      combinedPct >= 2 ||                       // Basic percentage (2%+)
-      (blackrockPct >= 1.5 || vanguardPct >= 1.5)) { // Single fund basic commitment
+      combinedPct >= 3 ||                       // Basic percentage (3%+)
+      (blackrockPct >= 2 || vanguardPct >= 2)) { // Single fund basic commitment
     return 1;
   }
   

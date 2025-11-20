@@ -34,7 +34,7 @@ let scanState = {
 
 let currentScanner = null;
 
-// Auto-populate watchlist with hot picks (fire 3-5, price <= $1.20)
+// Auto-populate watchlist with hot picks (fire 3-5, price <= $0.9)
 async function autoPopulateHotPicks() {
   try {
     console.log("🔥 Auto-populating Hot Picks watchlist...");
@@ -48,7 +48,7 @@ async function autoPopulateHotPicks() {
     // Filter for fire stocks (3-5) with price <= $1.20
     const hotPicks = scanResults.stocks.filter(
       (stock) =>
-        stock.fire_level >= 3 && stock.fire_level <= 5 && stock.price <= 1.2
+        stock.fire_level >= 2 && stock.fire_level <= 5 && stock.price <= 0.9
     );
 
     if (hotPicks.length === 0) {
@@ -204,6 +204,7 @@ app.post("/api/scan/start", async (req, res) => {
 
         const qualifyingStocks = [];
         const rejectedTickersToAdd = [];
+        const failedTickers = [];
 
         for (let i = 0; i < tickersToScan.length; i++) {
           const ticker = tickersToScan[i];
@@ -221,9 +222,18 @@ app.post("/api/scan/start", async (req, res) => {
                 rejectedTickersToAdd.push(ticker);
                 console.log(`🚫 ${ticker}: fire_level=0 (rejected)`);
               }
+            } else {
+              failedTickers.push(ticker);
+              console.log(`⚠️ ${ticker}: No data returned`);
             }
           } catch (error) {
+            failedTickers.push(ticker);
             console.error(`❌ Error scanning ${ticker}:`, error.message);
+          }
+
+          // Add delay between requests to avoid rate limiting (100ms)
+          if (i < tickersToScan.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 100));
           }
 
           // Update progress
@@ -234,7 +244,57 @@ app.post("/api/scan/start", async (req, res) => {
           };
         }
 
-        // Step 3: Add rejected tickers to rejected collection
+        // Step 3: Retry failed tickers once
+        if (failedTickers.length > 0) {
+          console.log(
+            `🔄 Retrying ${failedTickers.length} failed tickers: ${failedTickers.join(', ')}`
+          );
+
+          const retriedFailures = [];
+          
+          for (let i = 0; i < failedTickers.length; i++) {
+            const ticker = failedTickers[i];
+
+            try {
+              // Add longer delay before retry (500ms)
+              await new Promise(resolve => setTimeout(resolve, 500));
+              
+              const result = await scanner.analyzeTicker(ticker);
+
+              if (result) {
+                result.fire_level = calculateFireLevel(result);
+
+                if (result.fire_level > 0) {
+                  qualifyingStocks.push(result);
+                  console.log(`✅ ${ticker} (retry): fire_level=${result.fire_level}`);
+                } else {
+                  rejectedTickersToAdd.push(ticker);
+                  console.log(`🚫 ${ticker} (retry): fire_level=0 (rejected)`);
+                }
+              } else {
+                retriedFailures.push(ticker);
+                console.log(`⚠️ ${ticker} (retry): Still no data`);
+              }
+            } catch (error) {
+              retriedFailures.push(ticker);
+              console.error(`❌ ${ticker} (retry): ${error.message}`);
+            }
+          }
+
+          // Update failed tickers to only those that failed retry
+          failedTickers.length = 0;
+          failedTickers.push(...retriedFailures);
+
+          if (retriedFailures.length > 0) {
+            console.log(
+              `⚠️ ${retriedFailures.length} tickers still failed after retry: ${retriedFailures.join(', ')}`
+            );
+          } else {
+            console.log(`✅ All failed tickers recovered on retry`);
+          }
+        }
+
+        // Step 4: Add rejected tickers to rejected collection
         if (rejectedTickersToAdd.length > 0) {
           await dbService.addRejectedTickers(rejectedTickersToAdd);
           console.log(
@@ -242,13 +302,18 @@ app.post("/api/scan/start", async (req, res) => {
           );
         }
 
-        // Step 4: Save scan results
+        // Step 5: Save scan results
         const scanResults = {
           stocks: qualifyingStocks,
           summary: {
             total_processed: tickersToScan.length,
             qualifying_count: qualifyingStocks.length,
             rejected_count: rejectedTickersToAdd.length,
+            failed_count: failedTickers.length,
+            fire_level_5: qualifyingStocks.filter((s) => s.fire_level === 5)
+              .length,
+            fire_level_4: qualifyingStocks.filter((s) => s.fire_level === 4)
+              .length,
             fire_level_3: qualifyingStocks.filter((s) => s.fire_level === 3)
               .length,
             fire_level_2: qualifyingStocks.filter((s) => s.fire_level === 2)
@@ -261,7 +326,13 @@ app.post("/api/scan/start", async (req, res) => {
 
         await dbService.saveScanResults(scanResults);
 
-        // Step 5: Update ticker list with only qualifying tickers (remove non-qualifying ones)
+        if (failedTickers.length > 0) {
+          console.log(
+            `⚠️ Final failed count: ${failedTickers.length} tickers still failed after retry: ${failedTickers.join(', ')}`
+          );
+        }
+
+        // Step 6: Update ticker list with only qualifying tickers (remove non-qualifying ones)
         const qualifyingTickers = qualifyingStocks.map((s) => s.ticker);
         await dbService.updateTickers(qualifyingTickers);
         console.log(`💾 Updated ticker list with ${qualifyingTickers.length} qualifying tickers`);
@@ -274,7 +345,7 @@ app.post("/api/scan/start", async (req, res) => {
 
         console.log("✅ Scan completed successfully");
         console.log(
-          `📊 Results: ${qualifyingStocks.length} qualifying, ${rejectedTickersToAdd.length} rejected`
+          `📊 Results: ${qualifyingStocks.length} qualifying, ${rejectedTickersToAdd.length} rejected, ${failedTickers.length} failed`
         );
       } catch (error) {
         scanState.scanning = false;
@@ -884,7 +955,29 @@ app.delete("/api/watchlists/:id/stocks", async (req, res) => {
 app.get("/api/alerts", async (req, res) => {
   try {
     const alerts = await dbService.getPriceAlerts();
-    res.json({ alerts, count: alerts.length });
+    
+    // Get scan results to enrich alerts with fire level data
+    const scanResults = await dbService.getScanResults();
+    const stocksMap = new Map(
+      (scanResults.stocks || []).map(stock => [stock.ticker, stock])
+    );
+    
+    // Enrich alerts with fire level and other stock data
+    const enrichedAlerts = alerts.map(alert => {
+      const stockData = stocksMap.get(alert.ticker);
+      if (stockData) {
+        return {
+          ...alert,
+          fire_level: stockData.fire_level || 0,
+          blackrock_pct: stockData.blackrock_pct || 0,
+          vanguard_pct: stockData.vanguard_pct || 0,
+          market_cap: stockData.market_cap || 0
+        };
+      }
+      return alert;
+    });
+    
+    res.json({ alerts: enrichedAlerts, count: enrichedAlerts.length });
   } catch (error) {
     console.error("Error getting alerts:", error);
     res.status(500).json({ error: "Failed to get alerts" });
@@ -895,7 +988,26 @@ app.get("/api/alerts/ticker/:ticker", async (req, res) => {
   try {
     const { ticker } = req.params;
     const alerts = await dbService.getAlertsByTicker(ticker);
-    res.json({ alerts, count: alerts.length });
+    
+    // Get scan results to enrich alerts with fire level data
+    const scanResults = await dbService.getScanResults();
+    const stockData = (scanResults.stocks || []).find(s => s.ticker === ticker.toUpperCase());
+    
+    // Enrich alerts with fire level and other stock data
+    const enrichedAlerts = alerts.map(alert => {
+      if (stockData) {
+        return {
+          ...alert,
+          fire_level: stockData.fire_level || 0,
+          blackrock_pct: stockData.blackrock_pct || 0,
+          vanguard_pct: stockData.vanguard_pct || 0,
+          market_cap: stockData.market_cap || 0
+        };
+      }
+      return alert;
+    });
+    
+    res.json({ alerts: enrichedAlerts, count: enrichedAlerts.length });
   } catch (error) {
     console.error("Error getting alerts for ticker:", error);
     res.status(500).json({ error: "Failed to get alerts" });

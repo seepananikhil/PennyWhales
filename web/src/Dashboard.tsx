@@ -26,14 +26,14 @@ const Dashboard: React.FC = () => {
     progress: { current: number; total: number; percentage: number } | null;
     message: string | null;
   }>({ scanning: false, progress: null, message: null });
-  const [activeFilter, setActiveFilter] = useState<string>('anyfire');
+  const [activeFilter, setActiveFilter] = useState<string>('multifilter');
   const [multiFilters, setMultiFilters] = useState<{
     fireLevels: Set<number>;
     priceFilters: Set<string>;
     marketValueFilters: Set<string>;
   }>({
-    fireLevels: new Set(),
-    priceFilters: new Set(),
+    fireLevels: new Set([5, 4, 3]),
+    priceFilters: new Set(['under1']),
     marketValueFilters: new Set()
   });
   const [sortBy, setSortBy] = useState<string>('');
