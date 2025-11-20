@@ -58,6 +58,9 @@ async function autoPopulateHotPicks() {
       return;
     }
 
+    // Sort by fire level (highest first)
+    hotPicks.sort((a, b) => b.fire_level - a.fire_level);
+
     const hotPickTickers = hotPicks.map((s) => s.ticker);
     console.log(
       `🎯 Found ${hotPickTickers.length} hot picks: ${hotPickTickers.join(

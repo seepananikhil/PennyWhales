@@ -51,7 +51,7 @@ class StockScanner {
     }
   }
 
-  // Get market cap from Nasdaq summary
+  // Get market cap and average volume from Nasdaq summary
   async getMarketCap(ticker) {
     try {
       const response = await fetch(
@@ -63,23 +63,34 @@ class StockScanner {
         }
       );
 
-      if (!response.ok) return null;
+      if (!response.ok) return { marketCap: null, avgVolume: null };
       const data = await response.json();
       
       // Extract market cap from summary data
       const marketCapValue = data?.data?.summaryData?.MarketCap?.value;
-      if (!marketCapValue) return null;
+      let marketCap = null;
       
-      // Parse market cap - API returns raw dollar amounts as strings with commas
-      // Remove commas, convert to millions and round to 1 decimal for storage
-      const cleanValue = String(marketCapValue).replace(/,/g, '');
-      const marketCapDollars = parseFloat(cleanValue);
-      const marketCapInMillions = Math.round(marketCapDollars / 100000) / 10; // Round to 1 decimal
+      if (marketCapValue) {
+        // Parse market cap - API returns raw dollar amounts as strings with commas
+        // Remove commas, convert to millions and round to 1 decimal for storage
+        const cleanValue = String(marketCapValue).replace(/,/g, '');
+        const marketCapDollars = parseFloat(cleanValue);
+        marketCap = Math.round(marketCapDollars / 100000) / 10; // Round to 1 decimal
+      }
       
-      return marketCapInMillions;
+      // Extract average volume from summary data
+      const avgVolumeValue = data?.data?.summaryData?.AverageVolume?.value;
+      let avgVolume = null;
+      
+      if (avgVolumeValue) {
+        // Parse average volume - remove commas and convert to number
+        avgVolume = parseInt(String(avgVolumeValue).replace(/,/g, '')) || null;
+      }
+      
+      return { marketCap, avgVolume };
     } catch (error) {
-      console.error(`Error fetching market cap for ${ticker}:`, error);
-      return null;
+      console.error(`Error fetching market cap and volume for ${ticker}:`, error);
+      return { marketCap: null, avgVolume: null };
     }
   }
 
@@ -163,8 +174,8 @@ class StockScanner {
         return null;
       }
 
-      // Get market cap
-      const marketCap = await this.getMarketCap(ticker);
+      // Get market cap and average volume
+      const { marketCap, avgVolume } = await this.getMarketCap(ticker);
 
       const { blackrockMarketValue, vanguardMarketValue, blackrockPct, vanguardPct } = this.parseHoldings(holdingsData, marketCap);
 
@@ -182,6 +193,7 @@ class StockScanner {
         blackrock_market_value: blackrockMarketValue, // Store as number (in millions)
         vanguard_market_value: vanguardMarketValue,     // Store as number (in millions)
         market_cap: marketCap, // Market cap in millions
+        avg_volume: avgVolume, // Average volume
         performance: performance || { week: null, month: null, year: null }
       };
     } catch (error) {
@@ -333,7 +345,8 @@ class StockScanner {
         result.fire_level = calculateFireLevel(result);
         
         this.results.push(result);
-        console.log(`✅ ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}% | Fire:${result.fire_level}🔥`);
+        const volStr = result.avg_volume ? ` | Vol:${(result.avg_volume / 1000000).toFixed(1)}M` : '';
+        console.log(`✅ ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}%${volStr} | Fire:${result.fire_level}🔥`);
       }
 
       // Rate limiting
@@ -383,7 +396,8 @@ class StockScanner {
         result.fire_level = calculateFireLevel(result);
         
         this.results.push(result);
-        console.log(`✅ NEW ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}% | Fire:${result.fire_level}🔥`);
+        const volStr = result.avg_volume ? ` | Vol:${(result.avg_volume / 1000000).toFixed(1)}M` : '';
+        console.log(`✅ NEW ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}%${volStr} | Fire:${result.fire_level}🔥`);
       }
 
       // Rate limiting
