@@ -393,6 +393,32 @@ const Watchlist: React.FC = () => {
             👀 Watchlist
           </h1>
           <div style={{ display: 'flex', gap: theme.spacing.md, alignItems: 'center' }}>
+            {/* Create Watchlist Button */}
+            <button
+              onClick={() => setShowCreateModal(true)}
+              style={{
+                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                border: 'none',
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: theme.status.success,
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.semibold,
+                transition: `all ${theme.transition.normal}`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: theme.spacing.xs
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#218838';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = theme.status.success;
+              }}
+            >
+              ➕ New Watchlist
+            </button>
             {/* View Toggle Button */}
             <button
               onClick={() => setShowChartView(!showChartView)}
@@ -448,6 +474,69 @@ const Watchlist: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* Watchlist Selector */}
+        {watchlists.length > 0 && (
+          <div style={{
+            display: 'flex',
+            gap: theme.spacing.sm,
+            marginBottom: theme.spacing.md,
+            overflowX: 'auto',
+            paddingBottom: theme.spacing.sm,
+            flexWrap: 'wrap'
+          }}>
+            {watchlists.map((watchlist) => {
+              const watchlistId = watchlist.id || watchlist._id;
+              const isActive = watchlistId === activeWatchlistId;
+              
+              return (
+                <button
+                  key={watchlistId}
+                  onClick={() => setActiveWatchlistId(watchlistId)}
+                  style={{
+                    padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                    border: `2px solid ${isActive ? theme.status.info : theme.ui.border}`,
+                    borderRadius: theme.borderRadius.md,
+                    backgroundColor: isActive ? theme.status.info : theme.ui.surface,
+                    color: isActive ? 'white' : theme.ui.text.primary,
+                    cursor: 'pointer',
+                    fontSize: theme.typography.fontSize.sm,
+                    fontWeight: isActive ? theme.typography.fontWeight.bold : theme.typography.fontWeight.medium,
+                    transition: `all ${theme.transition.normal}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: theme.spacing.xs,
+                    whiteSpace: 'nowrap',
+                    boxShadow: isActive ? theme.ui.shadow.md : 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = theme.ui.background;
+                      e.currentTarget.style.borderColor = theme.status.info;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = theme.ui.surface;
+                      e.currentTarget.style.borderColor = theme.ui.border;
+                    }
+                  }}
+                >
+                  <span>{watchlist.name}</span>
+                  <span style={{
+                    fontSize: theme.typography.fontSize.xs,
+                    padding: `2px 6px`,
+                    borderRadius: theme.borderRadius.sm,
+                    backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : theme.ui.background,
+                    color: isActive ? 'white' : theme.ui.text.secondary
+                  }}>
+                    {watchlist.stocks?.length || 0}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Stats */}
         {activeWatchlist && (

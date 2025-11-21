@@ -155,7 +155,7 @@ const ChartView: React.FC<ChartViewProps> = ({
               }}>
                 <iframe
                   key={selectedTicker}
-                  src={`https://www.tradingview.com/widgetembed/?frameElementId=tradingview_${selectedTicker}&symbol=${selectedTicker}&interval=D&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=MASimple@tv-basicstudies&theme=light&style=1&timezone=Etc%2FUTC&locale=en`}
+                  src={`https://www.tradingview.com/widgetembed/?frameElementId=tradingview_${selectedTicker}&symbol=${selectedTicker}&interval=D&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=MASimple@tv-basicstudies&studies_overrides={"moving average.length":200}&theme=light&style=1&timezone=Etc%2FUTC&locale=en`}
                   style={{
                     width: '100%',
                     height: '100%',
