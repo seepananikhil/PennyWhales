@@ -154,13 +154,15 @@ const ChartView: React.FC<ChartViewProps> = ({
                 position: 'relative'
               }}>
                 <iframe
-                  src={`https://www.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=${selectedTicker}&interval=D&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=[]&theme=light&style=1&timezone=Etc%2FUTC&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=${selectedTicker}`}
+                  key={selectedTicker}
+                  src={`https://www.tradingview.com/widgetembed/?frameElementId=tradingview_${selectedTicker}&symbol=${selectedTicker}&interval=D&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=MASimple@tv-basicstudies&theme=light&style=1&timezone=Etc%2FUTC&locale=en`}
                   style={{
                     width: '100%',
                     height: '100%',
                     border: 'none'
                   }}
                   title={`${selectedTicker} Chart`}
+                  allowFullScreen
                 />
               </div>
             </div>

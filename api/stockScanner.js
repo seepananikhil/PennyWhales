@@ -100,15 +100,19 @@ class StockScanner {
       return { 
         blackrockMarketValue: 0,
         vanguardMarketValue: 0,
+        statestreetMarketValue: 0,
         blackrockPct: 0,
-        vanguardPct: 0
+        vanguardPct: 0,
+        statestreetPct: 0
       };
     }
 
     let blackrockMarketValue = 0;
     let vanguardMarketValue = 0;
+    let statestreetMarketValue = 0;
     let maxBlackrockValue = 0;
     let maxVanguardValue = 0;
+    let maxStatestreetValue = 0;
 
     try {
       const holdings = data.data.holdingsTransactions.table.rows;
@@ -135,6 +139,11 @@ class StockScanner {
             maxVanguardValue = marketValue;
             vanguardMarketValue = marketValue;
           }
+        } else if (ownerName.includes('STATE STREET')) {
+          if (marketValue > maxStatestreetValue) {
+            maxStatestreetValue = marketValue;
+            statestreetMarketValue = marketValue;
+          }
         }
       }
     } catch (error) {
@@ -145,17 +154,21 @@ class StockScanner {
     // Round to 2 decimal places
     let blackrockPct = 0;
     let vanguardPct = 0;
+    let statestreetPct = 0;
     
     if (marketCap && marketCap > 0) {
       blackrockPct = Math.round(((blackrockMarketValue / marketCap) * 100) * 100) / 100;
       vanguardPct = Math.round(((vanguardMarketValue / marketCap) * 100) * 100) / 100;
+      statestreetPct = Math.round(((statestreetMarketValue / marketCap) * 100) * 100) / 100;
     }
 
     return { 
       blackrockMarketValue: blackrockMarketValue,
       vanguardMarketValue: vanguardMarketValue,
+      statestreetMarketValue: statestreetMarketValue,
       blackrockPct: blackrockPct,
-      vanguardPct: vanguardPct
+      vanguardPct: vanguardPct,
+      statestreetPct: statestreetPct
     };
   }
 
@@ -177,7 +190,7 @@ class StockScanner {
       // Get market cap and average volume
       const { marketCap, avgVolume } = await this.getMarketCap(ticker);
 
-      const { blackrockMarketValue, vanguardMarketValue, blackrockPct, vanguardPct } = this.parseHoldings(holdingsData, marketCap);
+      const { blackrockMarketValue, vanguardMarketValue, statestreetMarketValue, blackrockPct, vanguardPct, statestreetPct } = this.parseHoldings(holdingsData, marketCap);
 
       // Get performance data from Finviz
       const performance = await getFinvizPerformance(ticker);
@@ -190,8 +203,10 @@ class StockScanner {
         previous_close: Math.round(priceData.previousClose * 100) / 100, // Round to 2 decimals
         blackrock_pct: blackrockPct, // Calculated from market cap and holding value
         vanguard_pct: vanguardPct,   // Calculated from market cap and holding value
+        statestreet_pct: statestreetPct, // Calculated from market cap and holding value
         blackrock_market_value: blackrockMarketValue, // Store as number (in millions)
         vanguard_market_value: vanguardMarketValue,     // Store as number (in millions)
+        statestreet_market_value: statestreetMarketValue, // Store as number (in millions)
         market_cap: marketCap, // Market cap in millions
         avg_volume: avgVolume, // Average volume
         performance: performance || { week: null, month: null, year: null }

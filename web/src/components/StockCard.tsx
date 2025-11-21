@@ -594,11 +594,11 @@ const StockCard: React.FC<StockCardProps> = ({
           )}
         </div>
 
-        {/* Holdings Section - BR & VG */}
+        {/* Holdings Section - BR, VG & SS */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            gridTemplateColumns: "1fr 1fr 1fr",
             gap: "8px",
             marginBottom: "6px",
           }}
@@ -731,6 +731,71 @@ const StockCard: React.FC<StockCardProps> = ({
                 {stock.vanguard_market_value >= 1000
                   ? `${(stock.vanguard_market_value / 1000).toFixed(1)}B`
                   : `${stock.vanguard_market_value.toFixed(1)}M`}
+              </div>
+            )}
+          </div>
+
+          <div
+            style={{
+              backgroundColor: "#f8f9fa",
+              padding: "6px 8px",
+              borderRadius: "6px",
+              border: "1px solid #e9ecef",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "0.7rem",
+                color: "#6c757d",
+                fontWeight: "600",
+                marginBottom: "3px",
+                letterSpacing: "0.5px",
+              }}
+            >
+              STATE ST
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <div
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: "bold",
+                  color: "#4F46E5",
+                }}
+              >
+                {stock.statestreet_pct ? stock.statestreet_pct.toFixed(1) : '0.0'}%
+              </div>
+              {stock.statestreet_change !== undefined &&
+                stock.statestreet_change !== 0 && (
+                  <div
+                    style={{
+                      fontSize: "0.7rem",
+                      fontWeight: "600",
+                      color: stock.statestreet_change > 0 ? "#28a745" : "#dc3545",
+                      backgroundColor:
+                        stock.statestreet_change > 0 ? "#d4edda" : "#f8d7da",
+                      padding: "1px 4px",
+                      borderRadius: "3px",
+                      border: `1px solid ${
+                        stock.statestreet_change > 0 ? "#c3e6cb" : "#f5c6cb"
+                      }`,
+                    }}
+                  >
+                    {stock.statestreet_change > 0 ? "+" : ""}
+                    {stock.statestreet_change.toFixed(2)}%
+                  </div>
+                )}
+            </div>
+            {stock.statestreet_market_value && stock.statestreet_market_value > 0 && (
+              <div
+                style={{
+                  fontSize: "0.75rem",
+                  color: "#888",
+                }}
+              >
+                $
+                {stock.statestreet_market_value >= 1000
+                  ? `${(stock.statestreet_market_value / 1000).toFixed(1)}B`
+                  : `${stock.statestreet_market_value.toFixed(1)}M`}
               </div>
             )}
           </div>

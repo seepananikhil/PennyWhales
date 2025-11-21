@@ -4,10 +4,13 @@ export interface Stock {
   previous_close?: number; // Previous closing price for change tracking
   blackrock_pct: number;
   vanguard_pct: number;
+  statestreet_pct?: number; // State Street ownership percentage
   blackrock_change?: number; // Change in BlackRock percentage from previous scan
   vanguard_change?: number; // Change in Vanguard percentage from previous scan
+  statestreet_change?: number; // Change in State Street percentage from previous scan
   blackrock_market_value?: number; // Market value in millions (numeric)
   vanguard_market_value?: number; // Market value in millions (numeric)
+  statestreet_market_value?: number; // Market value in millions (numeric)
   market_cap?: number; // Market capitalization in millions
   blackrock_source: string;
   vanguard_source: string;

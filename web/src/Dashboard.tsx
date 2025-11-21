@@ -512,14 +512,14 @@ const Dashboard: React.FC = () => {
       
       switch (sortBy) {
         case 'combined-desc':
-          // Sort by combined VG + BR percentage (highest first)
-          const combinedA = stockA.vanguard_pct + stockA.blackrock_pct;
-          const combinedB = stockB.vanguard_pct + stockB.blackrock_pct;
+          // Sort by combined VG + BR + SS percentage (highest first)
+          const combinedA = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
+          const combinedB = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
           return combinedB - combinedA;
         case 'combined-asc':
-          // Sort by combined VG + BR percentage (lowest first)
-          const combinedAsc = stockA.vanguard_pct + stockA.blackrock_pct;
-          const combinedBsc = stockB.vanguard_pct + stockB.blackrock_pct;
+          // Sort by combined VG + BR + SS percentage (lowest first)
+          const combinedAsc = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
+          const combinedBsc = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
           return combinedAsc - combinedBsc;
         case 'vg-desc':
           return stockB.vanguard_pct - stockA.vanguard_pct;
@@ -529,13 +529,17 @@ const Dashboard: React.FC = () => {
           return stockB.blackrock_pct - stockA.blackrock_pct;
         case 'br-asc':
           return stockA.blackrock_pct - stockB.blackrock_pct;
+        case 'ss-desc':
+          return (stockB.statestreet_pct || 0) - (stockA.statestreet_pct || 0);
+        case 'ss-asc':
+          return (stockA.statestreet_pct || 0) - (stockB.statestreet_pct || 0);
         case 'fire-desc':
           const fireA = stockA.fire_level || 0;
           const fireB = stockB.fire_level || 0;
           if (fireA !== fireB) return fireB - fireA;
-          // If fire levels are equal, sort by combined VG+BR as secondary
-          const fireComboA = stockA.vanguard_pct + stockA.blackrock_pct;
-          const fireComboB = stockB.vanguard_pct + stockB.blackrock_pct;
+          // If fire levels are equal, sort by combined VG+BR+SS as secondary
+          const fireComboA = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
+          const fireComboB = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
           return fireComboB - fireComboA;
         case 'price-desc':
           return stockB.price - stockA.price;
@@ -596,9 +600,9 @@ const Dashboard: React.FC = () => {
           if (!stockA?.performance || !stockB?.performance) return 0;
           return (stockA.performance.month || 0) - (stockB.performance.month || 0);
         default:
-          // Default to combined VG + BR (highest first)
-          const defaultA = stockA.vanguard_pct + stockA.blackrock_pct;
-          const defaultB = stockB.vanguard_pct + stockB.blackrock_pct;
+          // Default to combined VG + BR + SS (highest first)
+          const defaultA = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
+          const defaultB = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
           return defaultB - defaultA;
       }
     });
@@ -747,12 +751,14 @@ const Dashboard: React.FC = () => {
               }}
             >
               <option value="">🔢 No Sort</option>
-              <option value="combined-desc">🔥 VG + BR % (High to Low)</option>
-              <option value="combined-asc">🔥 VG + BR % (Low to High)</option>
+              <option value="combined-desc">🔥 VG + BR + SS % (High to Low)</option>
+              <option value="combined-asc">🔥 VG + BR + SS % (Low to High)</option>
               <option value="vg-desc">🔄 VG % (High to Low)</option>
               <option value="vg-asc">🔄 VG % (Low to High)</option>
               <option value="br-desc">🔄 BR % (High to Low)</option>
               <option value="br-asc">🔄 BR % (Low to High)</option>
+              <option value="ss-desc">🔄 SS % (High to Low)</option>
+              <option value="ss-asc">🔄 SS % (Low to High)</option>
               <option value="fire-desc">🔥 Fire Level (High to Low)</option>
               <option value="price-desc">💰 Price (High to Low)</option>
               <option value="price-asc">💰 Price (Low to High)</option>
