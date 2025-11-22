@@ -46,7 +46,7 @@ function calculateFireLevel(stock) {
   // FIRE LEVEL 3 - High institutional confidence
   if (combinedValue >= 15 ||                    // Substantial investment ($15M+)
       combinedPct >= 7 ||                       // Good percentage (7%+)
-      (blackrockPct >= 5 || vanguardPct >= 5) || // Single fund good commitment
+      (blackrockPct >= 4 || vanguardPct >= 4) || // Single fund good commitment
       (blackrockValue >= 10 || vanguardValue >= 10)) { // Single fund substantial value
     return 3;
   }

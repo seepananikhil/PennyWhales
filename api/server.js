@@ -66,15 +66,15 @@ async function autoPopulateHotPicks() {
       return;
     }
 
-    // Filter for fire stocks (3-5) with price <= $1.20
+    // Filter for fire stocks (2-5) with price <= $1.00
     const hotPicks = scanResults.stocks.filter(
       (stock) =>
-        stock.fire_level >= 2 && stock.fire_level <= 5 && stock.price <= 0.9
+        stock.fire_level >= 2 && stock.fire_level <= 5 && stock.price <= 1.0
     );
 
     if (hotPicks.length === 0) {
       console.log(
-        "📊 No stocks match hot picks criteria (fire 3-5, price <= $1.20)"
+        "📊 No stocks match hot picks criteria (fire 2-5, price <= $1.00)"
       );
       return;
     }
@@ -89,34 +89,40 @@ async function autoPopulateHotPicks() {
       )}`
     );
 
-    // Check for stocks under $0.70 and send notification
-    const stocksUnder070 = hotPicks.filter((stock) => stock.price < 0.7);
-    if (stocksUnder070.length > 0) {
+    // Check for stocks under $1.00 and send notification
+    const stocksUnder100 = hotPicks.filter((stock) => stock.price < 1.0);
+    console.log(`🔍 Hot Picks check: ${hotPicks.length} total, ${stocksUnder100.length} under $1.00`);
+    
+    if (stocksUnder100.length > 0) {
       console.log(
-        `🔥 Found ${stocksUnder070.length} hot picks under $0.70!`
+        `🔥 Found ${stocksUnder100.length} hot picks under $1.00!`
       );
 
       // Get settings to check if Telegram is enabled
       const settings = await dbService.getSettings();
+      console.log(`🔍 Telegram settings check: chatId=${settings.telegramChatId ? 'configured' : 'NOT configured'}`);
+      
       if (settings.telegramChatId) {
-        const stockList = stocksUnder070
+        const stockList = stocksUnder100
           .map(
             (stock) =>
-              `• ${stock.ticker}: $${stock.price.toFixed(
-                2
-              )} (Fire Level ${stock.fire_level})`
+              `• ${stock.ticker}: $${stock.price.toFixed(2)} ${'🔥'.repeat(stock.fire_level)}\n` +
+              `   BlackRock: ${stock.blackrock_pct.toFixed(1)}% | Vanguard: ${stock.vanguard_pct.toFixed(1)}%\n` +
+              `   📊 [View Chart](https://www.tradingview.com/chart/?symbol=${stock.ticker})`
           )
-          .join("\n");
+          .join("\n\n");
 
-        const message = `🔥 HOT PICKS UNDER $0.70 DETECTED! 🔥\n\n${stockList}\n\nTotal: ${stocksUnder070.length} stocks found`;
+        const message = `🔥 HOT PICKS UNDER $1.00 DETECTED! 🔥\n\n${stockList}`;
 
         try {
+          console.log(`📤 Sending Telegram notification for ${stocksUnder100.length} hot picks under $1.00...`);
           await telegramService.sendMessage(settings.telegramChatId, message);
-          console.log("✅ Telegram notification sent for stocks under $0.70");
+          console.log("✅ Telegram notification sent for stocks under $1.00");
         } catch (error) {
           console.error(
             "❌ Failed to send Telegram notification:",
-            error.message
+            error.message,
+            error.stack
           );
         }
       } else {
@@ -124,6 +130,8 @@ async function autoPopulateHotPicks() {
           "⚠️ Telegram chat ID not configured in settings"
         );
       }
+    } else {
+      console.log(`ℹ️ No hot picks under $1.00 found (all ${hotPicks.length} stocks are >= $1.00)`);
     }
 
     // Check if "Hot Picks" watchlist exists
@@ -203,26 +211,26 @@ async function autoPopulateSMACross() {
 
     // Send Telegram notification for high fire SMA crossover stocks
     const settings = await dbService.getSettings();
+    console.log(`🔍 Telegram settings check: chatId=${settings.telegramChatId ? 'configured' : 'NOT configured'}`);
+    
     if (settings.telegramChatId) {
       const stockList = highFireStocks
         .slice(0, 10) // Limit to top 10 to avoid message being too long
         .map(
           (stock) =>
-            `🔥 *${stock.ticker}* (Fire ${stock.fire_level})\n` +
-            `   Price: $${stock.price.toFixed(2)}\n` +
-            `   BlackRock: ${stock.blackrock_pct.toFixed(1)}%\n` +
-            `   Vanguard: ${stock.vanguard_pct.toFixed(1)}%\n` +
-            `   [View Chart](https://www.tradingview.com/chart/?symbol=${stock.ticker})`
+            `• ${stock.ticker}: $${stock.price.toFixed(2)} ${'🔥'.repeat(stock.fire_level)}\n` +
+            `   BlackRock: ${stock.blackrock_pct.toFixed(1)}% | Vanguard: ${stock.vanguard_pct.toFixed(1)}%\n` +
+            `   📊 [View Chart](https://www.tradingview.com/chart/?symbol=${stock.ticker})`
         )
         .join("\n\n");
 
       const totalCount = highFireStocks.length;
-      const displayCount = Math.min(totalCount, 10);
-      const message = `🚨 *HIGH FIRE 200 SMA CROSSOVER* 🚨\n\n${totalCount} stocks with Fire 3-5 crossed above 200 SMA!\n\n${stockList}${
+      const message = `🚨 200 SMA CROSSOVER DETECTED! 🚨\n\n${stockList}${
         totalCount > 10 ? `\n\n... and ${totalCount - 10} more stocks!` : ""
       }`;
 
       try {
+        console.log(`📤 Sending Telegram notification for ${highFireStocks.length} high-fire SMA crossover stocks...`);
         await telegramService.sendMessage(settings.telegramChatId, message);
         console.log(
           `✅ Telegram notification sent for ${highFireStocks.length} high-fire SMA crossover stocks`
@@ -230,7 +238,8 @@ async function autoPopulateSMACross() {
       } catch (error) {
         console.error(
           "❌ Failed to send Telegram notification:",
-          error.message
+          error.message,
+          error.stack
         );
       }
     } else {
@@ -330,7 +339,7 @@ app.post("/api/scan/start", async (req, res) => {
         }
 
         // Step 2: Scan the tickers
-        console.log(`� Starting scan for ${tickersToScan.length} tickers...`);
+        console.log(`🔍 Starting scan for ${tickersToScan.length} tickers...`);
 
         const scanner = new StockScanner();
         const { calculateFireLevel } = require("./fireUtils");
@@ -345,25 +354,38 @@ app.post("/api/scan/start", async (req, res) => {
         const rejectedTickersToAdd = [];
         const failedTickers = [];
 
+        console.log(`📍 Starting ticker analysis loop...`);
         for (let i = 0; i < tickersToScan.length; i++) {
           const ticker = tickersToScan[i];
+          console.log(`🔎 [${i+1}/${tickersToScan.length}] Analyzing ${ticker}...`);
 
           try {
             const result = await scanner.analyzeTicker(ticker);
 
-            if (result) {
-              result.fire_level = calculateFireLevel(result);
+            if (result.success) {
+              const stock = result.data;
+              stock.fire_level = calculateFireLevel(stock);
 
-              if (result.fire_level > 0) {
-                qualifyingStocks.push(result);
-                console.log(`✅ ${ticker}: fire_level=${result.fire_level}`);
+              if (stock.fire_level > 0) {
+                qualifyingStocks.push(stock);
+                console.log(`✅ ${ticker}: fire_level=${stock.fire_level}`);
               } else {
                 rejectedTickersToAdd.push(ticker);
                 console.log(`🚫 ${ticker}: fire_level=0 (rejected)`);
               }
             } else {
-              failedTickers.push(ticker);
-              console.log(`⚠️ ${ticker}: No data returned`);
+              // Consolidated failure logging based on reason
+              const reason = result.reason || 'unknown';
+              if (reason === 'market_cap_too_low') {
+                // Silent skip - don't retry, this is intentional filtering
+                // Don't add to failedTickers - these stocks don't qualify
+              } else if (reason === 'no_price_data' || reason === 'no_holdings_data') {
+                console.log(`⚠️ ${ticker}: Missing data (${reason})`);
+                failedTickers.push(ticker); // Retry these - might be temporary API issues
+              } else {
+                console.log(`⚠️ ${ticker}: Failed (${reason})`);
+                failedTickers.push(ticker); // Retry unknown failures
+              }
             }
           } catch (error) {
             failedTickers.push(ticker);
@@ -937,7 +959,7 @@ app.post("/api/watchlists/hot-picks/populate", async (req, res) => {
 });
 
 // 200 SMA Crossover auto-population endpoint
-app.get("/api/watchlists/sma-crossover/populate", async (req, res) => {
+app.post("/api/watchlists/sma-crossover/populate", async (req, res) => {
   try {
     const result = await autoPopulateSMACross();
     res.json(result);

@@ -8,6 +8,7 @@ const { getFinvizPerformance } = require('./finvizScraper');
 // HOLDING_THRESHOLD = 3.0; // 3% minimum holding
 const DELAY_BETWEEN_REQUESTS = 500; // ms
 const REQUIRE_BOTH_HOLDERS = false;
+const MAX_MARKET_CAP = parseFloat(process.env.MAX_MARKET_CAP) || 100; // Default 100M
 
 class StockScanner {
   constructor() {
@@ -96,6 +97,11 @@ class StockScanner {
 
   // Parse BlackRock and Vanguard holdings
   parseHoldings(data, marketCap) {
+    // Filter out stocks below minimum market cap early
+    if (marketCap && marketCap < MAX_MARKET_CAP) {
+      return null; // Signal that this stock should be skipped
+    }
+
     if (!data?.data?.holdingsTransactions?.table?.rows) {
       return { 
         blackrockMarketValue: 0,
@@ -178,19 +184,25 @@ class StockScanner {
       // Get stock price
       const priceData = await this.getStockPrice(ticker);
       if (!priceData) {
-        return null;
+        return { success: false, reason: 'no_price_data' };
       }
 
       // Get holdings data
       const holdingsData = await this.getNasdaqHoldings(ticker);
       if (!holdingsData) {
-        return null;
+        return { success: false, reason: 'no_holdings_data' };
       }
 
       // Get market cap and average volume
       const { marketCap, avgVolume } = await this.getMarketCap(ticker);
 
-      const { blackrockMarketValue, vanguardMarketValue, statestreetMarketValue, blackrockPct, vanguardPct, statestreetPct } = this.parseHoldings(holdingsData, marketCap);
+      // Parse holdings and filter by market cap
+      const holdings = this.parseHoldings(holdingsData, marketCap);
+      if (!holdings) {
+        return { success: false, reason: 'market_cap_too_low', marketCap };
+      }
+
+      const { blackrockMarketValue, vanguardMarketValue, statestreetMarketValue, blackrockPct, vanguardPct, statestreetPct } = holdings;
 
       // Get performance data from Finviz
       const performance = await getFinvizPerformance(ticker);
@@ -198,22 +210,25 @@ class StockScanner {
       // Always return the stock data regardless of holding percentages
       // The fire level calculation will handle the rating (including 0 for no fire)
       return {
-        ticker,
-        price: Math.round(priceData.price * 100) / 100, // Round to 2 decimals
-        previous_close: Math.round(priceData.previousClose * 100) / 100, // Round to 2 decimals
-        blackrock_pct: blackrockPct, // Calculated from market cap and holding value
-        vanguard_pct: vanguardPct,   // Calculated from market cap and holding value
-        statestreet_pct: statestreetPct, // Calculated from market cap and holding value
-        blackrock_market_value: blackrockMarketValue, // Store as number (in millions)
-        vanguard_market_value: vanguardMarketValue,     // Store as number (in millions)
-        statestreet_market_value: statestreetMarketValue, // Store as number (in millions)
-        market_cap: marketCap, // Market cap in millions
-        avg_volume: avgVolume, // Average volume
-        performance: performance || { week: null, month: null, year: null }
+        success: true,
+        data: {
+          ticker,
+          price: Math.round(priceData.price * 100) / 100, // Round to 2 decimals
+          previous_close: Math.round(priceData.previousClose * 100) / 100, // Round to 2 decimals
+          blackrock_pct: blackrockPct, // Calculated from market cap and holding value
+          vanguard_pct: vanguardPct,   // Calculated from market cap and holding value
+          statestreet_pct: statestreetPct, // Calculated from market cap and holding value
+          blackrock_market_value: blackrockMarketValue, // Store as number (in millions)
+          vanguard_market_value: vanguardMarketValue,     // Store as number (in millions)
+          statestreet_market_value: statestreetMarketValue, // Store as number (in millions)
+          market_cap: marketCap, // Market cap in millions
+          avg_volume: avgVolume, // Average volume
+          performance: performance || { week: null, month: null, year: null }
+        }
       };
     } catch (error) {
       console.error(`Error analyzing ${ticker}:`, error);
-      return null;
+      return { success: false, reason: 'error', error: error.message };
     }
   }
 
@@ -355,14 +370,16 @@ class StockScanner {
       }
 
       const result = await this.analyzeTicker(ticker);
-      if (result) {
+      if (result.success) {
+        const stock = result.data;
         // Calculate fire level for consistency with daily scan
-        result.fire_level = calculateFireLevel(result);
+        stock.fire_level = calculateFireLevel(stock);
         
-        this.results.push(result);
-        const volStr = result.avg_volume ? ` | Vol:${(result.avg_volume / 1000000).toFixed(1)}M` : '';
-        console.log(`✅ ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}%${volStr} | Fire:${result.fire_level}🔥`);
+        this.results.push(stock);
+        const volStr = stock.avg_volume ? ` | Vol:${(stock.avg_volume / 1000000).toFixed(1)}M` : '';
+        console.log(`✅ ${ticker} - $${stock.price.toFixed(2)} | BR:${stock.blackrock_pct.toFixed(1)}% VG:${stock.vanguard_pct.toFixed(1)}%${volStr} | Fire:${stock.fire_level}🔥`);
       }
+      // Silently skip failed stocks (most common: market cap too low)
 
       // Rate limiting
       await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_REQUESTS));
@@ -406,14 +423,16 @@ class StockScanner {
       }
 
       const result = await this.analyzeTicker(ticker);
-      if (result) {
+      if (result.success) {
+        const stock = result.data;
         // Calculate fire level for the new ticker
-        result.fire_level = calculateFireLevel(result);
+        stock.fire_level = calculateFireLevel(stock);
         
-        this.results.push(result);
-        const volStr = result.avg_volume ? ` | Vol:${(result.avg_volume / 1000000).toFixed(1)}M` : '';
-        console.log(`✅ NEW ${ticker} - $${result.price.toFixed(2)} | BR:${result.blackrock_pct.toFixed(1)}% VG:${result.vanguard_pct.toFixed(1)}%${volStr} | Fire:${result.fire_level}🔥`);
+        this.results.push(stock);
+        const volStr = stock.avg_volume ? ` | Vol:${(stock.avg_volume / 1000000).toFixed(1)}M` : '';
+        console.log(`✅ NEW ${ticker} - $${stock.price.toFixed(2)} | BR:${stock.blackrock_pct.toFixed(1)}% VG:${stock.vanguard_pct.toFixed(1)}%${volStr} | Fire:${stock.fire_level}🔥`);
       }
+      // Silently skip failed stocks
 
       // Rate limiting
       await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_REQUESTS));
