@@ -183,7 +183,8 @@
     "TCRX",
     "FTEK",
     "UPLD",
-    "BCAB"
+    "BCAB",
+    "TELA"
   ],
   "scanResults": {
     "stocks": [
@@ -2231,7 +2232,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "TLRY",
@@ -2253,7 +2254,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "HEPS",
@@ -2275,7 +2276,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "PROK",
@@ -2297,7 +2298,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "BYND",
@@ -2319,7 +2320,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "NMRA",
@@ -2341,7 +2342,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "OPAL",
@@ -2363,7 +2364,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "AUTL",
@@ -2385,7 +2386,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "ADV",
@@ -2407,7 +2408,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "NAUT",
@@ -2429,7 +2430,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "AREC",
@@ -2451,7 +2452,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "EGHT",
@@ -2473,7 +2474,7 @@
         "fire_level": 5,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 5
       },
       {
         "ticker": "RXT",
@@ -2495,7 +2496,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "MNTK",
@@ -2517,7 +2518,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "CCCC",
@@ -2539,7 +2540,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "TNYA",
@@ -2561,7 +2562,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "SKYX",
@@ -2583,7 +2584,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "NAKA",
@@ -2605,7 +2606,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "SATL",
@@ -2627,7 +2628,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "TONX",
@@ -2649,7 +2650,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "UPXI",
@@ -2671,7 +2672,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "SUIG",
@@ -2693,7 +2694,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "LUCD",
@@ -2715,7 +2716,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "TTEC",
@@ -2737,7 +2738,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "SGMO",
@@ -2759,7 +2760,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "SPRO",
@@ -2781,7 +2782,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "CYPH",
@@ -2803,7 +2804,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "STTK",
@@ -2825,7 +2826,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "CCLD",
@@ -2847,7 +2848,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "MAPS",
@@ -2869,7 +2870,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "MBOT",
@@ -2891,7 +2892,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "CGTX",
@@ -2913,7 +2914,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "INO",
@@ -2935,7 +2936,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "SND",
@@ -2957,7 +2958,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "BTMD",
@@ -2979,7 +2980,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "QNCX",
@@ -3001,7 +3002,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "CLYM",
@@ -3023,7 +3024,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "ELDN",
@@ -3045,7 +3046,7 @@
         "fire_level": 4,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 4
       },
       {
         "ticker": "AMTX",
@@ -3067,7 +3068,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "PROP",
@@ -3089,7 +3090,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "CNTX",
@@ -3111,7 +3112,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "OVID",
@@ -3133,7 +3134,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "WHWK",
@@ -3155,7 +3156,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "QIPT",
@@ -3177,7 +3178,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "GNSS",
@@ -3199,7 +3200,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "ZNTL",
@@ -3221,7 +3222,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "PLRX",
@@ -3243,7 +3244,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "ABOS",
@@ -3265,7 +3266,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "DCGO",
@@ -3287,7 +3288,7 @@
         "fire_level": 4,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 4
       },
       {
         "ticker": "ACET",
@@ -3309,7 +3310,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "GRWG",
@@ -3331,7 +3332,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "FLL",
@@ -3353,7 +3354,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "STIM",
@@ -3375,7 +3376,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "HURA",
@@ -3397,7 +3398,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "MGNX",
@@ -3419,7 +3420,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "CMTL",
@@ -3441,7 +3442,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "TUSK",
@@ -3463,7 +3464,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "GEG",
@@ -3485,7 +3486,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "IMUX",
@@ -3507,7 +3508,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "FBIO",
@@ -3529,7 +3530,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "PRPL",
@@ -3551,7 +3552,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "ALXO",
@@ -3573,7 +3574,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "MYPS",
@@ -3595,7 +3596,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "VRA",
@@ -3617,7 +3618,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "SPWH",
@@ -3639,7 +3640,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "ACRV",
@@ -3661,7 +3662,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "STRO",
@@ -3683,7 +3684,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "PMVP",
@@ -3705,7 +3706,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "BMEA",
@@ -3727,7 +3728,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "ASRT",
@@ -3749,7 +3750,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "FORA",
@@ -3771,7 +3772,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "ORGN",
@@ -3793,7 +3794,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "REFR",
@@ -3815,7 +3816,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "LAZR",
@@ -3837,7 +3838,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "ATYR",
@@ -3859,7 +3860,7 @@
         "fire_level": 4,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 4
       },
       {
         "ticker": "MCHX",
@@ -3881,7 +3882,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "ATOM",
@@ -3903,7 +3904,7 @@
         "fire_level": 4,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 4
       },
       {
         "ticker": "NNBR",
@@ -3925,7 +3926,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "CDLX",
@@ -3947,7 +3948,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "AFCG",
@@ -3969,7 +3970,7 @@
         "fire_level": 4,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 4
       },
       {
         "ticker": "LUNG",
@@ -3991,7 +3992,7 @@
         "fire_level": 4,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 4
       },
       {
         "ticker": "BWEN",
@@ -4013,7 +4014,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "CVGI",
@@ -4035,7 +4036,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "TEAD",
@@ -4057,7 +4058,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "EQ",
@@ -4079,7 +4080,7 @@
         "fire_level": 1,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 1
       },
       {
         "ticker": "MESA",
@@ -4101,7 +4102,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "STKS",
@@ -4123,7 +4124,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "MGX",
@@ -4145,7 +4146,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "TCRX",
@@ -4167,7 +4168,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "FTEK",
@@ -4189,7 +4190,7 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 2
       },
       {
         "ticker": "UPLD",
@@ -4211,7 +4212,7 @@
         "fire_level": 3,
         "blackrock_change": 0,
         "vanguard_change": 0,
-        "previous_fire_level": null
+        "previous_fire_level": 3
       },
       {
         "ticker": "BCAB",
@@ -4233,23 +4234,45 @@
         "fire_level": 2,
         "blackrock_change": 0,
         "vanguard_change": 0,
+        "previous_fire_level": 2
+      },
+      {
+        "ticker": "TELA",
+        "price": 1.17,
+        "previous_close": 1.06,
+        "blackrock_pct": 1.14,
+        "vanguard_pct": 4.46,
+        "statestreet_pct": 0,
+        "blackrock_market_value": 0.539,
+        "vanguard_market_value": 2.106,
+        "statestreet_market_value": 0,
+        "market_cap": 47.2,
+        "avg_volume": 169651,
+        "performance": {
+          "week": 17.08,
+          "month": -21.48,
+          "year": -59.79
+        },
+        "fire_level": 3,
+        "blackrock_change": 0,
+        "vanguard_change": 0,
         "previous_fire_level": null
       }
     ],
     "summary": {
-      "total_processed": 252,
-      "qualifying_count": 184,
-      "rejected_count": 66,
+      "total_processed": 186,
+      "qualifying_count": 185,
+      "rejected_count": 1,
       "failed_count": 0,
       "fire_level_5": 33,
       "fire_level_4": 32,
-      "fire_level_3": 59,
+      "fire_level_3": 60,
       "fire_level_2": 45,
       "fire_level_1": 15,
-      "total_fire_stocks": 184,
-      "total_scanned_stocks": 184
+      "total_fire_stocks": 185,
+      "total_scanned_stocks": 185
     },
-    "timestamp": "2025-11-22T12:22:20.650Z"
+    "timestamp": "2025-11-22T13:30:52.871Z"
   },
   "processedStocks": {
     "stocks": [],
@@ -4263,29 +4286,18 @@
       "id": "watchlist_1762530124412",
       "name": "Hot Picks",
       "stocks": [
-        "ATOS",
         "MVIS",
         "DCGO",
         "ATYR",
+        "ATOS",
         "MYPS",
         "STRO",
         "ASRT",
         "LAZR",
-        "TCRX",
-        "TLRY",
-        "BYND",
-        "ADV",
-        "NAKA",
-        "SGMO",
-        "MAPS",
-        "IMUX",
-        "BMEA",
-        "ORGN",
-        "TEAD",
-        "BCAB"
+        "TCRX"
       ],
       "created": "2025-11-07T15:42:04.412Z",
-      "updated": "2025-11-22T12:22:21.436Z"
+      "updated": "2025-11-22T17:47:36.772Z"
     },
     {
       "id": "watchlist_1763741895652",
@@ -4326,7 +4338,7 @@
         "MESA"
       ],
       "created": "2025-11-21T16:18:15.652Z",
-      "updated": "2025-11-22T12:22:22.411Z"
+      "updated": "2025-11-22T15:04:15.480Z"
     }
   ],
   "holdings": {
@@ -4419,7 +4431,8 @@
     "IOBT",
     "DWSN",
     "HOVR",
-    "FLNT"
+    "FLNT",
+    "SLMT"
   ],
   "priceAlerts": [
     {

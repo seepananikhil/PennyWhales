@@ -66,10 +66,10 @@ async function autoPopulateHotPicks() {
       return;
     }
 
-    // Filter for fire stocks (2-5) with price <= $1.00
+    // Filter for fire stocks (3-5) with price <= $1.00
     const hotPicks = scanResults.stocks.filter(
       (stock) =>
-        stock.fire_level >= 2 && stock.fire_level <= 5 && stock.price <= 1.0
+        stock.fire_level >= 3 && stock.fire_level <= 5 && stock.price <= 1.0
     );
 
     if (hotPicks.length === 0) {
@@ -946,7 +946,7 @@ app.get("/api/holdings/:ticker", async (req, res) => {
 });
 
 // Hot Picks auto-population endpoint
-app.post("/api/watchlists/hot-picks/populate", async (req, res) => {
+app.get("/api/watchlists/hot-picks/populate", async (req, res) => {
   try {
     const result = await autoPopulateHotPicks();
     res.json(result);
@@ -959,7 +959,7 @@ app.post("/api/watchlists/hot-picks/populate", async (req, res) => {
 });
 
 // 200 SMA Crossover auto-population endpoint
-app.post("/api/watchlists/sma-crossover/populate", async (req, res) => {
+app.get("/api/watchlists/sma-crossover/populate", async (req, res) => {
   try {
     const result = await autoPopulateSMACross();
     res.json(result);

@@ -139,7 +139,7 @@ class StockScanner {
             maxVanguardValue = marketValue;
             vanguardMarketValue = marketValue;
           }
-        } else if (ownerName.includes('STATE STREET')) {
+        } else if (ownerName.includes('STATE STREET') || ownerName.includes('STATESTREET')) {
           if (marketValue > maxStatestreetValue) {
             maxStatestreetValue = marketValue;
             statestreetMarketValue = marketValue;
