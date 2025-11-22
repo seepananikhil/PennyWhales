@@ -2,62 +2,83 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 /**
- * Scrapes stock data from Finviz screener
+ * Scrapes stock data from Finviz screener with pagination support
  * @param {string} url - Finviz screener URL
  * @returns {Promise<Array>} Array of stock objects
  */
-async function scrapeFinvizScreener(url = 'https://finviz.com/screener.ashx?v=411&f=exch_nasd,sh_price_u3&o=-change') {
+async function scrapeFinvizScreener(url = process.env.FINVIZ_SCREENER_URL || 'https://finviz.com/screener.ashx?v=411&f=cap_microover,exch_nasd,sh_instown_o10,sh_price_u3&ft=3&o=-marketcap') {
   try {
-    console.log('Fetching Finviz screener data...');
+    console.log('Fetching Finviz screener data with pagination...');
     
-    const response = await axios.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Connection': 'keep-alive',
-      }
-    });
-
-    const $ = cheerio.load(response.data);
-    const stocks = [];
+    const allStocks = [];
+    const seenTickers = new Set();
+    let pageNumber = 1;
+    let hasMorePages = true;
     
-    // Look for tickers in the screener_tickers class
-    const tickerContainer = $('.screener_tickers');
-    console.log(`Found ${tickerContainer.length} screener_tickers containers`);
-    
-    if (tickerContainer.length > 0) {
-      // Get all spans inside the screener_tickers container
-      const tickerSpans = tickerContainer.find('span');
-      console.log(`Found ${tickerSpans.length} ticker spans`);
+    while (hasMorePages) {
+      // Calculate offset for pagination (Finviz uses r parameter, increments by 20)
+      const offset = (pageNumber - 1) * 20;
+      const pageUrl = offset > 0 ? `${url}&r=${offset + 1}` : url;
       
-      tickerSpans.each((index, span) => {
-        const ticker = $(span).text().trim();
-        
-        // Validate ticker format (2-5 uppercase letters)
-        if (ticker && ticker.match(/^[A-Z]{2,5}$/)) {
-          stocks.push({
-            ticker: ticker
-          });
+      console.log(`Fetching page ${pageNumber} (offset ${offset})...`);
+      
+      const response = await axios.get(pageUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+          'Connection': 'keep-alive',
         }
       });
-    } else {
-      console.log('No screener_tickers container found');
-    }
-    
-    // Remove duplicates
-    const uniqueStocks = [];
-    const seenTickers = new Set();
-    
-    for (const stock of stocks) {
-      if (!seenTickers.has(stock.ticker)) {
-        seenTickers.add(stock.ticker);
-        uniqueStocks.push(stock);
+
+      const $ = cheerio.load(response.data);
+      const pageStocks = [];
+      
+      // Look for tickers in the screener_tickers class
+      const tickerContainer = $('.screener_tickers');
+      
+      if (tickerContainer.length > 0) {
+        // Get all spans inside the screener_tickers container
+        const tickerSpans = tickerContainer.find('span');
+        
+        tickerSpans.each((index, span) => {
+          const ticker = $(span).text().trim();
+          
+          // Validate ticker format (2-5 uppercase letters)
+          if (ticker && ticker.match(/^[A-Z]{2,5}$/) && !seenTickers.has(ticker)) {
+            seenTickers.add(ticker);
+            pageStocks.push({
+              ticker: ticker
+            });
+          }
+        });
+      }
+      
+      console.log(`Page ${pageNumber}: Found ${pageStocks.length} new unique tickers`);
+      allStocks.push(...pageStocks);
+      
+      // Check if there are more pages by looking for "next" button or checking if we got results
+      // Finviz shows max 1000 results at 20 per page = 50 pages
+      // But all tickers are in the HTML, so we should get them all on first page
+      // If we got fewer than expected or hit 1000, check for pagination
+      const totalText = $('body').text();
+      const totalMatch = totalText.match(/(\d+)\s*Total/);
+      const totalStocks = totalMatch ? parseInt(totalMatch[1]) : 0;
+      
+      console.log(`Total stocks in screener: ${totalStocks}, Collected so far: ${allStocks.length}`);
+      
+      // Stop if we have all stocks or no new stocks found or reached reasonable limit
+      if (pageStocks.length === 0 || allStocks.length >= totalStocks || pageNumber >= 100) {
+        hasMorePages = false;
+      } else {
+        pageNumber++;
+        // Add delay between pages to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
     
-    console.log(`Successfully scraped ${uniqueStocks.length} unique stocks from Finviz`);
-    return uniqueStocks;
+    console.log(`Successfully scraped ${allStocks.length} unique stocks from Finviz across ${pageNumber} page(s)`);
+    return allStocks;
     
   } catch (error) {
     console.error('Error scraping Finviz:', error.message);

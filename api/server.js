@@ -38,7 +38,7 @@ let currentScanner = null;
 async function fetch200SMACrossoverStocks() {
   try {
     console.log("📊 Fetching 200 SMA crossover stocks from Finviz...");
-    const sma200CrossUrl = "https://finviz.com/screener.ashx?v=411&f=exch_nasd,sh_price_u3,ta_sma200_pca&o=-pe";
+    const sma200CrossUrl = process.env.SMA_200_CROSSOVER_URL || "https://finviz.com/screener.ashx?v=411&f=exch_nasd,sh_price_u3,ta_sma200_pca&o=-pe";
     const sma200Stocks = await scrapeFinvizScreener(sma200CrossUrl);
     
     if (sma200Stocks && sma200Stocks.length > 0) {

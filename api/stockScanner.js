@@ -8,7 +8,6 @@ const { getFinvizPerformance } = require('./finvizScraper');
 // HOLDING_THRESHOLD = 3.0; // 3% minimum holding
 const DELAY_BETWEEN_REQUESTS = 500; // ms
 const REQUIRE_BOTH_HOLDERS = false;
-const MAX_MARKET_CAP = parseFloat(process.env.MAX_MARKET_CAP) || 100; // Default 100M
 
 class StockScanner {
   constructor() {
@@ -97,11 +96,6 @@ class StockScanner {
 
   // Parse BlackRock and Vanguard holdings
   parseHoldings(data, marketCap) {
-    // Filter out stocks below minimum market cap early
-    if (marketCap && marketCap < MAX_MARKET_CAP) {
-      return null; // Signal that this stock should be skipped
-    }
-
     if (!data?.data?.holdingsTransactions?.table?.rows) {
       return { 
         blackrockMarketValue: 0,
