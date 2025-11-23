@@ -56,7 +56,7 @@ const StockCard: React.FC<StockCardProps> = ({
   isSelected = false,
 }) => {
   const [currentPrice, setCurrentPrice] = useState(
-    livePrice?.price || stock.price
+    livePrice?.price || stock.price || 0
   );
   const [priceChange, setPriceChange] = useState(livePrice?.priceChange || 0);
   const [isLoading, setIsLoading] = useState(false);
@@ -567,7 +567,7 @@ const StockCard: React.FC<StockCardProps> = ({
               color: "#4F46E5",
             }}
           >
-            ${currentPrice.toFixed(2)}
+            ${(currentPrice || 0).toFixed(2)}
           </span>
           {isLoading && (
             <span

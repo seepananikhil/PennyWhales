@@ -40,7 +40,19 @@ const TickerModal: React.FC<TickerModalProps> = ({
     try {
       const result = await api.scanMultipleStocks(newTickers);
       if (result.success && result.stocks) {
-        setScannedStocks(result.stocks);
+        // Unwrap the data from each stock result
+        const unwrappedStocks = result.stocks.map((stock: any) => {
+          if (stock.success && stock.data) {
+            // Stock has wrapped data, unwrap it
+            return {
+              ...stock.data,
+              fire_level: stock.fire_level || 0
+            };
+          }
+          // Stock data is already in correct format
+          return stock;
+        });
+        setScannedStocks(unwrappedStocks);
         setScanErrors(result.errors || []);
         setShowResults(true);
       }

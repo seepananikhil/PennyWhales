@@ -608,13 +608,15 @@ app.post("/api/scan", async (req, res) => {
       try {
         const result = await scanner.analyzeTicker(tick.toUpperCase().trim());
 
-        if (result) {
-          result.fire_level = calculateFireLevel(result);
-          results.push(result);
+        if (result && result.success && result.data) {
+          // Extract the actual stock data from the wrapper
+          const stockData = result.data;
+          stockData.fire_level = calculateFireLevel(stockData);
+          results.push(stockData);
         } else {
           errors.push({
             ticker: tick.toUpperCase().trim(),
-            error: "Could not fetch data for this ticker",
+            error: result?.reason || "Could not fetch data for this ticker",
           });
         }
       } catch (error) {
