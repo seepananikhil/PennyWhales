@@ -3,7 +3,7 @@ const path = require('path');
 const dbService = require('./database');
 const { getStockPriceData } = require('./priceUtils');
 const { calculateFireLevel } = require('./fireUtils');
-const { getFinvizPerformance } = require('./finvizScraper');
+const { getFinvizTickerData } = require('./finvizScraper');
 
 // HOLDING_THRESHOLD = 3.0; // 3% minimum holding
 const DELAY_BETWEEN_REQUESTS = 500; // ms
@@ -50,50 +50,7 @@ class StockScanner {
       return null;
     }
   }
-
-  // Get market cap and average volume from Nasdaq summary
-  async getMarketCap(ticker) {
-    try {
-      const response = await fetch(
-        `https://api.nasdaq.com/api/quote/${ticker}/summary?assetclass=stocks`,
-        {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          }
-        }
-      );
-
-      if (!response.ok) return { marketCap: null, avgVolume: null };
-      const data = await response.json();
-      
-      // Extract market cap from summary data
-      const marketCapValue = data?.data?.summaryData?.MarketCap?.value;
-      let marketCap = null;
-      
-      if (marketCapValue) {
-        // Parse market cap - API returns raw dollar amounts as strings with commas
-        // Remove commas, convert to millions and round to 1 decimal for storage
-        const cleanValue = String(marketCapValue).replace(/,/g, '');
-        const marketCapDollars = parseFloat(cleanValue);
-        marketCap = Math.round(marketCapDollars / 100000) / 10; // Round to 1 decimal
-      }
-      
-      // Extract average volume from summary data
-      const avgVolumeValue = data?.data?.summaryData?.AverageVolume?.value;
-      let avgVolume = null;
-      
-      if (avgVolumeValue) {
-        // Parse average volume - remove commas and convert to number
-        avgVolume = parseInt(String(avgVolumeValue).replace(/,/g, '')) || null;
-      }
-      
-      return { marketCap, avgVolume };
-    } catch (error) {
-      console.error(`Error fetching market cap and volume for ${ticker}:`, error);
-      return { marketCap: null, avgVolume: null };
-    }
-  }
-
+  
   // Parse BlackRock and Vanguard holdings
   parseHoldings(data, marketCap) {
     if (!data?.data?.holdingsTransactions?.table?.rows) {
@@ -187,8 +144,17 @@ class StockScanner {
         return { success: false, reason: 'no_holdings_data' };
       }
 
-      // Get market cap and average volume
-      const { marketCap, avgVolume } = await this.getMarketCap(ticker);
+      // Get ticker data from Finviz (performance, employee count, IPO date, sector, industry, market cap) in a single call
+      const finvizData = await getFinvizTickerData(ticker);
+      
+      // Extract data with fallbacks
+      const performance = finvizData?.performance || { week: null, month: null, year: null };
+      let employeeCount = finvizData?.employee_count || null;
+      const ipoDate = finvizData?.ipo_date || null;
+      const sector = finvizData?.sector || null;
+      const industry = finvizData?.industry || null;
+      const description = finvizData?.description || null;
+      const marketCap = finvizData?.market_cap || null;
 
       // Parse holdings and filter by market cap
       const holdings = this.parseHoldings(holdingsData, marketCap);
@@ -197,9 +163,6 @@ class StockScanner {
       }
 
       const { blackrockMarketValue, vanguardMarketValue, statestreetMarketValue, blackrockPct, vanguardPct, statestreetPct } = holdings;
-
-      // Get performance data from Finviz
-      const performance = await getFinvizPerformance(ticker);
 
       // Always return the stock data regardless of holding percentages
       // The fire level calculation will handle the rating (including 0 for no fire)
@@ -215,8 +178,12 @@ class StockScanner {
           blackrock_market_value: blackrockMarketValue, // Store as number (in millions)
           vanguard_market_value: vanguardMarketValue,     // Store as number (in millions)
           statestreet_market_value: statestreetMarketValue, // Store as number (in millions)
-          market_cap: marketCap, // Market cap in millions
-          avg_volume: avgVolume, // Average volume
+          market_cap: marketCap, // Market cap in millions from Finviz
+          employee_count: employeeCount, // Number of employees from Finviz
+          ipo_date: ipoDate, // IPO date from Finviz
+          sector: sector, // Sector from Finviz
+          industry: industry, // Industry from Finviz
+          description: description, // Company description from Finviz
           performance: performance || { week: null, month: null, year: null }
         }
       };
@@ -370,8 +337,7 @@ class StockScanner {
         stock.fire_level = calculateFireLevel(stock);
         
         this.results.push(stock);
-        const volStr = stock.avg_volume ? ` | Vol:${(stock.avg_volume / 1000000).toFixed(1)}M` : '';
-        console.log(`✅ ${ticker} - $${stock.price.toFixed(2)} | BR:${stock.blackrock_pct.toFixed(1)}% VG:${stock.vanguard_pct.toFixed(1)}%${volStr} | Fire:${stock.fire_level}🔥`);
+        console.log(`✅ ${ticker} - $${stock.price.toFixed(2)} | BR:${stock.blackrock_pct.toFixed(1)}% VG:${stock.vanguard_pct.toFixed(1)}% | Fire:${stock.fire_level}🔥`);
       }
       // Silently skip failed stocks (most common: market cap too low)
 
@@ -423,8 +389,7 @@ class StockScanner {
         stock.fire_level = calculateFireLevel(stock);
         
         this.results.push(stock);
-        const volStr = stock.avg_volume ? ` | Vol:${(stock.avg_volume / 1000000).toFixed(1)}M` : '';
-        console.log(`✅ NEW ${ticker} - $${stock.price.toFixed(2)} | BR:${stock.blackrock_pct.toFixed(1)}% VG:${stock.vanguard_pct.toFixed(1)}%${volStr} | Fire:${stock.fire_level}🔥`);
+        console.log(`✅ NEW ${ticker} - $${stock.price.toFixed(2)} | BR:${stock.blackrock_pct.toFixed(1)}% VG:${stock.vanguard_pct.toFixed(1)}% | Fire:${stock.fire_level}🔥`);
       }
       // Silently skip failed stocks
 

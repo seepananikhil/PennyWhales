@@ -67,6 +67,7 @@ const StockCard: React.FC<StockCardProps> = ({
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [hasAlerts, setHasAlerts] = useState(false);
   const [alertCheckKey, setAlertCheckKey] = useState(0);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const fireLevel = stock.fire_level || 0;
   const fireStyle = getFireLevelStyle(fireLevel);
@@ -214,6 +215,7 @@ const StockCard: React.FC<StockCardProps> = ({
               alignItems: "center",
               gap: "6px",
               flexWrap: "wrap",
+              position: "relative",
             }}
           >
             <span
@@ -222,9 +224,58 @@ const StockCard: React.FC<StockCardProps> = ({
                 fontSize: "1.05rem",
                 color: "#333",
                 textTransform: "uppercase",
+                cursor: "help",
+                position: "relative",
               }}
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
             >
               {stock.ticker}
+              {showTooltip && (stock.sector || stock.industry || stock.description) && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: "0",
+                    marginTop: "4px",
+                    backgroundColor: "#ffffff",
+                    border: "2px solid #4F46E5",
+                    borderRadius: "8px",
+                    padding: "10px 12px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    zIndex: 1000,
+                    minWidth: "250px",
+                    maxWidth: "350px",
+                    whiteSpace: "normal",
+                    fontSize: "0.85rem",
+                    lineHeight: "1.4",
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {stock.sector && (
+                    <div style={{ marginBottom: "6px" }}>
+                      <strong style={{ color: "#4F46E5" }}>Sector:</strong>{" "}
+                      <span style={{ color: "#333" }}>{stock.sector}</span>
+                    </div>
+                  )}
+                  {stock.industry && (
+                    <div style={{ marginBottom: stock.description ? "6px" : "0" }}>
+                      <strong style={{ color: "#4F46E5" }}>Industry:</strong>{" "}
+                      <span style={{ color: "#333" }}>{stock.industry}</span>
+                    </div>
+                  )}
+                  {stock.description && (
+                    <div style={{ 
+                      borderTop: (stock.sector || stock.industry) ? "1px solid #e9ecef" : "none",
+                      paddingTop: (stock.sector || stock.industry) ? "6px" : "0",
+                      color: "#555",
+                      fontSize: "0.8rem"
+                    }}>
+                      {stock.description}
+                    </div>
+                  )}
+                </div>
+              )}
             </span>
             <span style={{ fontSize: "1rem" }}>{getFireEmoji(fireLevel)}</span>
             {stock.market_cap && stock.market_cap > 0 && (
@@ -554,44 +605,106 @@ const StockCard: React.FC<StockCardProps> = ({
           style={{
             display: "flex",
             alignItems: "baseline",
-            gap: "6px",
+            justifyContent: "space-between",
+            gap: "4px",
             marginBottom: "6px",
             paddingBottom: "6px",
             borderBottom: "1px solid #e9ecef",
           }}
         >
-          <span
-            style={{
-              fontWeight: "bold",
-              fontSize: "1.1rem",
-              color: "#4F46E5",
-            }}
-          >
-            ${(currentPrice || 0).toFixed(2)}
-          </span>
-          {isLoading && (
+          <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
             <span
               style={{
-                fontSize: "0.65rem",
-                color: "#999",
-                animation: "pulse 1.5s ease-in-out infinite",
+                fontWeight: "bold",
+                fontSize: "1.1rem",
+                color: "#4F46E5",
               }}
             >
-              🔄
+              ${(currentPrice || 0).toFixed(2)}
             </span>
-          )}
-          {priceChange !== undefined && priceChange !== 0 && (
-            <span
-              style={{
-                fontSize: "0.85rem",
-                color: priceChange > 0 ? "#28a745" : "#dc3545",
-                fontWeight: "600",
-              }}
-            >
-              {priceChange > 0 ? "+" : ""}
-              {priceChange.toFixed(2)}%
-            </span>
-          )}
+            {isLoading && (
+              <span
+                style={{
+                  fontSize: "0.65rem",
+                  color: "#999",
+                  animation: "pulse 1.5s ease-in-out infinite",
+                }}
+              >
+                🔄
+              </span>
+            )}
+            {priceChange !== undefined && priceChange !== 0 && (
+              <span
+                style={{
+                  fontSize: "0.85rem",
+                  color: priceChange > 0 ? "#28a745" : "#dc3545",
+                  fontWeight: "600",
+                }}
+              >
+                {priceChange > 0 ? "+" : ""}
+                {priceChange.toFixed(2)}%
+              </span>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            {stock.ipo_date && (
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  color: "#6c757d",
+                  fontWeight: "600",
+                  backgroundColor: "#fff9e6",
+                  padding: "2px 6px",
+                  borderRadius: "5px",
+                  border: "1px solid #ffe8a1",
+                }}
+                title={`IPO: ${stock.ipo_date}`}
+              >
+                📅 {(() => {
+                  try {
+                    const ipoDate = new Date(stock.ipo_date);
+                    const now = new Date();
+                    const diffMs = now.getTime() - ipoDate.getTime();
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    const diffMonths = Math.floor(diffDays / 30);
+                    const diffYears = Math.floor(diffDays / 365);
+
+                    if (diffYears >= 1) {
+                      return `${diffYears}Y`;
+                    } else if (diffMonths >= 1) {
+                      return `${diffMonths}M`;
+                    } else {
+                      return `${diffDays}D`;
+                    }
+                  } catch {
+                    return stock.ipo_date;
+                  }
+                })()}
+              </span>
+            )}
+            {stock.employee_count && stock.employee_count > 0 && (
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  color: "#6c757d",
+                  fontWeight: "600",
+                  backgroundColor: "#f0f8ff",
+                  padding: "2px 6px",
+                  borderRadius: "5px",
+                  border: "1px solid #d0e8f2",
+                }}
+                title={`${stock.employee_count.toLocaleString()} employees`}
+              >
+                👥 {(() => {
+                  const emp = stock.employee_count;
+                  if (emp >= 1000) {
+                    return `${(emp / 1000).toFixed(emp >= 10000 ? 0 : 1)}k`;
+                  }
+                  return emp.toString();
+                })()}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Holdings Section - BR, VG & SS */}

@@ -12,6 +12,12 @@ export interface Stock {
   vanguard_market_value?: number; // Market value in millions (numeric)
   statestreet_market_value?: number; // Market value in millions (numeric)
   market_cap?: number; // Market capitalization in millions
+  avg_volume?: number; // Average trading volume
+  employee_count?: number; // Number of employees
+  ipo_date?: string; // IPO date from Finviz
+  sector?: string; // Sector from Finviz
+  industry?: string; // Industry from Finviz
+  description?: string; // Company description
   blackrock_source: string;
   vanguard_source: string;
   data_quality: string;

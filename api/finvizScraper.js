@@ -87,11 +87,12 @@ async function scrapeFinvizScreener(url = process.env.FINVIZ_SCREENER_URL || 'ht
 }
 
 /**
- * Get performance data for a ticker from Finviz
+ * Get ticker data from Finviz (performance, employee count, IPO date, sector, industry)
+ * and company description from Yahoo Finance
  * @param {string} ticker - Stock ticker symbol
- * @returns {Promise<Object>} Performance data (week, month, year)
+ * @returns {Promise<Object>} Ticker data including performance, employee_count, ipo_date, sector, industry, and description
  */
-async function getFinvizPerformance(ticker) {
+async function getFinvizTickerData(ticker) {
   try {
     const response = await axios.get(
       `https://finviz.com/quote.ashx?t=${ticker}&p=d`,
@@ -112,8 +113,7 @@ async function getFinvizPerformance(ticker) {
       year: null
     };
 
-    // Find performance table rows - updated regex to match new HTML structure
-    // The percentage is in a <span> tag within the next <td> after the label
+    // Find performance table rows - the percentage is in a <span> tag within the next <td> after the label
     const perfWeekMatch = html.match(/Perf Week<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<span[^>]*>([-+]?\d+\.?\d*%)<\/span>/);
     const perfMonthMatch = html.match(/Perf Month<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<span[^>]*>([-+]?\d+\.?\d*%)<\/span>/);
     const perfYearMatch = html.match(/Perf Year<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<span[^>]*>([-+]?\d+\.?\d*%)<\/span>/);
@@ -128,9 +128,81 @@ async function getFinvizPerformance(ticker) {
       performance.year = parseFloat(perfYearMatch[1].replace('%', ''));
     }
 
-    return performance;
+    // Parse employee count from HTML
+    let employeeCount = null;
+    const employeeMatch = html.match(/Employees<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<b>([\d,]+)<\/b>/);
+    if (employeeMatch) {
+      employeeCount = parseInt(employeeMatch[1].replace(/,/g, ''));
+    }
+
+    // Parse IPO date from HTML
+    let ipoDate = null;
+    // Match pattern: <td>IPO</td><td...><b>Mar 13, 1986</b></td>
+    const ipoMatch = html.match(/>IPO<\/td>[\s\S]*?<b>([A-Z][a-z]{2}\s+\d{1,2},\s+\d{4})<\/b>/);
+    if (ipoMatch) {
+      const dateStr = ipoMatch[1].trim();
+      if (dateStr && dateStr !== '-') {
+        ipoDate = dateStr;
+      }
+    }
+
+    // Parse Sector and Industry from HTML
+    let sector = null;
+    let industry = null;
+    // Match pattern: <a href="screener.ashx?...f=sec_technology" class="tab-link">Technology</a>
+    const sectorMatch = html.match(/<a[^>]*href="[^"]*f=sec_[^"]*"[^>]*class="tab-link"[^>]*>([^<]+)<\/a>/);
+    if (sectorMatch) {
+      sector = sectorMatch[1].trim();
+    }
+    // Match pattern: <a href="screener.ashx?...f=ind_consumerelectronics" class="tab-link"...>Consumer Electronics</a>
+    const industryMatch = html.match(/<a[^>]*href="[^"]*f=ind_[^"]*"[^>]*class="tab-link[^"]*"[^>]*>([^<]+)<\/a>/);
+    if (industryMatch) {
+      industry = industryMatch[1].trim();
+    }
+
+    // Parse Market Cap from HTML
+    let marketCap = null;
+    const marketCapMatch = html.match(/>Market Cap<\/td>[\s\S]*?<b>([^<]+)<\/b>/);
+    if (marketCapMatch) {
+      const capStr = marketCapMatch[1].trim();
+      // Parse market cap: e.g., "877.36M" or "3.45B" or "1.23T"
+      const capValue = parseFloat(capStr);
+      if (!isNaN(capValue)) {
+        if (capStr.includes('T')) {
+          marketCap = capValue * 1000000; // Convert trillions to millions
+        } else if (capStr.includes('B')) {
+          marketCap = capValue * 1000; // Convert billions to millions
+        } else if (capStr.includes('M')) {
+          marketCap = capValue; // Already in millions
+        }
+      }
+    }
+
+    // Get company description from Finviz fullview-profile
+    let description = null;
+    const descMatch = html.match(/<td[^>]*class="fullview-profile"[^>]*>(.*?)<\/td>/s);
+    if (descMatch) {
+      description = descMatch[1]
+        .replace(/<[^>]*>/g, '') // Remove HTML tags
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .trim();
+      // Limit to reasonable length
+      if (description.length > 400) {
+        description = description.substring(0, 400) + '...';
+      }
+    }
+
+    return {
+      performance,
+      employee_count: employeeCount,
+      ipo_date: ipoDate,
+      sector: sector,
+      industry: industry,
+      market_cap: marketCap,
+      description: description
+    };
   } catch (error) {
-    console.error(`Error fetching Finviz performance for ${ticker}:`, error.message);
+    console.error(`Error fetching Finviz data for ${ticker}:`, error.message);
     return null;
   }
 }
@@ -138,5 +210,5 @@ async function getFinvizPerformance(ticker) {
 // Export functions
 module.exports = {
   scrapeFinvizScreener,
-  getFinvizPerformance
+  getFinvizTickerData,
 };

@@ -33,14 +33,14 @@ const Dashboard: React.FC = () => {
     marketValueFilters: Set<string>;
   }>({
     fireLevels: new Set([5, 4, 3]),
-    priceFilters: new Set(['under1']),
+    priceFilters: new Set(['under3']),
     marketValueFilters: new Set()
   });
   const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<string[]>([]); // Multi-sort: order of sort criteria
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [topGainers, setTopGainers] = useState<string[]>([]);
   const [topLosers, setTopLosers] = useState<string[]>([]);
-  const [showChartView, setShowChartView] = useState<boolean>(true);
 
   useEffect(() => {
     loadData();
@@ -436,14 +436,16 @@ const Dashboard: React.FC = () => {
         
         return Array.from(multiFilters.priceFilters).some(priceFilter => {
           switch (priceFilter) {
-            case 'under0.5':
-              return stock.price < 0.6;
-            case 'under1':
-              return stock.price < 1.0;
-            case '1to2':
-              return stock.price >= 1.0 && stock.price <= 2.0;
-            case 'over2':
-              return stock.price > 2.0;
+            case 'under3':
+              return stock.price < 3.0;
+            case '3to5':
+              return stock.price >= 3.0 && stock.price < 5.0;
+            case '5to10':
+              return stock.price >= 5.0 && stock.price < 10.0;
+            case '10to15':
+              return stock.price >= 10.0 && stock.price < 15.0;
+            case 'over15':
+              return stock.price >= 15.0;
             default:
               return true;
           }
@@ -495,7 +497,130 @@ const Dashboard: React.FC = () => {
     
     // Sort stocks based on selected sort option
     return stocks.sort((a, b) => {
-      // If no sort selected, maintain original order
+      // Multi-sort: apply each sort criteria in order
+      if (sortOrder.length > 0) {
+        for (const sortKey of sortOrder) {
+          const stockA = stockData.get(a);
+          const stockB = stockData.get(b);
+          
+          if (!stockA || !stockB) continue;
+          
+          let comparison = 0;
+          
+          switch (sortKey) {
+            case 'combined-desc':
+              const combinedA = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
+              const combinedB = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
+              comparison = combinedB - combinedA;
+              break;
+            case 'combined-asc':
+              const combinedAsc = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
+              const combinedBsc = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
+              comparison = combinedAsc - combinedBsc;
+              break;
+            case 'vg-desc':
+              comparison = stockB.vanguard_pct - stockA.vanguard_pct;
+              break;
+            case 'vg-asc':
+              comparison = stockA.vanguard_pct - stockB.vanguard_pct;
+              break;
+            case 'br-desc':
+              comparison = stockB.blackrock_pct - stockA.blackrock_pct;
+              break;
+            case 'br-asc':
+              comparison = stockA.blackrock_pct - stockB.blackrock_pct;
+              break;
+            case 'ss-desc':
+              comparison = (stockB.statestreet_pct || 0) - (stockA.statestreet_pct || 0);
+              break;
+            case 'ss-asc':
+              comparison = (stockA.statestreet_pct || 0) - (stockB.statestreet_pct || 0);
+              break;
+            case 'fire-desc':
+              const fireA = stockA.fire_level || 0;
+              const fireB = stockB.fire_level || 0;
+              comparison = fireB - fireA;
+              break;
+            case 'price-desc':
+              comparison = stockB.price - stockA.price;
+              break;
+            case 'price-asc':
+              comparison = stockA.price - stockB.price;
+              break;
+            case 'price-change-desc':
+              const priceChangeA = livePriceData.get(a)?.priceChange || 0;
+              const priceChangeB = livePriceData.get(b)?.priceChange || 0;
+              comparison = priceChangeB - priceChangeA;
+              break;
+            case 'price-change-asc':
+              const priceChangeAscA = livePriceData.get(a)?.priceChange || 0;
+              const priceChangeAscB = livePriceData.get(b)?.priceChange || 0;
+              comparison = priceChangeAscA - priceChangeAscB;
+              break;
+            case 'market-value-desc':
+              const marketCapA = stockA.market_cap || 0;
+              const marketCapB = stockB.market_cap || 0;
+              comparison = marketCapB - marketCapA;
+              break;
+            case 'market-value-asc':
+              const marketCapAscA = stockA.market_cap || 0;
+              const marketCapAscB = stockB.market_cap || 0;
+              comparison = marketCapAscA - marketCapAscB;
+              break;
+            case 'daily-gainers':
+              const indexA_gainers = topGainers.indexOf(a);
+              const indexB_gainers = topGainers.indexOf(b);
+              if (indexA_gainers === -1 && indexB_gainers === -1) comparison = 0;
+              else if (indexA_gainers === -1) comparison = 1;
+              else if (indexB_gainers === -1) comparison = -1;
+              else comparison = indexA_gainers - indexB_gainers;
+              break;
+            case 'daily-losers':
+              const indexA_losers = topLosers.indexOf(a);
+              const indexB_losers = topLosers.indexOf(b);
+              if (indexA_losers === -1 && indexB_losers === -1) comparison = 0;
+              else if (indexA_losers === -1) comparison = 1;
+              else if (indexB_losers === -1) comparison = -1;
+              else comparison = indexA_losers - indexB_losers;
+              break;
+            case 'weekly-gainers':
+              if (!stockA?.performance || !stockB?.performance) comparison = 0;
+              else comparison = (stockB.performance.week || 0) - (stockA.performance.week || 0);
+              break;
+            case 'weekly-losers':
+              if (!stockA?.performance || !stockB?.performance) comparison = 0;
+              else comparison = (stockA.performance.week || 0) - (stockB.performance.week || 0);
+              break;
+            case 'monthly-gainers':
+              if (!stockA?.performance || !stockB?.performance) comparison = 0;
+              else comparison = (stockB.performance.month || 0) - (stockA.performance.month || 0);
+              break;
+            case 'monthly-losers':
+              if (!stockA?.performance || !stockB?.performance) comparison = 0;
+              else comparison = (stockA.performance.month || 0) - (stockB.performance.month || 0);
+              break;
+            case 'price-asc-combined-desc':
+              // First sort by price (low to high)
+              const priceAsc = stockA.price - stockB.price;
+              if (priceAsc !== 0) {
+                comparison = priceAsc;
+              } else {
+                // Then by combined % (high to low) as tiebreaker
+                const combinedB = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
+                const combinedA = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
+                comparison = combinedB - combinedA;
+              }
+              break;
+          }
+          
+          // If this sort criteria produces a difference, return it
+          if (comparison !== 0) return comparison;
+        }
+        // All sort criteria resulted in equality
+        return 0;
+      }
+      
+      // Legacy single sort (fallback)
       if (!sortBy) return 0;
       
       const stockA = stockData.get(a);
@@ -681,32 +806,6 @@ const Dashboard: React.FC = () => {
             )}
           </h1>
           <div style={{ display: 'flex', gap: theme.spacing.md, alignItems: 'center' }}>
-            {/* Chart View Toggle */}
-            <button
-              onClick={() => setShowChartView(!showChartView)}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-                border: 'none',
-                borderRadius: theme.borderRadius.md,
-                backgroundColor: showChartView ? theme.status.success : theme.status.info,
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.semibold,
-                transition: `all ${theme.transition.normal}`,
-                boxShadow: theme.ui.shadow.sm
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }}
-            >
-              {showChartView ? '📊 Chart Mode' : '📋 Grid Mode'}
-            </button>
             {/* Search Input */}
             <input
               type="text"
@@ -734,10 +833,23 @@ const Dashboard: React.FC = () => {
                 e.currentTarget.style.boxShadow = 'none';
               }}
             />
-            {/* Sort Dropdown */}
+            {/* Sort Dropdown - Multi-sort */}
             <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              value=""
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === 'CLEAR_ALL') {
+                  setSortOrder([]);
+                } else if (value) {
+                  setSortOrder(prev => {
+                    // Add to sort order if not already present
+                    if (!prev.includes(value)) {
+                      return [...prev, value];
+                    }
+                    return prev;
+                  });
+                }
+              }}
               style={{
                 padding: `${theme.spacing.sm} ${theme.spacing.md}`,
                 border: `1px solid ${theme.ui.border}`,
@@ -750,22 +862,58 @@ const Dashboard: React.FC = () => {
                 fontFamily: theme.typography.fontFamily
               }}
             >
-              <option value="">🔢 No Sort</option>
-              <option value="combined-desc">🔥 VG + BR + SS % (High to Low)</option>
-              <option value="combined-asc">🔥 VG + BR + SS % (Low to High)</option>
-              <option value="vg-desc">🔄 VG % (High to Low)</option>
-              <option value="vg-asc">🔄 VG % (Low to High)</option>
-              <option value="br-desc">🔄 BR % (High to Low)</option>
-              <option value="br-asc">🔄 BR % (Low to High)</option>
-              <option value="ss-desc">🔄 SS % (High to Low)</option>
-              <option value="ss-asc">🔄 SS % (Low to High)</option>
-              <option value="fire-desc">🔥 Fire Level (High to Low)</option>
-              <option value="price-desc">💰 Price (High to Low)</option>
-              <option value="price-asc">💰 Price (Low to High)</option>
-              <option value="price-change-desc">📈 Price Change % (High to Low)</option>
-              <option value="price-change-asc">📉 Price Change % (Low to High)</option>
-              <option value="market-value-desc">💎 Market Value (High to Low)</option>
-              <option value="market-value-asc">💎 Market Value (Low to High)</option>
+              <option value="">
+                {sortOrder.length > 0 ? `🔢 Sort (${sortOrder.length} active)` : '🔢 Add Sort'}
+              </option>
+              <option value="combined-desc">
+                {sortOrder.includes('combined-desc') ? `[${sortOrder.indexOf('combined-desc') + 1}] ` : ''}🔥 VG + BR + SS % (High to Low)
+              </option>
+              <option value="combined-asc">
+                {sortOrder.includes('combined-asc') ? `[${sortOrder.indexOf('combined-asc') + 1}] ` : ''}🔥 VG + BR + SS % (Low to High)
+              </option>
+              <option value="vg-desc">
+                {sortOrder.includes('vg-desc') ? `[${sortOrder.indexOf('vg-desc') + 1}] ` : ''}🔄 VG % (High to Low)
+              </option>
+              <option value="vg-asc">
+                {sortOrder.includes('vg-asc') ? `[${sortOrder.indexOf('vg-asc') + 1}] ` : ''}🔄 VG % (Low to High)
+              </option>
+              <option value="br-desc">
+                {sortOrder.includes('br-desc') ? `[${sortOrder.indexOf('br-desc') + 1}] ` : ''}🔄 BR % (High to Low)
+              </option>
+              <option value="br-asc">
+                {sortOrder.includes('br-asc') ? `[${sortOrder.indexOf('br-asc') + 1}] ` : ''}🔄 BR % (Low to High)
+              </option>
+              <option value="ss-desc">
+                {sortOrder.includes('ss-desc') ? `[${sortOrder.indexOf('ss-desc') + 1}] ` : ''}🔄 SS % (High to Low)
+              </option>
+              <option value="ss-asc">
+                {sortOrder.includes('ss-asc') ? `[${sortOrder.indexOf('ss-asc') + 1}] ` : ''}🔄 SS % (Low to High)
+              </option>
+              <option value="fire-desc">
+                {sortOrder.includes('fire-desc') ? `[${sortOrder.indexOf('fire-desc') + 1}] ` : ''}🔥 Fire Level (High to Low)
+              </option>
+              <option value="price-desc">
+                {sortOrder.includes('price-desc') ? `[${sortOrder.indexOf('price-desc') + 1}] ` : ''}💰 Price (High to Low)
+              </option>
+              <option value="price-asc">
+                {sortOrder.includes('price-asc') ? `[${sortOrder.indexOf('price-asc') + 1}] ` : ''}💰 Price (Low to High)
+              </option>
+              <option value="price-change-desc">
+                {sortOrder.includes('price-change-desc') ? `[${sortOrder.indexOf('price-change-desc') + 1}] ` : ''}📈 Price Change % (High to Low)
+              </option>
+              <option value="price-change-asc">
+                {sortOrder.includes('price-change-asc') ? `[${sortOrder.indexOf('price-change-asc') + 1}] ` : ''}📉 Price Change % (Low to High)
+              </option>
+              <option value="market-value-desc">
+                {sortOrder.includes('market-value-desc') ? `[${sortOrder.indexOf('market-value-desc') + 1}] ` : ''}💎 Market Value (High to Low)
+              </option>
+              <option value="market-value-asc">
+                {sortOrder.includes('market-value-asc') ? `[${sortOrder.indexOf('market-value-asc') + 1}] ` : ''}💎 Market Value (Low to High)
+              </option>
+              <option value="price-asc-combined-desc">
+                {sortOrder.includes('price-asc-combined-desc') ? `[${sortOrder.indexOf('price-asc-combined-desc') + 1}] ` : ''}🎯 Low Price + High % (Combo)
+              </option>
+              {sortOrder.length > 0 && <option value="CLEAR_ALL">❌ Clear All Sorts</option>}
             </select>
             <button
               onClick={() => setShowModal(true)}
@@ -981,7 +1129,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div 
+          {/* <div 
             onClick={() => toggleFilter('fire', 2)}
             style={{
               textAlign: 'center',
@@ -1065,7 +1213,7 @@ const Dashboard: React.FC = () => {
             }}>
               🔥
             </div>
-          </div>
+          </div> */}
 
           <div 
             onClick={() => {
@@ -1119,107 +1267,173 @@ const Dashboard: React.FC = () => {
         {/* Price Filter Row */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-          gap: theme.spacing.md,
-          marginBottom: theme.spacing.md
+          gridTemplateColumns: 'repeat(5, 1fr) 2fr',
+          gap: theme.spacing.sm,
+          alignItems: 'center'
         }}>
           <button
-            onClick={() => toggleFilter('price', 'under0.5')}
+            onClick={() => toggleFilter('price', 'under3')}
             style={{
-              padding: theme.spacing.md,
-              backgroundColor: multiFilters.priceFilters.has('under0.5') ? '#007bff' : theme.ui.surface,
-              color: multiFilters.priceFilters.has('under0.5') ? 'white' : '#007bff',
+              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              backgroundColor: multiFilters.priceFilters.has('under3') ? '#007bff' : theme.ui.surface,
+              color: multiFilters.priceFilters.has('under3') ? 'white' : '#007bff',
               border: `2px solid #007bff`,
               borderRadius: theme.borderRadius.md,
               textAlign: 'center',
-              boxShadow: multiFilters.priceFilters.has('under0.5') ? '0 4px 8px rgba(0, 123, 255, 0.3)' : theme.ui.shadow.sm,
+              boxShadow: multiFilters.priceFilters.has('under3') ? '0 4px 8px rgba(0, 123, 255, 0.3)' : theme.ui.shadow.sm,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.priceFilters.has('under0.5') ? 'translateY(-1px)' : 'none',
+              transform: multiFilters.priceFilters.has('under3') ? 'translateY(-1px)' : 'none',
               fontFamily: theme.typography.fontFamily,
               fontSize: theme.typography.fontSize.sm,
               fontWeight: theme.typography.fontWeight.semibold
             }}
             onMouseEnter={(e) => {
-              if (!multiFilters.priceFilters.has('under0.5')) {
+              if (!multiFilters.priceFilters.has('under3')) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 123, 255, 0.2)';
               }
             }}
             onMouseLeave={(e) => {
-              if (!multiFilters.priceFilters.has('under0.5')) {
+              if (!multiFilters.priceFilters.has('under3')) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
             }}
           >
-            💰 Under $0.5
+            💰 &lt; $3
           </button>
 
           <button
-            onClick={() => toggleFilter('price', 'under1')}
+            onClick={() => toggleFilter('price', '3to5')}
             style={{
-              padding: theme.spacing.md,
-              backgroundColor: multiFilters.priceFilters.has('under1') ? '#28a745' : theme.ui.surface,
-              color: multiFilters.priceFilters.has('under1') ? 'white' : '#28a745',
+              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              backgroundColor: multiFilters.priceFilters.has('3to5') ? '#28a745' : theme.ui.surface,
+              color: multiFilters.priceFilters.has('3to5') ? 'white' : '#28a745',
               border: `2px solid #28a745`,
               borderRadius: theme.borderRadius.md,
               textAlign: 'center',
-              boxShadow: multiFilters.priceFilters.has('under1') ? '0 4px 8px rgba(40, 167, 69, 0.3)' : theme.ui.shadow.sm,
+              boxShadow: multiFilters.priceFilters.has('3to5') ? '0 4px 8px rgba(40, 167, 69, 0.3)' : theme.ui.shadow.sm,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.priceFilters.has('under1') ? 'translateY(-1px)' : 'none',
+              transform: multiFilters.priceFilters.has('3to5') ? 'translateY(-1px)' : 'none',
               fontFamily: theme.typography.fontFamily,
               fontSize: theme.typography.fontSize.sm,
               fontWeight: theme.typography.fontWeight.semibold
             }}
             onMouseEnter={(e) => {
-              if (!multiFilters.priceFilters.has('under1')) {
+              if (!multiFilters.priceFilters.has('3to5')) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = '0 4px 8px rgba(40, 167, 69, 0.2)';
               }
             }}
             onMouseLeave={(e) => {
-              if (!multiFilters.priceFilters.has('under1')) {
+              if (!multiFilters.priceFilters.has('3to5')) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
             }}
           >
-            💰 Under $1
+            💰 $3 - $5
           </button>
 
           <button
-            onClick={() => toggleFilter('price', '1to2')}
+            onClick={() => toggleFilter('price', '5to10')}
             style={{
-              padding: theme.spacing.md,
-              backgroundColor: multiFilters.priceFilters.has('1to2') ? '#fd7e14' : theme.ui.surface,
-              color: multiFilters.priceFilters.has('1to2') ? 'white' : '#fd7e14',
+              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              backgroundColor: multiFilters.priceFilters.has('5to10') ? '#fd7e14' : theme.ui.surface,
+              color: multiFilters.priceFilters.has('5to10') ? 'white' : '#fd7e14',
               border: `2px solid #fd7e14`,
               borderRadius: theme.borderRadius.md,
               textAlign: 'center',
-              boxShadow: multiFilters.priceFilters.has('1to2') ? '0 4px 8px rgba(253, 126, 20, 0.3)' : theme.ui.shadow.sm,
+              boxShadow: multiFilters.priceFilters.has('5to10') ? '0 4px 8px rgba(253, 126, 20, 0.3)' : theme.ui.shadow.sm,
               cursor: 'pointer',
               transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.priceFilters.has('1to2') ? 'translateY(-1px)' : 'none',
+              transform: multiFilters.priceFilters.has('5to10') ? 'translateY(-1px)' : 'none',
               fontFamily: theme.typography.fontFamily,
               fontSize: theme.typography.fontSize.sm,
               fontWeight: theme.typography.fontWeight.semibold
             }}
             onMouseEnter={(e) => {
-              if (!multiFilters.priceFilters.has('1to2')) {
+              if (!multiFilters.priceFilters.has('5to10')) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
                 e.currentTarget.style.boxShadow = '0 4px 8px rgba(253, 126, 20, 0.2)';
               }
             }}
             onMouseLeave={(e) => {
-              if (!multiFilters.priceFilters.has('1to2')) {
+              if (!multiFilters.priceFilters.has('5to10')) {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }
             }}
           >
-            above $1
+            💰 $5 - $10
+          </button>
+
+          <button
+            onClick={() => toggleFilter('price', '10to15')}
+            style={{
+              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              backgroundColor: multiFilters.priceFilters.has('10to15') ? '#6610f2' : theme.ui.surface,
+              color: multiFilters.priceFilters.has('10to15') ? 'white' : '#6610f2',
+              border: `2px solid #6610f2`,
+              borderRadius: theme.borderRadius.md,
+              textAlign: 'center',
+              boxShadow: multiFilters.priceFilters.has('10to15') ? '0 4px 8px rgba(102, 16, 242, 0.3)' : theme.ui.shadow.sm,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: multiFilters.priceFilters.has('10to15') ? 'translateY(-1px)' : 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}
+            onMouseEnter={(e) => {
+              if (!multiFilters.priceFilters.has('10to15')) {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(102, 16, 242, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!multiFilters.priceFilters.has('10to15')) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            💰 $10 - $15
+          </button>
+
+          <button
+            onClick={() => toggleFilter('price', 'over15')}
+            style={{
+              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              backgroundColor: multiFilters.priceFilters.has('over15') ? '#dc3545' : theme.ui.surface,
+              color: multiFilters.priceFilters.has('over15') ? 'white' : '#dc3545',
+              border: `2px solid #dc3545`,
+              borderRadius: theme.borderRadius.md,
+              textAlign: 'center',
+              boxShadow: multiFilters.priceFilters.has('over15') ? '0 4px 8px rgba(220, 53, 69, 0.3)' : theme.ui.shadow.sm,
+              cursor: 'pointer',
+              transition: `all ${theme.transition.normal}`,
+              transform: multiFilters.priceFilters.has('over15') ? 'translateY(-1px)' : 'none',
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.semibold
+            }}
+            onMouseEnter={(e) => {
+              if (!multiFilters.priceFilters.has('over15')) {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!multiFilters.priceFilters.has('over15')) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }
+            }}
+          >
+            💰 $15+
           </button>
 
           {/* Compact Performance Sort */}
@@ -1233,7 +1447,7 @@ const Dashboard: React.FC = () => {
             borderRadius: theme.borderRadius.md,
             boxShadow: (sortBy === 'daily-gainers' || sortBy === 'daily-losers' || sortBy === 'weekly-gainers' || sortBy === 'weekly-losers' || sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') ? '0 4px 8px rgba(33, 150, 243, 0.3)' : theme.ui.shadow.sm,
             transition: `all ${theme.transition.normal}`,
-            fontFamily: theme.typography.fontFamily
+            fontFamily: theme.typography.fontFamily,
           }}>
             {/* Timeframe Toggle */}
             <div style={{ display: 'flex', gap: '2px', backgroundColor: '#f8f9fa', borderRadius: theme.borderRadius.sm, padding: '2px' }}>
@@ -1357,7 +1571,7 @@ const Dashboard: React.FC = () => {
                 whiteSpace: 'nowrap'
               }}
             >
-              📈 Gainers
+              Gainers
             </button>
 
             {/* Losers Button */}
@@ -1394,7 +1608,7 @@ const Dashboard: React.FC = () => {
                 whiteSpace: 'nowrap'
               }}
             >
-              📉 Losers
+              Loosers
             </button>
           </div>
         </div>
@@ -1588,38 +1802,20 @@ const Dashboard: React.FC = () => {
 
         {tickersWithData.length > 0 || (activeFilter === 'holdings' && holdingTickers.length > 0) ? (
           <>
-            {showChartView ? (
-              <ChartView
-                stocks={filteredStocks}
-                stockData={stockData}
-                livePriceData={livePriceData}
-                holdings={holdings}
-                watchlistStocks={watchlistStocks}
-                onToggleHolding={handleToggleHolding}
-                onToggleWatchlist={handleToggleWatchlist}
-                onDeleteTicker={handleDeleteTicker}
-                onLoadLivePrice={loadLivePriceForTicker}
-                showWatchButton={watchlists.length > 0}
-                showDeleteButton={true}
-                tradingViewChartUrl="https://www.tradingview.com/chart/StTMbjgz/?symbol="
-              />
-            ) : (
-              <GridView
-                stocks={filteredStocks}
-                stockData={stockData}
-                livePriceData={livePriceData}
-                holdings={holdings}
-                watchlistStocks={watchlistStocks}
-                onToggleHolding={handleToggleHolding}
-                onToggleWatchlist={handleToggleWatchlist}
-                onOpenChart={handleOpenChart}
-                onDeleteTicker={handleDeleteTicker}
-                onLoadLivePrice={loadLivePriceForTicker}
-                showWatchButton={watchlists.length > 0}
-                showDeleteButton={true}
-                activeFilter={activeFilter}
-              />
-            )}
+            <ChartView
+              stocks={filteredStocks}
+              stockData={stockData}
+              livePriceData={livePriceData}
+              holdings={holdings}
+              watchlistStocks={watchlistStocks}
+              onToggleHolding={handleToggleHolding}
+              onToggleWatchlist={handleToggleWatchlist}
+              onDeleteTicker={handleDeleteTicker}
+              onLoadLivePrice={loadLivePriceForTicker}
+              showWatchButton={watchlists.length > 0}
+              showDeleteButton={true}
+              tradingViewChartUrl="https://www.tradingview.com/chart/StTMbjgz/?symbol="
+            />
           </>
         ) : (
           <div style={{
