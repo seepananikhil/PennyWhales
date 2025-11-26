@@ -505,7 +505,7 @@ app.post("/api/scan/start", async (req, res) => {
         console.log(`💾 Updated ticker list with ${qualifyingTickers.length} qualifying tickers`);
 
         // Auto-populate Hot Picks watchlist after scan completes
-        await autoPopulateHotPicks();
+        // await autoPopulateHotPicks();
 
         // Auto-populate 200 SMA Crossover watchlist with high fire stocks (3-5)
         await autoPopulateSMACross();
