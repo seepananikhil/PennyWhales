@@ -130,9 +130,12 @@ async function getFinvizTickerData(ticker) {
 
     // Parse employee count from HTML
     let employeeCount = null;
-    const employeeMatch = html.match(/Employees<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<b>([\d,]+)<\/b>/);
+    const employeeMatch = html.match(/>Employees<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<b>([^<]+)<\/b>/);
     if (employeeMatch) {
-      employeeCount = parseInt(employeeMatch[1].replace(/,/g, ''));
+      const empStr = employeeMatch[1].trim();
+      if (empStr && empStr !== '-') {
+        employeeCount = parseInt(empStr.replace(/,/g, ''));
+      }
     }
 
     // Parse IPO date from HTML

@@ -182,6 +182,98 @@ export const getFireLevelStyle = (level: number) => {
   }
 };
 
+// Sector Configuration with Icons and Colors
+export const sectors = {
+  'Technology': {
+    icon: '💻',
+    color: '#4F46E5',      // Indigo
+    background: '#EEF2FF',
+    border: '#C7D2FE',
+    description: 'Software, Hardware, IT Services'
+  },
+  'Healthcare': {
+    icon: '🏥',
+    color: '#DC2626',      // Red
+    background: '#FEF2F2',
+    border: '#FECACA',
+    description: 'Biotechnology, Medical Devices, Healthcare Services'
+  },
+  'Financial': {
+    icon: '💰',
+    color: '#16A34A',      // Green
+    background: '#F0FDF4',
+    border: '#BBF7D0',
+    description: 'Banks, Insurance, Asset Management'
+  },
+  'Consumer Cyclical': {
+    icon: '🛍️',
+    color: '#EA580C',      // Orange
+    background: '#FFF7ED',
+    border: '#FED7AA',
+    description: 'Retail, Automotive, Leisure'
+  },
+  'Industrials': {
+    icon: '🏭',
+    color: '#64748B',      // Slate
+    background: '#F8FAFC',
+    border: '#CBD5E1',
+    description: 'Manufacturing, Construction, Aerospace'
+  },
+  'Communication Services': {
+    icon: '📡',
+    color: '#7C3AED',      // Violet
+    background: '#F5F3FF',
+    border: '#DDD6FE',
+    description: 'Telecom, Media, Entertainment'
+  },
+  'Consumer Defensive': {
+    icon: '🛒',
+    color: '#059669',      // Emerald
+    background: '#ECFDF5',
+    border: '#A7F3D0',
+    description: 'Food, Beverages, Household Products'
+  },
+  'Energy': {
+    icon: '⚡',
+    color: '#CA8A04',      // Yellow
+    background: '#FEFCE8',
+    border: '#FDE68A',
+    description: 'Oil & Gas, Renewable Energy'
+  },
+  'Real Estate': {
+    icon: '🏢',
+    color: '#0891B2',      // Cyan
+    background: '#ECFEFF',
+    border: '#A5F3FC',
+    description: 'REITs, Real Estate Services'
+  },
+  'Basic Materials': {
+    icon: '⚙️',
+    color: '#9333EA',      // Purple
+    background: '#FAF5FF',
+    border: '#E9D5FF',
+    description: 'Chemicals, Metals, Mining'
+  },
+  'Utilities': {
+    icon: '💡',
+    color: '#0D9488',      // Teal
+    background: '#F0FDFA',
+    border: '#99F6E4',
+    description: 'Electric, Water, Gas Utilities'
+  }
+};
+
+// Helper function to get sector styling
+export const getSectorStyle = (sector: string) => {
+  return sectors[sector as keyof typeof sectors] || {
+    icon: '📊',
+    color: '#6B7280',
+    background: '#F9FAFB',
+    border: '#E5E7EB',
+    description: 'Other'
+  };
+};
+
 // Helper function for price filter styling
 export const getPriceFilterStyle = (filter: string) => {
   switch (filter) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Stock } from "../types";
-import { theme, getFireLevelStyle } from "../theme";
+import { theme, getFireLevelStyle, getSectorStyle } from "../theme";
 import api from "../api";
 import { SiTradingview } from "react-icons/si";
 import { FaBell, FaBellSlash } from "react-icons/fa";
@@ -71,6 +71,7 @@ const StockCard: React.FC<StockCardProps> = ({
 
   const fireLevel = stock.fire_level || 0;
   const fireStyle = getFireLevelStyle(fireLevel);
+  const sectorStyle = stock.sector ? getSectorStyle(stock.sector) : null;
   const cardBorderColor = isSelected
     ? fireLevel > 0
       ? fireStyle.primary
@@ -278,25 +279,24 @@ const StockCard: React.FC<StockCardProps> = ({
               )}
             </span>
             <span style={{ fontSize: "1rem" }}>{getFireEmoji(fireLevel)}</span>
-            {stock.market_cap && stock.market_cap > 0 && (
+            {sectorStyle && (
               <span
                 style={{
-                  fontSize: "0.8rem",
-                  color: "#6c757d",
+                  fontSize: "0.7rem",
+                  color: sectorStyle.color,
                   fontWeight: "600",
-                  backgroundColor: "#fafafa",
+                  backgroundColor: sectorStyle.background,
                   padding: "2px 6px",
-                  borderRadius: "5px",
-                  border: "1px solid #e9ecef",
-                  marginRight: "4px",
+                  borderRadius: "4px",
+                  border: `1px solid ${sectorStyle.border}`,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "3px",
                 }}
+                title={sectorStyle.description}
               >
-                {(() => {
-                  const mcap = Number(stock.market_cap);
-                  return mcap >= 1000
-                    ? `${(mcap / 1000).toFixed(1)}B`
-                    : `${Math.round(mcap)}M`;
-                })()}
+                <span>{sectorStyle.icon}</span>
+                <span>{stock.sector}</span>
               </span>
             )}
           </div>
@@ -305,6 +305,7 @@ const StockCard: React.FC<StockCardProps> = ({
               display: "flex",
               alignItems: "center",
               gap: "3px",
+              flexShrink: 0,
             }}
           >
             {showHoldingStar && isHolding && (
@@ -679,6 +680,32 @@ const StockCard: React.FC<StockCardProps> = ({
                   } catch {
                     return stock.ipo_date;
                   }
+                })()}
+              </span>
+            )}
+            {stock.market_cap && stock.market_cap > 0 && (
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  color: "#6c757d",
+                  fontWeight: "600",
+                  backgroundColor: "#fafafa",
+                  padding: "2px 6px",
+                  borderRadius: "5px",
+                  border: "1px solid #e9ecef",
+                }}
+                title={`Market Cap: ${(() => {
+                  const mcap = Number(stock.market_cap);
+                  return mcap >= 1000
+                    ? `$${(mcap / 1000).toFixed(1)}B`
+                    : `$${Math.round(mcap)}M`;
+                })()}`}
+              >
+                💼 {(() => {
+                  const mcap = Number(stock.market_cap);
+                  return mcap >= 1000
+                    ? `${(mcap / 1000).toFixed(1)}B`
+                    : `${Math.round(mcap)}M`;
                 })()}
               </span>
             )}

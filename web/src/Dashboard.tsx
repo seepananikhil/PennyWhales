@@ -5,6 +5,7 @@ import { theme, getFireLevelStyle } from './theme';
 import TickerModal from './components/TickerModal';
 import ChartView from './components/ChartView';
 import GridView from './components/GridView';
+import FilterPanel from './components/FilterPanel';
 
 const Dashboard: React.FC = () => {
   const [tickers, setTickers] = useState<string[]>([]);
@@ -31,16 +32,23 @@ const Dashboard: React.FC = () => {
     fireLevels: Set<number>;
     priceFilters: Set<string>;
     marketValueFilters: Set<string>;
+    sectors: Set<string>;
+    employeeCount: Set<string>;
+    ipoDate: Set<string>;
   }>({
     fireLevels: new Set([5, 4, 3]),
     priceFilters: new Set(['under3']),
-    marketValueFilters: new Set()
+    marketValueFilters: new Set(),
+    sectors: new Set(),
+    employeeCount: new Set(),
+    ipoDate: new Set()
   });
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string[]>([]); // Multi-sort: order of sort criteria
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [topGainers, setTopGainers] = useState<string[]>([]);
   const [topLosers, setTopLosers] = useState<string[]>([]);
+  const [filterPanelOpen, setFilterPanelOpen] = useState<boolean>(false);
 
   useEffect(() => {
     loadData();
@@ -324,7 +332,7 @@ const Dashboard: React.FC = () => {
   };
 
   // Single unified filter toggle function
-  const toggleFilter = (type: 'fire' | 'price' | 'marketValue', value: number | string) => {
+  const toggleFilter = (type: 'fire' | 'price' | 'marketValue' | 'sector' | 'employee' | 'ipo', value: number | string) => {
     setMultiFilters(prev => {
       const newFilters = { ...prev };
       
@@ -352,6 +360,30 @@ const Dashboard: React.FC = () => {
           newMarketValueFilters.add(value as string);
         }
         newFilters.marketValueFilters = newMarketValueFilters;
+      } else if (type === 'sector') {
+        const newSectors = new Set(prev.sectors);
+        if (newSectors.has(value as string)) {
+          newSectors.delete(value as string);
+        } else {
+          newSectors.add(value as string);
+        }
+        newFilters.sectors = newSectors;
+      } else if (type === 'employee') {
+        const newEmployeeCount = new Set(prev.employeeCount);
+        if (newEmployeeCount.has(value as string)) {
+          newEmployeeCount.delete(value as string);
+        } else {
+          newEmployeeCount.add(value as string);
+        }
+        newFilters.employeeCount = newEmployeeCount;
+      } else if (type === 'ipo') {
+        const newIpoDate = new Set(prev.ipoDate);
+        if (newIpoDate.has(value as string)) {
+          newIpoDate.delete(value as string);
+        } else {
+          newIpoDate.add(value as string);
+        }
+        newFilters.ipoDate = newIpoDate;
       }
       
       return newFilters;
@@ -372,7 +404,10 @@ const Dashboard: React.FC = () => {
     setMultiFilters({
       fireLevels: new Set(),
       priceFilters: new Set(),
-      marketValueFilters: new Set()
+      marketValueFilters: new Set(),
+      sectors: new Set(),
+      employeeCount: new Set(),
+      ipoDate: new Set()
     });
   };
 
@@ -472,6 +507,67 @@ const Dashboard: React.FC = () => {
               return marketCap >= 50 && marketCap < 100;
             case 'over100':
               return marketCap >= 100;
+            default:
+              return true;
+          }
+        });
+      });
+    }
+
+    // Apply sector filter if selected
+    if (multiFilters.sectors.size > 0) {
+      stocks = stocks.filter(ticker => {
+        const stock = stockData.get(ticker);
+        if (!stock || !stock.sector) return false;
+        return multiFilters.sectors.has(stock.sector);
+      });
+    }
+
+    // Apply employee count filter if selected
+    if (multiFilters.employeeCount.size > 0) {
+      stocks = stocks.filter(ticker => {
+        const stock = stockData.get(ticker);
+        if (!stock) return false;
+        
+        const employees = stock.employee_count || 0;
+        
+        return Array.from(multiFilters.employeeCount).some(employeeFilter => {
+          switch (employeeFilter) {
+            case 'under100':
+              return employees > 0 && employees < 100;
+            case '100to500':
+              return employees >= 100 && employees < 500;
+            case '500to1000':
+              return employees >= 500 && employees < 1000;
+            case 'over1000':
+              return employees >= 1000;
+            default:
+              return true;
+          }
+        });
+      });
+    }
+
+    // Apply IPO date filter if selected
+    if (multiFilters.ipoDate.size > 0) {
+      stocks = stocks.filter(ticker => {
+        const stock = stockData.get(ticker);
+        if (!stock || !stock.ipo_date) return false;
+        
+        const ipoDate = new Date(stock.ipo_date);
+        const now = new Date();
+        const yearsDiff = (now.getTime() - ipoDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
+        
+        return Array.from(multiFilters.ipoDate).some(ipoFilter => {
+          switch (ipoFilter) {
+            case 'lastYear':
+              return yearsDiff <= 1;
+            case 'last3Years':
+              return yearsDiff <= 3;
+            case 'last5Years':
+              return yearsDiff <= 5;
+            case 'older':
+              return yearsDiff > 5;
             default:
               return true;
           }
@@ -611,6 +707,33 @@ const Dashboard: React.FC = () => {
                 comparison = combinedB - combinedA;
               }
               break;
+            case 'employees-desc':
+              const empA = stockA.employee_count || 0;
+              const empB = stockB.employee_count || 0;
+              comparison = empB - empA;
+              break;
+            case 'ipo-newest':
+              // Sort by IPO date (newest first = most recent dates first)
+              if (!stockA?.ipo_date && !stockB?.ipo_date) comparison = 0;
+              else if (!stockA?.ipo_date) comparison = 1; // No IPO date goes to end
+              else if (!stockB?.ipo_date) comparison = -1;
+              else {
+                const dateA = new Date(stockA.ipo_date).getTime();
+                const dateB = new Date(stockB.ipo_date).getTime();
+                comparison = dateB - dateA; // Newer dates (higher timestamp) first
+              }
+              break;
+            case 'ipo-oldest':
+              // Sort by IPO date (oldest first = earliest dates first)
+              if (!stockA?.ipo_date && !stockB?.ipo_date) comparison = 0;
+              else if (!stockA?.ipo_date) comparison = 1; // No IPO date goes to end
+              else if (!stockB?.ipo_date) comparison = -1;
+              else {
+                const dateA = new Date(stockA.ipo_date).getTime();
+                const dateB = new Date(stockB.ipo_date).getTime();
+                comparison = dateA - dateB; // Older dates (lower timestamp) first
+              }
+              break;
           }
           
           // If this sort criteria produces a difference, return it
@@ -724,6 +847,23 @@ const Dashboard: React.FC = () => {
           // Sort by monthly performance (lowest/most negative first)
           if (!stockA?.performance || !stockB?.performance) return 0;
           return (stockA.performance.month || 0) - (stockB.performance.month || 0);
+        case 'employees-desc':
+          // Sort by employee count (highest first)
+          const empA = stockA.employee_count || 0;
+          const empB = stockB.employee_count || 0;
+          return empB - empA;
+        case 'ipo-newest':
+          // Sort by IPO date (newest first)
+          if (!stockA?.ipo_date && !stockB?.ipo_date) return 0;
+          if (!stockA?.ipo_date) return 1;
+          if (!stockB?.ipo_date) return -1;
+          return new Date(stockB.ipo_date).getTime() - new Date(stockA.ipo_date).getTime();
+        case 'ipo-oldest':
+          // Sort by IPO date (oldest first)
+          if (!stockA?.ipo_date && !stockB?.ipo_date) return 0;
+          if (!stockA?.ipo_date) return 1;
+          if (!stockB?.ipo_date) return -1;
+          return new Date(stockA.ipo_date).getTime() - new Date(stockB.ipo_date).getTime();
         default:
           // Default to combined VG + BR + SS (highest first)
           const defaultA = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
@@ -734,6 +874,18 @@ const Dashboard: React.FC = () => {
   };
 
   const filteredStocks = getFilteredStocks();
+
+  // Calculate available sectors from all stocks with data
+  const availableSectors = React.useMemo(() => {
+    const sectors = new Set<string>();
+    tickersWithData.forEach(ticker => {
+      const stock = stockData.get(ticker);
+      if (stock?.sector) {
+        sectors.add(stock.sector);
+      }
+    });
+    return Array.from(sectors).sort();
+  }, [tickersWithData, stockData]);
 
   if (loading) {
     return (
@@ -833,88 +985,32 @@ const Dashboard: React.FC = () => {
                 e.currentTarget.style.boxShadow = 'none';
               }}
             />
-            {/* Sort Dropdown - Multi-sort */}
-            <select
-              value=""
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === 'CLEAR_ALL') {
-                  setSortOrder([]);
-                } else if (value) {
-                  setSortOrder(prev => {
-                    // Add to sort order if not already present
-                    if (!prev.includes(value)) {
-                      return [...prev, value];
-                    }
-                    return prev;
-                  });
-                }
-              }}
+          
+            <button
+              onClick={() => setFilterPanelOpen(true)}
               style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                border: `1px solid ${theme.ui.border}`,
+                padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+                border: 'none',
                 borderRadius: theme.borderRadius.md,
-                backgroundColor: theme.ui.surface,
-                color: theme.ui.text.primary,
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.medium,
+                backgroundColor: theme.status.warning,
+                color: 'white',
                 cursor: 'pointer',
-                fontFamily: theme.typography.fontFamily
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.semibold,
+                transition: `all ${theme.transition.normal}`,
+                boxShadow: theme.ui.shadow.sm
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }}
             >
-              <option value="">
-                {sortOrder.length > 0 ? `🔢 Sort (${sortOrder.length} active)` : '🔢 Add Sort'}
-              </option>
-              <option value="combined-desc">
-                {sortOrder.includes('combined-desc') ? `[${sortOrder.indexOf('combined-desc') + 1}] ` : ''}🔥 VG + BR + SS % (High to Low)
-              </option>
-              <option value="combined-asc">
-                {sortOrder.includes('combined-asc') ? `[${sortOrder.indexOf('combined-asc') + 1}] ` : ''}🔥 VG + BR + SS % (Low to High)
-              </option>
-              <option value="vg-desc">
-                {sortOrder.includes('vg-desc') ? `[${sortOrder.indexOf('vg-desc') + 1}] ` : ''}🔄 VG % (High to Low)
-              </option>
-              <option value="vg-asc">
-                {sortOrder.includes('vg-asc') ? `[${sortOrder.indexOf('vg-asc') + 1}] ` : ''}🔄 VG % (Low to High)
-              </option>
-              <option value="br-desc">
-                {sortOrder.includes('br-desc') ? `[${sortOrder.indexOf('br-desc') + 1}] ` : ''}🔄 BR % (High to Low)
-              </option>
-              <option value="br-asc">
-                {sortOrder.includes('br-asc') ? `[${sortOrder.indexOf('br-asc') + 1}] ` : ''}🔄 BR % (Low to High)
-              </option>
-              <option value="ss-desc">
-                {sortOrder.includes('ss-desc') ? `[${sortOrder.indexOf('ss-desc') + 1}] ` : ''}🔄 SS % (High to Low)
-              </option>
-              <option value="ss-asc">
-                {sortOrder.includes('ss-asc') ? `[${sortOrder.indexOf('ss-asc') + 1}] ` : ''}🔄 SS % (Low to High)
-              </option>
-              <option value="fire-desc">
-                {sortOrder.includes('fire-desc') ? `[${sortOrder.indexOf('fire-desc') + 1}] ` : ''}🔥 Fire Level (High to Low)
-              </option>
-              <option value="price-desc">
-                {sortOrder.includes('price-desc') ? `[${sortOrder.indexOf('price-desc') + 1}] ` : ''}💰 Price (High to Low)
-              </option>
-              <option value="price-asc">
-                {sortOrder.includes('price-asc') ? `[${sortOrder.indexOf('price-asc') + 1}] ` : ''}💰 Price (Low to High)
-              </option>
-              <option value="price-change-desc">
-                {sortOrder.includes('price-change-desc') ? `[${sortOrder.indexOf('price-change-desc') + 1}] ` : ''}📈 Price Change % (High to Low)
-              </option>
-              <option value="price-change-asc">
-                {sortOrder.includes('price-change-asc') ? `[${sortOrder.indexOf('price-change-asc') + 1}] ` : ''}📉 Price Change % (Low to High)
-              </option>
-              <option value="market-value-desc">
-                {sortOrder.includes('market-value-desc') ? `[${sortOrder.indexOf('market-value-desc') + 1}] ` : ''}💎 Market Value (High to Low)
-              </option>
-              <option value="market-value-asc">
-                {sortOrder.includes('market-value-asc') ? `[${sortOrder.indexOf('market-value-asc') + 1}] ` : ''}💎 Market Value (Low to High)
-              </option>
-              <option value="price-asc-combined-desc">
-                {sortOrder.includes('price-asc-combined-desc') ? `[${sortOrder.indexOf('price-asc-combined-desc') + 1}] ` : ''}🎯 Low Price + High % (Combo)
-              </option>
-              {sortOrder.length > 0 && <option value="CLEAR_ALL">❌ Clear All Sorts</option>}
-            </select>
+              🔍 Filters & Sort
+            </button>
             <button
               onClick={() => setShowModal(true)}
               style={{
@@ -942,816 +1038,6 @@ const Dashboard: React.FC = () => {
             </button>
           </div>
         </div>
-
-        {/* Stats Row */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-          gap: theme.spacing.md,
-          marginBottom: theme.spacing.md
-        }}>
-          <div 
-            onClick={() => {
-              if (activeFilter === 'anyfire') {
-                setActiveFilter('anyfire');
-                clearAllFilters();
-              } else {
-                setActiveFilter('anyfire');
-                clearAllFilters();
-              }
-            }}
-            style={{
-              textAlign: 'center',
-              padding: theme.spacing.sm,
-              backgroundColor: activeFilter === 'anyfire' ? '#ff6b35' : '#fff0e6',
-              borderRadius: theme.borderRadius.md,
-              border: `2px solid ${activeFilter === 'anyfire' ? '#ff6b35' : '#ffb380'}`,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: activeFilter === 'anyfire' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: activeFilter === 'anyfire' ? theme.ui.shadow.md : theme.ui.shadow.sm
-            }}
-            onMouseEnter={(e) => {
-              if (activeFilter !== 'anyfire') {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (activeFilter !== 'anyfire') {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            <div style={{
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: activeFilter === 'anyfire' ? 'white' : '#ff6b35'
-            }}>
-              {anyFireTickers.length}
-            </div>
-            <div style={{
-              fontSize: theme.typography.fontSize.xs,
-              color: activeFilter === 'anyfire' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
-              fontWeight: theme.typography.fontWeight.medium
-            }}>
-              🔥 Any Fire
-            </div>
-          </div>
-
-          <div 
-            onClick={() => toggleFilter('fire', 5)}
-            style={{
-              textAlign: 'center',
-              padding: theme.spacing.sm,
-              backgroundColor: multiFilters.fireLevels.has(5) ? getFireLevelStyle(5).primary : getFireLevelStyle(5).background,
-              borderRadius: theme.borderRadius.md,
-              border: `2px solid ${multiFilters.fireLevels.has(5) ? getFireLevelStyle(5).primary : getFireLevelStyle(5).border}`,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.fireLevels.has(5) ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: multiFilters.fireLevels.has(5) ? theme.ui.shadow.md : theme.ui.shadow.sm,
-              position: 'relative'
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.fireLevels.has(5)) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.fireLevels.has(5)) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            <div style={{
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: multiFilters.fireLevels.has(5) ? 'white' : getFireLevelStyle(5).primary
-            }}>
-              {fire5Tickers.length}
-            </div>
-            <div style={{
-              fontSize: theme.typography.fontSize.xs,
-              color: multiFilters.fireLevels.has(5) ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
-              fontWeight: theme.typography.fontWeight.medium
-            }}>
-              🔥🔥🔥🔥🔥
-            </div>
-          </div>
-
-          <div 
-            onClick={() => toggleFilter('fire', 4)}
-            style={{
-              textAlign: 'center',
-              padding: theme.spacing.sm,
-              backgroundColor: multiFilters.fireLevels.has(4) ? getFireLevelStyle(4).primary : getFireLevelStyle(4).background,
-              borderRadius: theme.borderRadius.md,
-              border: `2px solid ${multiFilters.fireLevels.has(4) ? getFireLevelStyle(4).primary : getFireLevelStyle(4).border}`,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.fireLevels.has(4) ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: multiFilters.fireLevels.has(4) ? theme.ui.shadow.md : theme.ui.shadow.sm,
-              position: 'relative'
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.fireLevels.has(4)) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.fireLevels.has(4)) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            <div style={{
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: multiFilters.fireLevels.has(4) ? 'white' : getFireLevelStyle(4).primary
-            }}>
-              {fire4Tickers.length}
-            </div>
-            <div style={{
-              fontSize: theme.typography.fontSize.xs,
-              color: multiFilters.fireLevels.has(4) ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
-              fontWeight: theme.typography.fontWeight.medium
-            }}>
-              🔥🔥🔥🔥
-            </div>
-          </div>
-
-          <div 
-            onClick={() => toggleFilter('fire', 3)}
-            style={{
-              textAlign: 'center',
-              padding: theme.spacing.sm,
-              backgroundColor: multiFilters.fireLevels.has(3) ? getFireLevelStyle(3).primary : getFireLevelStyle(3).background,
-              borderRadius: theme.borderRadius.md,
-              border: `2px solid ${multiFilters.fireLevels.has(3) ? getFireLevelStyle(3).primary : getFireLevelStyle(3).border}`,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.fireLevels.has(3) ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: multiFilters.fireLevels.has(3) ? theme.ui.shadow.md : theme.ui.shadow.sm,
-              position: 'relative'
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.fireLevels.has(3)) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.fireLevels.has(3)) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            <div style={{
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: multiFilters.fireLevels.has(3) ? 'white' : getFireLevelStyle(3).primary
-            }}>
-              {fire3Tickers.length}
-            </div>
-            <div style={{
-              fontSize: theme.typography.fontSize.xs,
-              color: multiFilters.fireLevels.has(3) ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
-              fontWeight: theme.typography.fontWeight.medium
-            }}>
-              🔥🔥🔥
-            </div>
-          </div>
-
-          {/* <div 
-            onClick={() => toggleFilter('fire', 2)}
-            style={{
-              textAlign: 'center',
-              padding: theme.spacing.sm,
-              backgroundColor: multiFilters.fireLevels.has(2) ? getFireLevelStyle(2).primary : getFireLevelStyle(2).background,
-              borderRadius: theme.borderRadius.md,
-              border: `2px solid ${multiFilters.fireLevels.has(2) ? getFireLevelStyle(2).primary : getFireLevelStyle(2).border}`,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.fireLevels.has(2) ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: multiFilters.fireLevels.has(2) ? theme.ui.shadow.md : theme.ui.shadow.sm,
-              position: 'relative'
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.fireLevels.has(2)) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.fireLevels.has(2)) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            <div style={{
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: multiFilters.fireLevels.has(2) ? 'white' : getFireLevelStyle(2).primary
-            }}>
-              {fire2Tickers.length}
-            </div>
-            <div style={{
-              fontSize: theme.typography.fontSize.xs,
-              color: multiFilters.fireLevels.has(2) ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
-              fontWeight: theme.typography.fontWeight.medium
-            }}>
-              🔥🔥
-            </div>
-          </div>
-
-          <div 
-            onClick={() => toggleFilter('fire', 1)}
-            style={{
-              textAlign: 'center',
-              padding: theme.spacing.sm,
-              backgroundColor: multiFilters.fireLevels.has(1) ? getFireLevelStyle(1).primary : getFireLevelStyle(1).background,
-              borderRadius: theme.borderRadius.md,
-              border: `2px solid ${multiFilters.fireLevels.has(1) ? getFireLevelStyle(1).primary : getFireLevelStyle(1).border}`,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.fireLevels.has(1) ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: multiFilters.fireLevels.has(1) ? theme.ui.shadow.md : theme.ui.shadow.sm,
-              position: 'relative'
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.fireLevels.has(1)) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.fireLevels.has(1)) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            <div style={{
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: multiFilters.fireLevels.has(1) ? 'white' : getFireLevelStyle(1).primary
-            }}>
-              {fire1Tickers.length}
-            </div>
-            <div style={{
-              fontSize: theme.typography.fontSize.xs,
-              color: multiFilters.fireLevels.has(1) ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
-              fontWeight: theme.typography.fontWeight.medium
-            }}>
-              🔥
-            </div>
-          </div> */}
-
-          <div 
-            onClick={() => {
-              if (activeFilter === 'holdings') {
-                setActiveFilter('anyfire');
-              } else {
-                setActiveFilter('holdings');
-              }
-            }}
-            style={{
-              textAlign: 'center',
-              padding: theme.spacing.sm,
-              backgroundColor: activeFilter === 'holdings' ? '#ffd700' : '#fff3cd',
-              borderRadius: theme.borderRadius.md,
-              border: `2px solid ${activeFilter === 'holdings' ? '#ffd700' : '#ffeaa7'}`,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: activeFilter === 'holdings' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: activeFilter === 'holdings' ? theme.ui.shadow.md : theme.ui.shadow.sm
-            }}
-            onMouseEnter={(e) => {
-              if (activeFilter !== 'holdings') {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (activeFilter !== 'holdings') {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            <div style={{
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: activeFilter === 'holdings' ? 'white' : '#ffd700'
-            }}>
-              {holdingTickers.length}
-            </div>
-            <div style={{
-              fontSize: theme.typography.fontSize.xs,
-              color: activeFilter === 'holdings' ? 'rgba(255,255,255,0.8)' : theme.ui.text.secondary,
-              fontWeight: theme.typography.fontWeight.medium
-            }}>
-              ⭐ Holdings
-            </div>
-          </div>
-        </div>
-
-        {/* Price Filter Row */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(5, 1fr) 2fr',
-          gap: theme.spacing.sm,
-          alignItems: 'center'
-        }}>
-          <button
-            onClick={() => toggleFilter('price', 'under3')}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              backgroundColor: multiFilters.priceFilters.has('under3') ? '#007bff' : theme.ui.surface,
-              color: multiFilters.priceFilters.has('under3') ? 'white' : '#007bff',
-              border: `2px solid #007bff`,
-              borderRadius: theme.borderRadius.md,
-              textAlign: 'center',
-              boxShadow: multiFilters.priceFilters.has('under3') ? '0 4px 8px rgba(0, 123, 255, 0.3)' : theme.ui.shadow.sm,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.priceFilters.has('under3') ? 'translateY(-1px)' : 'none',
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.priceFilters.has('under3')) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 123, 255, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.priceFilters.has('under3')) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            💰 &lt; $3
-          </button>
-
-          <button
-            onClick={() => toggleFilter('price', '3to5')}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              backgroundColor: multiFilters.priceFilters.has('3to5') ? '#28a745' : theme.ui.surface,
-              color: multiFilters.priceFilters.has('3to5') ? 'white' : '#28a745',
-              border: `2px solid #28a745`,
-              borderRadius: theme.borderRadius.md,
-              textAlign: 'center',
-              boxShadow: multiFilters.priceFilters.has('3to5') ? '0 4px 8px rgba(40, 167, 69, 0.3)' : theme.ui.shadow.sm,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.priceFilters.has('3to5') ? 'translateY(-1px)' : 'none',
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.priceFilters.has('3to5')) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(40, 167, 69, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.priceFilters.has('3to5')) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            💰 $3 - $5
-          </button>
-
-          <button
-            onClick={() => toggleFilter('price', '5to10')}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              backgroundColor: multiFilters.priceFilters.has('5to10') ? '#fd7e14' : theme.ui.surface,
-              color: multiFilters.priceFilters.has('5to10') ? 'white' : '#fd7e14',
-              border: `2px solid #fd7e14`,
-              borderRadius: theme.borderRadius.md,
-              textAlign: 'center',
-              boxShadow: multiFilters.priceFilters.has('5to10') ? '0 4px 8px rgba(253, 126, 20, 0.3)' : theme.ui.shadow.sm,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.priceFilters.has('5to10') ? 'translateY(-1px)' : 'none',
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.priceFilters.has('5to10')) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(253, 126, 20, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.priceFilters.has('5to10')) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            💰 $5 - $10
-          </button>
-
-          <button
-            onClick={() => toggleFilter('price', '10to15')}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              backgroundColor: multiFilters.priceFilters.has('10to15') ? '#6610f2' : theme.ui.surface,
-              color: multiFilters.priceFilters.has('10to15') ? 'white' : '#6610f2',
-              border: `2px solid #6610f2`,
-              borderRadius: theme.borderRadius.md,
-              textAlign: 'center',
-              boxShadow: multiFilters.priceFilters.has('10to15') ? '0 4px 8px rgba(102, 16, 242, 0.3)' : theme.ui.shadow.sm,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.priceFilters.has('10to15') ? 'translateY(-1px)' : 'none',
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.priceFilters.has('10to15')) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(102, 16, 242, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.priceFilters.has('10to15')) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            💰 $10 - $15
-          </button>
-
-          <button
-            onClick={() => toggleFilter('price', 'over15')}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              backgroundColor: multiFilters.priceFilters.has('over15') ? '#dc3545' : theme.ui.surface,
-              color: multiFilters.priceFilters.has('over15') ? 'white' : '#dc3545',
-              border: `2px solid #dc3545`,
-              borderRadius: theme.borderRadius.md,
-              textAlign: 'center',
-              boxShadow: multiFilters.priceFilters.has('over15') ? '0 4px 8px rgba(220, 53, 69, 0.3)' : theme.ui.shadow.sm,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.priceFilters.has('over15') ? 'translateY(-1px)' : 'none',
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.priceFilters.has('over15')) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.priceFilters.has('over15')) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            💰 $15+
-          </button>
-
-          {/* Compact Performance Sort */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-            backgroundColor: (sortBy === 'daily-gainers' || sortBy === 'daily-losers' || sortBy === 'weekly-gainers' || sortBy === 'weekly-losers' || sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') ? '#E3F2FD' : theme.ui.surface,
-            border: `2px solid ${(sortBy === 'daily-gainers' || sortBy === 'daily-losers' || sortBy === 'weekly-gainers' || sortBy === 'weekly-losers' || sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') ? '#2196F3' : theme.ui.border}`,
-            borderRadius: theme.borderRadius.md,
-            boxShadow: (sortBy === 'daily-gainers' || sortBy === 'daily-losers' || sortBy === 'weekly-gainers' || sortBy === 'weekly-losers' || sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') ? '0 4px 8px rgba(33, 150, 243, 0.3)' : theme.ui.shadow.sm,
-            transition: `all ${theme.transition.normal}`,
-            fontFamily: theme.typography.fontFamily,
-          }}>
-            {/* Timeframe Toggle */}
-            <div style={{ display: 'flex', gap: '2px', backgroundColor: '#f8f9fa', borderRadius: theme.borderRadius.sm, padding: '2px' }}>
-              <button
-                onClick={() => {
-                  // Toggle daily: if already on daily-gainers/losers, turn off, otherwise set to daily-gainers
-                  if (sortBy === 'daily-gainers' || sortBy === 'daily-losers') {
-                    setSortBy('');
-                  } else if (sortBy === 'weekly-gainers' || sortBy === 'monthly-gainers') {
-                    setSortBy('daily-gainers');
-                  } else if (sortBy === 'weekly-losers' || sortBy === 'monthly-losers') {
-                    setSortBy('daily-losers');
-                  } else {
-                    setSortBy('daily-gainers');
-                  }
-                }}
-                style={{
-                  padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                  backgroundColor: (sortBy === 'daily-gainers' || sortBy === 'daily-losers') ? '#2196F3' : 'transparent',
-                  color: (sortBy === 'daily-gainers' || sortBy === 'daily-losers') ? 'white' : theme.ui.text.primary,
-                  border: 'none',
-                  borderRadius: theme.borderRadius.sm,
-                  cursor: 'pointer',
-                  fontSize: theme.typography.fontSize.xs,
-                  fontWeight: theme.typography.fontWeight.semibold,
-                  fontFamily: theme.typography.fontFamily,
-                  transition: `all ${theme.transition.normal}`
-                }}
-              >
-                D
-              </button>
-              <button
-                onClick={() => {
-                  // Toggle weekly
-                  if (sortBy === 'weekly-gainers' || sortBy === 'weekly-losers') {
-                    setSortBy('');
-                  } else if (sortBy === 'daily-gainers' || sortBy === 'monthly-gainers') {
-                    setSortBy('weekly-gainers');
-                  } else if (sortBy === 'daily-losers' || sortBy === 'monthly-losers') {
-                    setSortBy('weekly-losers');
-                  } else {
-                    setSortBy('weekly-gainers');
-                  }
-                }}
-                style={{
-                  padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                  backgroundColor: (sortBy === 'weekly-gainers' || sortBy === 'weekly-losers') ? '#2196F3' : 'transparent',
-                  color: (sortBy === 'weekly-gainers' || sortBy === 'weekly-losers') ? 'white' : theme.ui.text.primary,
-                  border: 'none',
-                  borderRadius: theme.borderRadius.sm,
-                  cursor: 'pointer',
-                  fontSize: theme.typography.fontSize.xs,
-                  fontWeight: theme.typography.fontWeight.semibold,
-                  fontFamily: theme.typography.fontFamily,
-                  transition: `all ${theme.transition.normal}`
-                }}
-              >
-                W
-              </button>
-              <button
-                onClick={() => {
-                  // Toggle monthly
-                  if (sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') {
-                    setSortBy('');
-                  } else if (sortBy === 'daily-gainers' || sortBy === 'weekly-gainers') {
-                    setSortBy('monthly-gainers');
-                  } else if (sortBy === 'daily-losers' || sortBy === 'weekly-losers') {
-                    setSortBy('monthly-losers');
-                  } else {
-                    setSortBy('monthly-gainers');
-                  }
-                }}
-                style={{
-                  padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                  backgroundColor: (sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') ? '#2196F3' : 'transparent',
-                  color: (sortBy === 'monthly-gainers' || sortBy === 'monthly-losers') ? 'white' : theme.ui.text.primary,
-                  border: 'none',
-                  borderRadius: theme.borderRadius.sm,
-                  cursor: 'pointer',
-                  fontSize: theme.typography.fontSize.xs,
-                  fontWeight: theme.typography.fontWeight.semibold,
-                  fontFamily: theme.typography.fontFamily,
-                  transition: `all ${theme.transition.normal}`
-                }}
-              >
-                M
-              </button>
-            </div>
-
-            {/* Gainers Button */}
-            <button
-              onClick={() => {
-                // Toggle gainers based on current timeframe
-                if (sortBy === 'daily-gainers') {
-                  setSortBy('');
-                } else if (sortBy === 'weekly-gainers') {
-                  setSortBy('');
-                } else if (sortBy === 'monthly-gainers') {
-                  setSortBy('');
-                } else if (sortBy === 'daily-losers') {
-                  setSortBy('daily-gainers');
-                } else if (sortBy === 'weekly-losers') {
-                  setSortBy('weekly-gainers');
-                } else if (sortBy === 'monthly-losers') {
-                  setSortBy('monthly-gainers');
-                } else {
-                  setSortBy('daily-gainers');
-                }
-              }}
-              style={{
-                padding: `${theme.spacing.xs} ${theme.spacing.md}`,
-                backgroundColor: (sortBy === 'daily-gainers' || sortBy === 'weekly-gainers' || sortBy === 'monthly-gainers') ? '#28a745' : 'transparent',
-                color: (sortBy === 'daily-gainers' || sortBy === 'weekly-gainers' || sortBy === 'monthly-gainers') ? 'white' : '#28a745',
-                border: `2px solid #28a745`,
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontFamily: theme.typography.fontFamily,
-                transition: `all ${theme.transition.normal}`,
-                whiteSpace: 'nowrap'
-              }}
-            >
-              Gainers
-            </button>
-
-            {/* Losers Button */}
-            <button
-              onClick={() => {
-                // Toggle losers based on current timeframe
-                if (sortBy === 'daily-losers') {
-                  setSortBy('');
-                } else if (sortBy === 'weekly-losers') {
-                  setSortBy('');
-                } else if (sortBy === 'monthly-losers') {
-                  setSortBy('');
-                } else if (sortBy === 'daily-gainers') {
-                  setSortBy('daily-losers');
-                } else if (sortBy === 'weekly-gainers') {
-                  setSortBy('weekly-losers');
-                } else if (sortBy === 'monthly-gainers') {
-                  setSortBy('monthly-losers');
-                } else {
-                  setSortBy('daily-losers');
-                }
-              }}
-              style={{
-                padding: `${theme.spacing.xs} ${theme.spacing.md}`,
-                backgroundColor: (sortBy === 'daily-losers' || sortBy === 'weekly-losers' || sortBy === 'monthly-losers') ? '#dc3545' : 'transparent',
-                color: (sortBy === 'daily-losers' || sortBy === 'weekly-losers' || sortBy === 'monthly-losers') ? 'white' : '#dc3545',
-                border: `2px solid #dc3545`,
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontFamily: theme.typography.fontFamily,
-                transition: `all ${theme.transition.normal}`,
-                whiteSpace: 'nowrap'
-              }}
-            >
-              Loosers
-            </button>
-          </div>
-        </div>
-
-        {/* Market Value Filter Row */}
-        {/* <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-          gap: theme.spacing.md,
-          marginBottom: theme.spacing.md
-        }}>
-          <button
-            onClick={() => toggleFilter('marketValue', 'under10')}
-            style={{
-              padding: theme.spacing.md,
-              backgroundColor: multiFilters.marketValueFilters.has('under10') ? '#17a2b8' : theme.ui.surface,
-              color: multiFilters.marketValueFilters.has('under10') ? 'white' : '#17a2b8',
-              border: `2px solid #17a2b8`,
-              borderRadius: theme.borderRadius.md,
-              textAlign: 'center',
-              boxShadow: multiFilters.marketValueFilters.has('under10') ? '0 4px 8px rgba(23, 162, 184, 0.3)' : theme.ui.shadow.sm,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.marketValueFilters.has('under10') ? 'translateY(-1px)' : 'none',
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.marketValueFilters.has('under10')) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(23, 162, 184, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.marketValueFilters.has('under10')) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            💎 Under $10M
-          </button>
-
-          <button
-            onClick={() => toggleFilter('marketValue', '10to50')}
-            style={{
-              padding: theme.spacing.md,
-              backgroundColor: multiFilters.marketValueFilters.has('10to50') ? '#20c997' : theme.ui.surface,
-              color: multiFilters.marketValueFilters.has('10to50') ? 'white' : '#20c997',
-              border: `2px solid #20c997`,
-              borderRadius: theme.borderRadius.md,
-              textAlign: 'center',
-              boxShadow: multiFilters.marketValueFilters.has('10to50') ? '0 4px 8px rgba(32, 201, 151, 0.3)' : theme.ui.shadow.sm,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.marketValueFilters.has('10to50') ? 'translateY(-1px)' : 'none',
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.marketValueFilters.has('10to50')) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(32, 201, 151, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.marketValueFilters.has('10to50')) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            🚀 $10M - $50M
-          </button>
-
-          <button
-            onClick={() => toggleFilter('marketValue', '50to100')}
-            style={{
-              padding: theme.spacing.md,
-              backgroundColor: multiFilters.marketValueFilters.has('50to100') ? '#e83e8c' : theme.ui.surface,
-              color: multiFilters.marketValueFilters.has('50to100') ? 'white' : '#e83e8c',
-              border: `2px solid #e83e8c`,
-              borderRadius: theme.borderRadius.md,
-              textAlign: 'center',
-              boxShadow: multiFilters.marketValueFilters.has('50to100') ? '0 4px 8px rgba(232, 62, 140, 0.3)' : theme.ui.shadow.sm,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.marketValueFilters.has('50to100') ? 'translateY(-1px)' : 'none',
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.marketValueFilters.has('50to100')) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(232, 62, 140, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.marketValueFilters.has('50to100')) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            💰 $50M - $100M
-          </button>
-
-          <button
-            onClick={() => toggleFilter('marketValue', 'over100')}
-            style={{
-              padding: theme.spacing.md,
-              backgroundColor: multiFilters.marketValueFilters.has('over100') ? '#6610f2' : theme.ui.surface,
-              color: multiFilters.marketValueFilters.has('over100') ? 'white' : '#6610f2',
-              border: `2px solid #6610f2`,
-              borderRadius: theme.borderRadius.md,
-              textAlign: 'center',
-              boxShadow: multiFilters.marketValueFilters.has('over100') ? '0 4px 8px rgba(102, 16, 242, 0.3)' : theme.ui.shadow.sm,
-              cursor: 'pointer',
-              transition: `all ${theme.transition.normal}`,
-              transform: multiFilters.marketValueFilters.has('over100') ? 'translateY(-1px)' : 'none',
-              fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.semibold
-            }}
-            onMouseEnter={(e) => {
-              if (!multiFilters.marketValueFilters.has('over100')) {
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(102, 16, 242, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!multiFilters.marketValueFilters.has('over100')) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
-              }
-            }}
-          >
-            🏆 Over $100M
-          </button>
-        </div> */}
       </div>
 
       {/* Content Section */}
@@ -1848,6 +1134,33 @@ const Dashboard: React.FC = () => {
         onSave={handleSaveTickers}
         onAddNew={handleAddNewTickers}
         currentTickers={tickers}
+      />
+
+      {/* Filter Panel */}
+      <FilterPanel
+        isOpen={filterPanelOpen}
+        onClose={() => setFilterPanelOpen(false)}
+        filters={multiFilters}
+        onToggleFilter={toggleFilter}
+        onClearFilters={clearAllFilters}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={(sort: string) => {
+          if (sort === 'CLEAR_ALL') {
+            setSortOrder([]);
+            setSortBy('');
+          } else if (sortOrder.includes(sort)) {
+            const newSortOrder = sortOrder.filter(s => s !== sort);
+            setSortOrder(newSortOrder);
+            // Set sortBy to the first remaining sort or empty
+            setSortBy(newSortOrder.length > 0 ? newSortOrder[0] : '');
+          } else {
+            const newSortOrder = [...sortOrder, sort];
+            setSortOrder(newSortOrder);
+            setSortBy(sort); // Set the most recently added sort as active
+          }
+        }}
+        availableSectors={availableSectors}
       />
 
       {/* Add CSS for spinning animation */}
