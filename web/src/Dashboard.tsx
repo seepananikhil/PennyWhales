@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
     ipoDate: Set<string>;
   }>({
     fireLevels: new Set([5, 4, 3]),
-    priceFilters: new Set(['under3']),
+    priceFilters: new Set(),
     marketValueFilters: new Set(),
     sectors: new Set(),
     employeeCount: new Set(),
@@ -392,9 +392,13 @@ const Dashboard: React.FC = () => {
     // Auto-set activeFilter based on whether we have any filters
     // Check the updated state by calculating hasFilters separately
     setActiveFilter(prev => {
-      const newFiltersSize = (type === 'fire' ? (multiFilters.fireLevels.has(value as number) ? multiFilters.fireLevels.size - 1 : multiFilters.fireLevels.size + 1) : multiFilters.fireLevels.size) +
-                             (type === 'price' ? (multiFilters.priceFilters.has(value as string) ? multiFilters.priceFilters.size - 1 : multiFilters.priceFilters.size + 1) : multiFilters.priceFilters.size) +
-                             (type === 'marketValue' ? (multiFilters.marketValueFilters.has(value as string) ? multiFilters.marketValueFilters.size - 1 : multiFilters.marketValueFilters.size + 1) : multiFilters.marketValueFilters.size);
+      const newFiltersSize = 
+        (type === 'fire' ? (multiFilters.fireLevels.has(value as number) ? multiFilters.fireLevels.size - 1 : multiFilters.fireLevels.size + 1) : multiFilters.fireLevels.size) +
+        (type === 'price' ? (multiFilters.priceFilters.has(value as string) ? multiFilters.priceFilters.size - 1 : multiFilters.priceFilters.size + 1) : multiFilters.priceFilters.size) +
+        (type === 'marketValue' ? (multiFilters.marketValueFilters.has(value as string) ? multiFilters.marketValueFilters.size - 1 : multiFilters.marketValueFilters.size + 1) : multiFilters.marketValueFilters.size) +
+        (type === 'sector' ? (multiFilters.sectors.has(value as string) ? multiFilters.sectors.size - 1 : multiFilters.sectors.size + 1) : multiFilters.sectors.size) +
+        (type === 'employee' ? (multiFilters.employeeCount.has(value as string) ? multiFilters.employeeCount.size - 1 : multiFilters.employeeCount.size + 1) : multiFilters.employeeCount.size) +
+        (type === 'ipo' ? (multiFilters.ipoDate.has(value as string) ? multiFilters.ipoDate.size - 1 : multiFilters.ipoDate.size + 1) : multiFilters.ipoDate.size);
       
       return newFiltersSize > 0 ? 'multifilter' : 'anyfire';
     });
@@ -471,16 +475,16 @@ const Dashboard: React.FC = () => {
         
         return Array.from(multiFilters.priceFilters).some(priceFilter => {
           switch (priceFilter) {
-            case 'under3':
-              return stock.price < 3.0;
+            case 'under1':
+              return stock.price < 1.0;
+            case '1to3':
+              return stock.price >= 1.0 && stock.price < 3.0;
             case '3to5':
               return stock.price >= 3.0 && stock.price < 5.0;
             case '5to10':
               return stock.price >= 5.0 && stock.price < 10.0;
-            case '10to15':
-              return stock.price >= 10.0 && stock.price < 15.0;
-            case 'over15':
-              return stock.price >= 15.0;
+            case 'over10':
+              return stock.price >= 10.0;
             default:
               return true;
           }
@@ -494,19 +498,28 @@ const Dashboard: React.FC = () => {
         const stock = stockData.get(ticker);
         if (!stock) return false;
         
-       
-        const marketCap = stock.market_cap || 0;
+        const marketCap = stock.market_cap;
+        
+        // Skip stocks without market cap data
+        if (marketCap === null || marketCap === undefined || marketCap === 0) return false;
         
         return Array.from(multiFilters.marketValueFilters).some(marketValueFilter => {
           switch (marketValueFilter) {
-            case 'under10':
-              return marketCap < 10;
-            case '10to50':
-              return marketCap >= 10 && marketCap  < 50;
-            case '50to100':
-              return marketCap >= 50 && marketCap < 100;
-            case 'over100':
-              return marketCap >= 100;
+            case 'nano':
+              // Nano cap: < $50M
+              return marketCap < 50;
+            case 'micro':
+              // Micro cap: $50M - $300M
+              return marketCap >= 50 && marketCap < 300;
+            case 'small':
+              // Small cap: $300M - $2B
+              return marketCap >= 300 && marketCap < 2000;
+            case 'mid':
+              // Mid cap: $2B - $10B
+              return marketCap >= 2000 && marketCap < 10000;
+            case 'large':
+              // Large cap: $10B+
+              return marketCap >= 10000;
             default:
               return true;
           }
@@ -529,18 +542,23 @@ const Dashboard: React.FC = () => {
         const stock = stockData.get(ticker);
         if (!stock) return false;
         
-        const employees = stock.employee_count || 0;
+        const employees = stock.employee_count;
+        
+        // Skip stocks without employee count data
+        if (employees === null || employees === undefined || employees === 0) return false;
         
         return Array.from(multiFilters.employeeCount).some(employeeFilter => {
           switch (employeeFilter) {
-            case 'under100':
-              return employees > 0 && employees < 100;
-            case '100to500':
-              return employees >= 100 && employees < 500;
-            case '500to1000':
-              return employees >= 500 && employees < 1000;
-            case 'over1000':
-              return employees >= 1000;
+            case 'under50':
+              return employees < 50;
+            case '50to200':
+              return employees >= 50 && employees < 200;
+            case '200to1000':
+              return employees >= 200 && employees < 1000;
+            case '1000to5000':
+              return employees >= 1000 && employees < 5000;
+            case 'over5000':
+              return employees >= 5000;
             default:
               return true;
           }
@@ -944,7 +962,7 @@ const Dashboard: React.FC = () => {
             }}>
               {filteredStocks.length} {filteredStocks.length === 1 ? 'Stock' : 'Stocks'}
             </span>
-            {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0) && (
+            {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0 || multiFilters.sectors.size > 0 || multiFilters.employeeCount.size > 0 || multiFilters.ipoDate.size > 0) && (
               <span style={{
                 fontSize: theme.typography.fontSize.sm,
                 backgroundColor: theme.status.info,
@@ -953,7 +971,7 @@ const Dashboard: React.FC = () => {
                 borderRadius: theme.borderRadius.md,
                 fontWeight: theme.typography.fontWeight.medium
               }}>
-                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size} filters active
+                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size + multiFilters.sectors.size + multiFilters.employeeCount.size + multiFilters.ipoDate.size} filters active
               </span>
             )}
           </h1>

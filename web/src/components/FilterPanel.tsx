@@ -282,11 +282,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           {/* Price */}
           <FilterSection title="Price" icon={FaDollarSign({})}>
             {[
-              { id: 'under3', label: '< $3' },
+              { id: 'under1', label: '< $1' },
+              { id: '1to3', label: '$1 - $3' },
               { id: '3to5', label: '$3 - $5' },
               { id: '5to10', label: '$5 - $10' },
-              { id: '10to15', label: '$10 - $15' },
-              { id: 'over15', label: '$15+' }
+              { id: 'over10', label: '$10+' }
             ].map(opt => (
               <FilterChip
                 key={opt.id}
@@ -301,10 +301,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           {/* Market Cap */}
           <FilterSection title="Market Cap" icon={FaBriefcase({})}>
             {[
-              { id: 'under10', label: '< $10M' },
-              { id: '10to50', label: '$10M - $50M' },
-              { id: '50to100', label: '$50M - $100M' },
-              { id: 'over100', label: '$100M+' }
+              { id: 'nano', label: '🔬 Nano (< $50M)' },
+              { id: 'micro', label: '💎 Micro ($50M - $300M)' },
+              { id: 'small', label: '📊 Small ($300M - $2B)' },
+              { id: 'mid', label: '🏢 Mid ($2B - $10B)' },
+              { id: 'large', label: '🏛️ Large ($10B+)' }
             ].map(opt => (
               <FilterChip
                 key={opt.id}
@@ -336,10 +337,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           {/* Employee Count */}
           <FilterSection title="Employees" icon={FaUsers({})}>
             {[
-              { id: 'under100', label: '< 100' },
-              { id: '100to500', label: '100 - 500' },
-              { id: '500to1000', label: '500 - 1k' },
-              { id: 'over1000', label: '1k+' }
+              { id: 'under50', label: '🔬 Micro (< 50)' },
+              { id: '50to200', label: '🏠 Small (50 - 200)' },
+              { id: '200to1000', label: '🏢 Medium (200 - 1k)' },
+              { id: '1000to5000', label: '🏭 Large (1k - 5k)' },
+              { id: 'over5000', label: '🏛️ Enterprise (5k+)' }
             ].map(opt => (
               <FilterChip
                 key={opt.id}
