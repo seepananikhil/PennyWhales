@@ -161,7 +161,8 @@ const StockCard: React.FC<StockCardProps> = ({
   }, [livePrice]);
 
   // Visibility-based live price fetching
-  // Only fetch if card is visible for 3+ seconds (avoids auto-scroll triggers)
+  // Fetch if card is visible for 1.5+ seconds (avoids auto-scroll triggers)
+  // Re-fetches every time card becomes visible again
   useEffect(() => {
     if (livePrice) {
       // If live price is provided from parent, don't fetch independently
@@ -169,19 +170,17 @@ const StockCard: React.FC<StockCardProps> = ({
     }
 
     let visibilityTimer: NodeJS.Timeout | null = null;
-    let hasFetched = false;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasFetched) {
+          if (entry.isIntersecting) {
             // Card is visible - wait 1.5 seconds before fetching
             visibilityTimer = setTimeout(() => {
               fetchLivePrice();
-              hasFetched = true;
             }, 1500);
           } else if (!entry.isIntersecting && visibilityTimer) {
-            // Card left viewport before 3 seconds - cancel fetch
+            // Card left viewport before 1.5 seconds - cancel fetch
             clearTimeout(visibilityTimer);
             visibilityTimer = null;
           }
