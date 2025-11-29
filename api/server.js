@@ -11,6 +11,7 @@ const { getStockPriceData } = require("./priceUtils");
 const { scrapeFinvizScreener } = require("./finvizScraper");
 const alertChecker = require("./alertChecker");
 const telegramService = require("./telegramService");
+const { analyzeStock } = require("./llmAnalyzer");
 
 // Make fetch available for Node.js if not available
 if (typeof fetch === "undefined") {
@@ -754,6 +755,40 @@ app.get("/api/tickers", async (req, res) => {
   } catch (error) {
     console.error("Error getting tickers:", error);
     res.status(500).json({ error: "Failed to get tickers" });
+  }
+});
+
+// AI Analysis Endpoint
+app.post("/api/analyze/:ticker", async (req, res) => {
+  try {
+    const { ticker } = req.params;
+    
+    // Get stock data from database
+    const scanResults = await dbService.getScanResults();
+    const stock = scanResults.stocks.find(s => s.ticker.toUpperCase() === ticker.toUpperCase());
+    
+    if (!stock) {
+      return res.status(404).json({ error: `Stock ${ticker} not found in database` });
+    }
+    
+    console.log(`🤖 Analyzing ${ticker} with AI...`);
+    
+    // Get AI analysis
+    const analysis = await analyzeStock(stock);
+    
+    res.json({
+      ticker: stock.ticker,
+      analysis: analysis.analysis,
+      responseTime: analysis.responseTime,
+      tokensUsed: analysis.tokensUsed,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Error analyzing stock:", error);
+    res.status(500).json({ 
+      error: "Failed to analyze stock",
+      message: error.message 
+    });
   }
 });
 

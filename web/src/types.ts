@@ -18,6 +18,8 @@ export interface Stock {
   sector?: string; // Sector from Finviz
   industry?: string; // Industry from Finviz
   description?: string; // Company description
+  inst_own?: number; // Total institutional ownership %
+  inst_trans?: number; // Institutional transaction % (positive = buying, negative = selling)
   blackrock_source: string;
   vanguard_source: string;
   data_quality: string;

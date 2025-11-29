@@ -87,6 +87,149 @@ async function scrapeFinvizScreener(url = process.env.FINVIZ_SCREENER_URL || 'ht
 }
 
 /**
+ * Helper function to extract performance percentage from Finviz HTML
+ * @param {string} html - HTML content
+ * @param {string} label - Performance label (e.g., "Perf Week", "Perf Month")
+ * @returns {number|null} Performance percentage as float or null
+ */
+function extractPerformance(html, label) {
+  const pattern = new RegExp(`>${label}</td>[\\s\\S]*?<span[^>]*>([-+]?\\d+\\.?\\d*)%</span>`);
+  const match = html.match(pattern);
+  return match ? parseFloat(match[1]) : null;
+}
+
+/**
+ * Helper function to extract numeric values from HTML
+ */
+function extractValue(html, label, occurrence = 1) {
+  try {
+    const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`>${escapedLabel}<\\/td><td[^>]*class="snapshot-td2[^"]*"[^>]*>(?:<b>)?([^<]+)(?:<\\/b>)?<\\/td>`, 'g');
+    
+    let match;
+    let count = 0;
+    while ((match = pattern.exec(html)) !== null) {
+      count++;
+      if (count === occurrence) {
+        const value = match[1].trim();
+        if (value === '-' || value === '') return null;
+        
+        // Parse numeric values with suffixes (M, B, T)
+        const numMatch = value.match(/([-+]?\d+\.?\d*)\s*([MBT])?/);
+        if (numMatch) {
+          let num = parseFloat(numMatch[1]);
+          const suffix = numMatch[2];
+          
+          if (suffix === 'M') return num;
+          if (suffix === 'B') return num * 1000;
+          if (suffix === 'T') return num * 1000000;
+          
+          return num;
+        }
+        
+        return value;
+      }
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Helper function to extract percentage values
+ */
+function extractPercent(html, label, occurrence = 1) {
+  try {
+    const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`>${escapedLabel}<\\/td><td[^>]*class="snapshot-td2[^"]*"[^>]*>(?:<b>)?([^<]+)(?:<\\/b>)?<\\/td>`, 'g');
+    
+    let match;
+    let count = 0;
+    while ((match = pattern.exec(html)) !== null) {
+      count++;
+      if (count === occurrence) {
+        const value = match[1].trim();
+        if (value === '-' || value === '') return null;
+        
+        // Extract percentage from the value (look for pattern like "+24.62%" or "-5.23%")
+        const percentMatch = value.match(/([-+]?\d+\.?\d*)%/);
+        if (percentMatch) {
+          return parseFloat(percentMatch[1]);
+        }
+        
+        return null;
+      }
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Helper function to extract text values
+ */
+function extractText(html, label) {
+  try {
+    const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`>${escapedLabel}<\\/td><td[^>]*class="snapshot-td2[^"]*"[^>]*>(?:<b>)?([^<]+)(?:<\\/b>)?<\\/td>`);
+    const match = html.match(pattern);
+    
+    if (match) {
+      const text = match[1].trim();
+      return text === '-' ? null : text;
+    }
+    
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Extract sector from HTML
+ */
+function extractSector(html) {
+  try {
+    const match = html.match(/<a[^>]*href="[^"]*f=sec_[^"]*"[^>]*class="tab-link"[^>]*>([^<]+)<\/a>/);
+    return match ? match[1].trim() : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Extract industry from HTML
+ */
+function extractIndustry(html) {
+  try {
+    const match = html.match(/<a[^>]*href="[^"]*f=ind_[^"]*"[^>]*class="tab-link[^"]*"[^>]*>([^<]+)<\/a>/);
+    return match ? match[1].trim() : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Extract volatility (weekly, monthly)
+ */
+function extractVolatility(html) {
+  try {
+    const match = html.match(/>Volatility<\/td>[\s\S]*?<b>([\d.]+)%\s+([\d.]+)%<\/b>/);
+    if (match) {
+      return {
+        week: parseFloat(match[1]),
+        month: parseFloat(match[2])
+      };
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
  * Get ticker data from Finviz (performance, employee count, IPO date, sector, industry)
  * and company description from Yahoo Finance
  * @param {string} ticker - Stock ticker symbol
@@ -106,27 +249,12 @@ async function getFinvizTickerData(ticker) {
     if (response.status !== 200) return null;
     const html = response.data;
     
-    // Parse performance data from HTML
+    // Parse performance data from HTML using the tested helper function
     const performance = {
-      week: null,
-      month: null,
-      year: null
+      week: extractPerformance(html, 'Perf Week'),
+      month: extractPerformance(html, 'Perf Month'),
+      year: extractPerformance(html, 'Perf Year')
     };
-
-    // Find performance table rows - the percentage is in a <span> tag within the next <td> after the label
-    const perfWeekMatch = html.match(/Perf Week<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<span[^>]*>([-+]?\d+\.?\d*%)<\/span>/);
-    const perfMonthMatch = html.match(/Perf Month<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<span[^>]*>([-+]?\d+\.?\d*%)<\/span>/);
-    const perfYearMatch = html.match(/Perf Year<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<span[^>]*>([-+]?\d+\.?\d*%)<\/span>/);
-
-    if (perfWeekMatch) {
-      performance.week = parseFloat(perfWeekMatch[1].replace('%', ''));
-    }
-    if (perfMonthMatch) {
-      performance.month = parseFloat(perfMonthMatch[1].replace('%', ''));
-    }
-    if (perfYearMatch) {
-      performance.year = parseFloat(perfYearMatch[1].replace('%', ''));
-    }
 
     // Parse employee count from HTML
     let employeeCount = null;
@@ -195,6 +323,10 @@ async function getFinvizTickerData(ticker) {
       }
     }
 
+    // Parse institutional ownership and transactions
+    const instOwn = extractPercent(html, 'Inst Own');
+    const instTrans = extractPercent(html, 'Inst Trans');
+
     return {
       performance,
       employee_count: employeeCount,
@@ -202,10 +334,160 @@ async function getFinvizTickerData(ticker) {
       sector: sector,
       industry: industry,
       market_cap: marketCap,
-      description: description
+      description: description,
+      inst_own: instOwn,
+      inst_trans: instTrans
     };
   } catch (error) {
     console.error(`Error fetching Finviz data for ${ticker}:`, error.message);
+    return null;
+  }
+}
+
+/**
+ * Extract comprehensive fundamental and technical data from Finviz
+ * @param {string} ticker - Stock ticker symbol
+ * @returns {Promise<Object>} Comprehensive stock data
+ */
+async function getComprehensiveFinvizData(ticker) {
+  try {
+    const response = await axios.get(
+      `https://finviz.com/quote.ashx?t=${ticker}&p=d`,
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      }
+    );
+
+    if (response.status !== 200) return null;
+    const html = response.data;
+    
+    const data = {
+      // Valuation Metrics
+      valuation: {
+        marketCap: extractValue(html, 'Market Cap'),
+        enterpriseValue: extractValue(html, 'Enterprise Value'),
+        pe: extractValue(html, 'P/E'),
+        forwardPE: extractValue(html, 'Forward P/E'),
+        peg: extractValue(html, 'PEG'),
+        ps: extractValue(html, 'P/S'),
+        pb: extractValue(html, 'P/B'),
+        pc: extractValue(html, 'P/C'),
+        pFcf: extractValue(html, 'P/FCF'),
+        evEbitda: extractValue(html, 'EV/EBITDA'),
+        evSales: extractValue(html, 'EV/Sales')
+      },
+      
+      // Profitability Metrics
+      profitability: {
+        income: extractValue(html, 'Income'),
+        sales: extractValue(html, 'Sales'),
+        roa: extractPercent(html, 'ROA'),
+        roe: extractPercent(html, 'ROE'),
+        roic: extractPercent(html, 'ROIC'),
+        grossMargin: extractPercent(html, 'Gross Margin'),
+        operMargin: extractPercent(html, 'Oper. Margin'),
+        profitMargin: extractPercent(html, 'Profit Margin')
+      },
+      
+      // EPS Metrics
+      eps: {
+        ttm: extractValue(html, 'EPS \\(ttm\\)'),
+        nextY: extractValue(html, 'EPS next Y'),
+        nextQ: extractValue(html, 'EPS next Q'),
+        thisYGrowth: extractPercent(html, 'EPS this Y'),
+        nextYGrowth: extractPercent(html, 'EPS next Y', 2), // 2nd occurrence
+        next5Y: extractPercent(html, 'EPS next 5Y'),
+        past5Y: extractPercent(html, 'EPS past 5Y'),
+        yoyTTM: extractPercent(html, 'EPS Y/Y TTM'),
+        qoq: extractPercent(html, 'EPS Q/Q')
+      },
+      
+      // Sales Growth
+      salesGrowth: {
+        past5Y: extractPercent(html, 'Sales past 5Y'),
+        yoyTTM: extractPercent(html, 'Sales Y/Y TTM'),
+        qoq: extractPercent(html, 'Sales Q/Q')
+      },
+      
+      // Ownership & Float
+      ownership: {
+        insiderOwn: extractPercent(html, 'Insider Own'),
+        insiderTrans: extractPercent(html, 'Insider Trans'),
+        instOwn: extractPercent(html, 'Inst Own'),
+        instTrans: extractPercent(html, 'Inst Trans'),
+        sharesOutstanding: extractValue(html, 'Shs Outstand'),
+        sharesFloat: extractValue(html, 'Shs Float'),
+        shortFloat: extractPercent(html, 'Short Float'),
+        shortRatio: extractValue(html, 'Short Ratio'),
+        shortInterest: extractValue(html, 'Short Interest')
+      },
+      
+      // Technical Indicators
+      technical: {
+        beta: extractValue(html, 'Beta'),
+        atr: extractValue(html, 'ATR'),
+        rsi: extractValue(html, 'RSI'),
+        sma20: extractPercent(html, 'SMA20'),
+        sma50: extractPercent(html, 'SMA50'),
+        sma200: extractPercent(html, 'SMA200'),
+        week52High: extractValue(html, '52W High'),
+        week52Low: extractValue(html, '52W Low'),
+        volatility: extractVolatility(html)
+      },
+      
+      // Performance
+      performance: {
+        week: extractPerformance(html, 'Perf Week'),
+        month: extractPerformance(html, 'Perf Month'),
+        quarter: extractPerformance(html, 'Perf Quarter'),
+        halfYear: extractPerformance(html, 'Perf Half Y'),
+        ytd: extractPerformance(html, 'Perf YTD'),
+        year: extractPerformance(html, 'Perf Year'),
+        threeYear: extractPerformance(html, 'Perf 3Y'),
+        fiveYear: extractPerformance(html, 'Perf 5Y')
+      },
+      
+      // Balance Sheet
+      balanceSheet: {
+        bookPerShare: extractValue(html, 'Book/sh'),
+        cashPerShare: extractValue(html, 'Cash/sh'),
+        quickRatio: extractValue(html, 'Quick Ratio'),
+        currentRatio: extractValue(html, 'Current Ratio'),
+        debtToEquity: extractValue(html, 'Debt/Eq'),
+        ltDebtToEquity: extractValue(html, 'LT Debt/Eq')
+      },
+      
+      // Company Info
+      company: {
+        employees: extractValue(html, 'Employees'),
+        ipoDate: extractText(html, 'IPO'),
+        sector: extractSector(html),
+        industry: extractIndustry(html)
+      },
+      
+      // Analyst Info
+      analyst: {
+        recommendation: extractValue(html, 'Recom'),
+        targetPrice: extractValue(html, 'Target Price')
+      },
+      
+      // Volume & Price
+      trading: {
+        avgVolume: extractValue(html, 'Avg Volume'),
+        volume: extractValue(html, 'Volume'),
+        relVolume: extractValue(html, 'Rel Volume'),
+        price: extractValue(html, 'Price'),
+        change: extractPercent(html, 'Change'),
+        prevClose: extractValue(html, 'Prev Close')
+      }
+    };
+    
+    return data;
+    
+  } catch (error) {
+    console.error(`Error fetching comprehensive Finviz data for ${ticker}:`, error.message);
     return null;
   }
 }
@@ -214,4 +496,5 @@ async function getFinvizTickerData(ticker) {
 module.exports = {
   scrapeFinvizScreener,
   getFinvizTickerData,
+  getComprehensiveFinvizData
 };

@@ -3,7 +3,7 @@ import { Stock } from "../types";
 import { theme, getFireLevelStyle, getSectorStyle } from "../theme";
 import api from "../api";
 import { SiTradingview } from "react-icons/si";
-import { FaBell, FaBellSlash } from "react-icons/fa";
+import { FaBell, FaBellSlash, FaBrain } from "react-icons/fa";
 import { MdDelete, MdDeleteForever } from "react-icons/md";
 import PriceAlertModal from "./PriceAlertModal";
 
@@ -68,6 +68,9 @@ const StockCard: React.FC<StockCardProps> = ({
   const [hasAlerts, setHasAlerts] = useState(false);
   const [alertCheckKey, setAlertCheckKey] = useState(0);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+  const [aiAnalysis, setAIAnalysis] = useState<string | null>(null);
+  const [aiLoading, setAILoading] = useState(false);
 
   const fireLevel = stock.fire_level || 0;
   const fireStyle = getFireLevelStyle(fireLevel);
@@ -107,6 +110,27 @@ const StockCard: React.FC<StockCardProps> = ({
     setShowAlertModal(false);
     // Trigger re-check of alerts when modal closes
     setAlertCheckKey((prev) => prev + 1);
+  };
+
+  // Fetch AI analysis
+  const fetchAIAnalysis = async () => {
+    if (aiAnalysis) {
+      // If already loaded, just toggle display
+      setShowAIAnalysis(!showAIAnalysis);
+      return;
+    }
+    
+    try {
+      setAILoading(true);
+      setShowAIAnalysis(true);
+      const data = await api.analyzeStock(stock.ticker);
+      setAIAnalysis(data.analysis);
+    } catch (error) {
+      console.error(`Error fetching AI analysis for ${stock.ticker}:`, error);
+      setAIAnalysis("Failed to load AI analysis. Please try again.");
+    } finally {
+      setAILoading(false);
+    }
   };
 
   // Fetch live price data via proxy API
@@ -598,8 +622,103 @@ const StockCard: React.FC<StockCardProps> = ({
             >
               {hasAlerts ? FaBellSlash({ size: 12 }) : FaBell({ size: 12 })}
             </span>
+            {/* AI Analysis Button */}
+            <span
+              style={{
+                color: showAIAnalysis ? "#7C3AED" : "#8B5CF6",
+                cursor: "pointer",
+                fontSize: "1rem",
+                backgroundColor: showAIAnalysis ? "#EDE9FE" : "#F5F3FF",
+                padding: "3px 4px",
+                borderRadius: "8px",
+                border: showAIAnalysis ? "1px solid #C4B5FD" : "1px solid #DDD6FE",
+                boxShadow: showAIAnalysis
+                  ? "0 1px 2px rgba(124,58,237,0.2)"
+                  : "0 1px 2px rgba(139,92,246,0.2)",
+                display: "inline-flex",
+                alignItems: "center",
+                transition: "all 0.2s ease",
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                fetchAIAnalysis();
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.1)";
+                e.currentTarget.style.backgroundColor = "#DDD6FE";
+                e.currentTarget.style.color = "#6D28D9";
+                e.currentTarget.style.boxShadow = "0 2px 4px rgba(124,58,237,0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.backgroundColor = showAIAnalysis ? "#EDE9FE" : "#F5F3FF";
+                e.currentTarget.style.color = showAIAnalysis ? "#7C3AED" : "#8B5CF6";
+                e.currentTarget.style.boxShadow = showAIAnalysis
+                  ? "0 1px 2px rgba(124,58,237,0.2)"
+                  : "0 1px 2px rgba(139,92,246,0.2)";
+              }}
+              title={aiLoading ? "Loading AI analysis..." : showAIAnalysis ? "Hide AI analysis" : "Get AI analysis"}
+            >
+              {aiLoading ? (
+                <span style={{ animation: "pulse 1.5s ease-in-out infinite" }}>🔄</span>
+              ) : (
+                FaBrain({ size: 12 })
+              )}
+            </span>
           </div>
         </div>
+
+        {/* AI Analysis Section */}
+        {showAIAnalysis && aiAnalysis && (
+          <div
+            style={{
+              marginBottom: "8px",
+              padding: "10px",
+              backgroundColor: "#F5F3FF",
+              border: "2px solid #8B5CF6",
+              borderRadius: "8px",
+              fontSize: "0.85rem",
+              lineHeight: "1.5",
+              color: "#333",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "8px",
+                paddingBottom: "6px",
+                borderBottom: "1px solid #DDD6FE",
+              }}
+            >
+              <span style={{ fontWeight: "bold", color: "#7C3AED", fontSize: "0.9rem" }}>
+                🤖 AI Analysis
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAIAnalysis(false);
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#8B5CF6",
+                  cursor: "pointer",
+                  fontSize: "1.2rem",
+                  padding: "0 4px",
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ whiteSpace: "pre-wrap" }}>
+              {aiAnalysis}
+            </div>
+          </div>
+        )}
 
         {/* Price Section */}
         <div
@@ -738,7 +857,7 @@ const StockCard: React.FC<StockCardProps> = ({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
+            gridTemplateColumns: "1fr 1fr 1fr 1fr",
             gap: "8px",
             marginBottom: "6px",
           }}
@@ -762,37 +881,14 @@ const StockCard: React.FC<StockCardProps> = ({
             >
               BLACKROCK
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              <div
-                style={{
-                  fontSize: "1rem",
-                  fontWeight: "bold",
-                  color: "#4F46E5",
-                }}
-              >
-                {stock.blackrock_pct.toFixed(1)}%
-              </div>
-              {stock.blackrock_change !== undefined &&
-                stock.blackrock_change !== 0 && (
-                  <div
-                    style={{
-                      fontSize: "0.7rem",
-                      fontWeight: "600",
-                      color:
-                        stock.blackrock_change > 0 ? "#28a745" : "#dc3545",
-                      backgroundColor:
-                        stock.blackrock_change > 0 ? "#d4edda" : "#f8d7da",
-                      padding: "1px 4px",
-                      borderRadius: "3px",
-                      border: `1px solid ${
-                        stock.blackrock_change > 0 ? "#c3e6cb" : "#f5c6cb"
-                      }`,
-                    }}
-                  >
-                    {stock.blackrock_change > 0 ? "+" : ""}
-                    {stock.blackrock_change.toFixed(2)}%
-                  </div>
-                )}
+            <div
+              style={{
+                fontSize: "1rem",
+                fontWeight: "bold",
+                color: "#4F46E5",
+              }}
+            >
+              {stock.blackrock_pct.toFixed(1)}%
             </div>
             {stock.blackrock_market_value &&
               stock.blackrock_market_value > 0 && (
@@ -829,36 +925,14 @@ const StockCard: React.FC<StockCardProps> = ({
             >
               VANGUARD
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              <div
-                style={{
-                  fontSize: "1rem",
-                  fontWeight: "bold",
-                  color: "#4F46E5",
-                }}
-              >
-                {stock.vanguard_pct.toFixed(1)}%
-              </div>
-              {stock.vanguard_change !== undefined &&
-                stock.vanguard_change !== 0 && (
-                  <div
-                    style={{
-                      fontSize: "0.7rem",
-                      fontWeight: "600",
-                      color: stock.vanguard_change > 0 ? "#28a745" : "#dc3545",
-                      backgroundColor:
-                        stock.vanguard_change > 0 ? "#d4edda" : "#f8d7da",
-                      padding: "1px 4px",
-                      borderRadius: "3px",
-                      border: `1px solid ${
-                        stock.vanguard_change > 0 ? "#c3e6cb" : "#f5c6cb"
-                      }`,
-                    }}
-                  >
-                    {stock.vanguard_change > 0 ? "+" : ""}
-                    {stock.vanguard_change.toFixed(2)}%
-                  </div>
-                )}
+            <div
+              style={{
+                fontSize: "1rem",
+                fontWeight: "bold",
+                color: "#4F46E5",
+              }}
+            >
+              {stock.vanguard_pct.toFixed(1)}%
             </div>
             {stock.vanguard_market_value && stock.vanguard_market_value > 0 && (
               <div
@@ -894,36 +968,14 @@ const StockCard: React.FC<StockCardProps> = ({
             >
               STATE ST
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              <div
-                style={{
-                  fontSize: "1rem",
-                  fontWeight: "bold",
-                  color: "#4F46E5",
-                }}
-              >
-                {stock.statestreet_pct ? stock.statestreet_pct.toFixed(1) : '0.0'}%
-              </div>
-              {stock.statestreet_change !== undefined &&
-                stock.statestreet_change !== 0 && (
-                  <div
-                    style={{
-                      fontSize: "0.7rem",
-                      fontWeight: "600",
-                      color: stock.statestreet_change > 0 ? "#28a745" : "#dc3545",
-                      backgroundColor:
-                        stock.statestreet_change > 0 ? "#d4edda" : "#f8d7da",
-                      padding: "1px 4px",
-                      borderRadius: "3px",
-                      border: `1px solid ${
-                        stock.statestreet_change > 0 ? "#c3e6cb" : "#f5c6cb"
-                      }`,
-                    }}
-                  >
-                    {stock.statestreet_change > 0 ? "+" : ""}
-                    {stock.statestreet_change.toFixed(2)}%
-                  </div>
-                )}
+            <div
+              style={{
+                fontSize: "1rem",
+                fontWeight: "bold",
+                color: "#4F46E5",
+              }}
+            >
+              {stock.statestreet_pct ? stock.statestreet_pct.toFixed(1) : '0.0'}%
             </div>
             {stock.statestreet_market_value && stock.statestreet_market_value > 0 && (
               <div
@@ -939,6 +991,54 @@ const StockCard: React.FC<StockCardProps> = ({
               </div>
             )}
           </div>
+
+          {/* Institutional Ownership & Transaction */}
+          {(stock.inst_own !== null && stock.inst_own !== undefined) || 
+           (stock.inst_trans !== null && stock.inst_trans !== undefined) ? (
+            <div
+              style={{
+                backgroundColor: stock.inst_trans && stock.inst_trans > 0 ? "#d4edda" : stock.inst_trans && stock.inst_trans < 0 ? "#f8d7da" : "#f8f9fa",
+                padding: "6px 8px",
+                borderRadius: "6px",
+                border: `1px solid ${stock.inst_trans && stock.inst_trans > 0 ? "#c3e6cb" : stock.inst_trans && stock.inst_trans < 0 ? "#f5c6cb" : "#e9ecef"}`,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "0.7rem",
+                  color: "#6c757d",
+                  fontWeight: "600",
+                  marginBottom: "3px",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                INST. HOLD
+              </div>
+              {stock.inst_own !== null && stock.inst_own !== undefined && (
+                <div
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    color: "#4F46E5",
+                  }}
+                >
+                  {stock.inst_own.toFixed(1)}%
+                </div>
+              )}
+              {stock.inst_trans !== null && stock.inst_trans !== undefined && (
+                <div
+                  style={{
+                    fontSize: "0.85rem",
+                    fontWeight: "600",
+                    color: stock.inst_trans > 0 ? "#28a745" : stock.inst_trans < 0 ? "#dc3545" : "#6c757d",
+                    marginTop: "2px",
+                  }}
+                >
+                  {stock.inst_trans > 0 ? "+" : ""}{stock.inst_trans.toFixed(1)}% {stock.inst_trans > 0 ? "🟢" : stock.inst_trans < 0 ? "🔴" : ""}
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
 
         {/* Performance Metrics */}

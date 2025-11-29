@@ -752,6 +752,22 @@ const Dashboard: React.FC = () => {
                 comparison = dateA - dateB; // Older dates (lower timestamp) first
               }
               break;
+            case 'inst-trans-desc':
+              // Sort by institutional transaction (buying = positive, highest first)
+              comparison = (stockB.inst_trans || 0) - (stockA.inst_trans || 0);
+              break;
+            case 'inst-trans-asc':
+              // Sort by institutional transaction (selling = negative, lowest first)
+              comparison = (stockA.inst_trans || 0) - (stockB.inst_trans || 0);
+              break;
+            case 'inst-own-desc':
+              // Sort by institutional ownership (highest first)
+              comparison = (stockB.inst_own || 0) - (stockA.inst_own || 0);
+              break;
+            case 'inst-own-asc':
+              // Sort by institutional ownership (lowest first)
+              comparison = (stockA.inst_own || 0) - (stockB.inst_own || 0);
+              break;
           }
           
           // If this sort criteria produces a difference, return it

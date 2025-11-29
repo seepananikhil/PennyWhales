@@ -49,6 +49,12 @@ export const api = {
     return response.data;
   },
 
+  // AI Analysis
+  analyzeStock: async (ticker: string): Promise<{ ticker: string; analysis: string; responseTime: string; tokensUsed: any; timestamp: string }> => {
+    const response = await axios.post(`${API_BASE}/api/analyze/${ticker}`);
+    return response.data;
+  },
+
   updateTickers: async (tickers: string[]): Promise<{ success: boolean; tickers: string[]; count: number }> => {
     const response = await axios.put(`${API_BASE}/api/tickers`, { tickers });
     return response.data;

@@ -201,6 +201,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               <option value="ipo-newest">🆕 IPO Date (Newest)</option>
               <option value="ipo-oldest">👴 IPO Date (Oldest)</option>
               <option value="employees-desc">👥 Employees (High to Low)</option>
+              <option value="inst-trans-desc">🟢 Inst. Buying (High to Low)</option>
+              <option value="inst-trans-asc">🔴 Inst. Selling (Low to High)</option>
+              <option value="inst-own-desc">🏢 Inst. Ownership (High to Low)</option>
+              <option value="inst-own-asc">🏢 Inst. Ownership (Low to High)</option>
               <option value="price-asc-combined-desc">🎯 Low Price + High % (Combo)</option>
               {sortOrder.length > 0 && <option value="CLEAR_ALL">❌ Clear All Sorts</option>}
             </select>
@@ -245,6 +249,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                       {sortKey === 'ipo-newest' && 'IPO Date (Newest)'}
                       {sortKey === 'ipo-oldest' && 'IPO Date (Oldest)'}
                       {sortKey === 'employees-desc' && 'Employees (High to Low)'}
+                      {sortKey === 'inst-trans-desc' && 'Inst. Buying (High to Low)'}
+                      {sortKey === 'inst-trans-asc' && 'Inst. Selling (Low to High)'}
+                      {sortKey === 'inst-own-desc' && 'Inst. Ownership (High to Low)'}
+                      {sortKey === 'inst-own-asc' && 'Inst. Ownership (Low to High)'}
                       {sortKey === 'price-asc-combined-desc' && 'Low Price + High %'}
                     </span>
                     <button

@@ -155,6 +155,8 @@ class StockScanner {
       const industry = finvizData?.industry || null;
       const description = finvizData?.description || null;
       const marketCap = finvizData?.market_cap || null;
+      const instOwn = finvizData?.inst_own || null;
+      const instTrans = finvizData?.inst_trans || null;
 
       // Parse holdings and filter by market cap
       const holdings = this.parseHoldings(holdingsData, marketCap);
@@ -184,6 +186,8 @@ class StockScanner {
           sector: sector, // Sector from Finviz
           industry: industry, // Industry from Finviz
           description: description, // Company description from Finviz
+          inst_own: instOwn, // Institutional ownership % from Finviz
+          inst_trans: instTrans, // Institutional transaction % from Finviz (positive = buying)
           performance: performance || { week: null, month: null, year: null }
         }
       };
