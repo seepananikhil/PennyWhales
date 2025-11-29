@@ -119,10 +119,11 @@ Provide COMPREHENSIVE analysis:
 1. Risk Score (1-10, higher=riskier)
 2. Value Score (1-10, higher=better value)
 3. Growth Potential (Low/Medium/High)
-4. Key Insights (2-3 critical observations)
-5. Investment Verdict (STRONG BUY/BUY/HOLD/SELL/STRONG SELL)
+4. Entry Price Recommendation (specific $ target based on support levels, moving averages, and valuation)
+5. Key Insights (2-3 critical observations)
+6. Investment Verdict (STRONG BUY/BUY/HOLD/SELL/STRONG SELL)
 
-Use ALL data points. Be thorough but concise.`;
+Use ALL data points. Be thorough but concise. For entry price, consider: current price vs SMAs, support/resistance levels, RSI overbought/oversold, and intrinsic value indicators.`;
 
   return { prompt, description };
 }
@@ -154,8 +155,9 @@ Provide:
 1. Risk Score (1-10)
 2. Value Score (1-10)
 3. Growth Potential
-4. Key Insight
-5. Verdict (BUY/HOLD/SELL)`;
+4. Entry Price Recommendation (specific $ target)
+5. Key Insight
+6. Verdict (BUY/HOLD/SELL)`;
 }
 
 /**

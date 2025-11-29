@@ -90,20 +90,51 @@ async function autoPopulateHotPicks() {
       )}`
     );
 
-    // Check for stocks under $1.00 and send notification
+    // Check for 5-fire stocks under $1.00 and send separate notification
+    const fire5StocksUnder1 = hotPicks.filter((stock) => stock.fire_level === 5 && stock.price < 1.0);
     const stocksUnder100 = hotPicks.filter((stock) => stock.price < 1.0);
-    console.log(`🔍 Hot Picks check: ${hotPicks.length} total, ${stocksUnder100.length} under $1.00`);
     
-    if (stocksUnder100.length > 0) {
-      console.log(
-        `🔥 Found ${stocksUnder100.length} hot picks under $1.00!`
-      );
+    console.log(`🔍 Hot Picks check: ${hotPicks.length} total, ${stocksUnder100.length} under $1.00, ${fire5StocksUnder1.length} 5-fire under $1.00`);
+    
+    // Get settings to check if Telegram is enabled
+    const settings = await dbService.getSettings();
+    console.log(`🔍 Telegram settings check: chatId=${settings.telegramChatId ? 'configured' : 'NOT configured'}`);
+    
+    if (settings.telegramChatId) {
+      // Send separate notification for 5-fire stocks under $1.00
+      if (fire5StocksUnder1.length > 0) {
+        console.log(`🔥🔥🔥 CRITICAL: Found ${fire5StocksUnder1.length} 5-FIRE stocks under $1.00!`);
+        
+        const fire5StockList = fire5StocksUnder1
+          .map(
+            (stock) =>
+              `• ${stock.ticker}: $${stock.price.toFixed(2)} 🔥🔥🔥🔥🔥\n` +
+              `   BlackRock: ${stock.blackrock_pct.toFixed(1)}% | Vanguard: ${stock.vanguard_pct.toFixed(1)}%\n` +
+              `   📊 [View Chart](https://www.tradingview.com/chart/?symbol=${stock.ticker})`
+          )
+          .join("\n\n");
 
-      // Get settings to check if Telegram is enabled
-      const settings = await dbService.getSettings();
-      console.log(`🔍 Telegram settings check: chatId=${settings.telegramChatId ? 'configured' : 'NOT configured'}`);
+        const fire5Message = `🚨🔥 CRITICAL ALERT: 5-FIRE STOCKS UNDER $1.00! 🔥🚨\n\n${fire5StockList}`;
+
+        try {
+          console.log(`📤 Sending CRITICAL Telegram notification for ${fire5StocksUnder1.length} 5-fire stocks under $1.00...`);
+          await telegramService.sendMessage(settings.telegramChatId, fire5Message);
+          console.log("✅ CRITICAL Telegram notification sent for 5-fire stocks under $1.00");
+        } catch (error) {
+          console.error(
+            "❌ Failed to send CRITICAL Telegram notification:",
+            error.message,
+            error.stack
+          );
+        }
+      }
       
-      if (settings.telegramChatId) {
+      // Send regular notification for all hot picks under $1.00
+      if (stocksUnder100.length > 0) {
+        console.log(
+          `🔥 Found ${stocksUnder100.length} hot picks under $1.00!`
+        );
+
         const stockList = stocksUnder100
           .map(
             (stock) =>
@@ -127,12 +158,12 @@ async function autoPopulateHotPicks() {
           );
         }
       } else {
-        console.log(
-          "⚠️ Telegram chat ID not configured in settings"
-        );
+        console.log(`ℹ️ No hot picks under $1.00 found (all ${hotPicks.length} stocks are >= $1.00)`);
       }
     } else {
-      console.log(`ℹ️ No hot picks under $1.00 found (all ${hotPicks.length} stocks are >= $1.00)`);
+      console.log(
+        "⚠️ Telegram chat ID not configured in settings"
+      );
     }
 
     // Check if "Hot Picks" watchlist exists
