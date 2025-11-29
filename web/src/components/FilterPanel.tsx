@@ -1,6 +1,7 @@
 import React from 'react';
 import { theme, getFireLevelStyle, sectors as sectorConfig } from '../theme';
 import { FaFilter, FaSort, FaTimes, FaFire, FaDollarSign, FaBriefcase, FaCalendarAlt, FaUsers, FaIndustry } from 'react-icons/fa';
+import { BsSortDown, BsSortUp } from 'react-icons/bs';
 
 interface FilterPanelProps {
   isOpen: boolean;
@@ -121,7 +122,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         position: 'fixed',
         top: 0,
         right: isOpen ? 0 : '-400px',
-        width: '380px',
+        width: '320px',
         height: '100vh',
         backgroundColor: theme.ui.surface,
         boxShadow: '-4px 0 16px rgba(0,0,0,0.1)',
@@ -163,113 +164,94 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           
           {/* Sort Section */}
           <FilterSection title="Sort By" icon={FaSort({})}>
-            <select 
-              value="" 
-              onChange={(e) => onSortChange(e.target.value)}
-              style={{
-                width: '100%',
-                padding: theme.spacing.sm,
-                borderRadius: theme.borderRadius.md,
-                border: `1px solid ${theme.ui.border}`,
-                fontSize: '0.9rem',
-                backgroundColor: theme.ui.surface,
-                marginBottom: theme.spacing.sm
-              }}
-            >
-              <option value="">Add Sort Criteria...</option>
-              <option value="combined-desc">🔥 VG + BR + SS % (High to Low)</option>
-              <option value="combined-asc">🔥 VG + BR + SS % (Low to High)</option>
-              <option value="vg-desc">🔄 VG % (High to Low)</option>
-              <option value="vg-asc">🔄 VG % (Low to High)</option>
-              <option value="br-desc">🔄 BR % (High to Low)</option>
-              <option value="br-asc">🔄 BR % (Low to High)</option>
-              <option value="ss-desc">🔄 SS % (High to Low)</option>
-              <option value="ss-asc">🔄 SS % (Low to High)</option>
-              <option value="fire-desc">🔥 Fire Level (High to Low)</option>
-              <option value="price-desc">💰 Price (High to Low)</option>
-              <option value="price-asc">💰 Price (Low to High)</option>
-              <option value="price-change-desc">📈 Price Change % (High to Low)</option>
-              <option value="price-change-asc">📉 Price Change % (Low to High)</option>
-              <option value="market-value-desc">💎 Market Value (High to Low)</option>
-              <option value="market-value-asc">💎 Market Value (Low to High)</option>
-              <option value="daily-gainers">📈 Daily Gainers</option>
-              <option value="daily-losers">📉 Daily Losers</option>
-              <option value="weekly-gainers">📅 Weekly Gainers</option>
-              <option value="weekly-losers">📅 Weekly Losers</option>
-              <option value="monthly-gainers">📅 Monthly Gainers</option>
-              <option value="monthly-losers">📅 Monthly Losers</option>
-              <option value="ipo-newest">🆕 IPO Date (Newest)</option>
-              <option value="ipo-oldest">👴 IPO Date (Oldest)</option>
-              <option value="employees-desc">👥 Employees (High to Low)</option>
-              <option value="inst-trans-desc">🟢 Inst. Buying (High to Low)</option>
-              <option value="inst-trans-asc">🔴 Inst. Selling (Low to High)</option>
-              <option value="inst-own-desc">🏢 Inst. Ownership (High to Low)</option>
-              <option value="inst-own-asc">🏢 Inst. Ownership (Low to High)</option>
-              <option value="price-asc-combined-desc">🎯 Low Price + High % (Combo)</option>
-              {sortOrder.length > 0 && <option value="CLEAR_ALL">❌ Clear All Sorts</option>}
-            </select>
-
-            {/* Active Sorts Display */}
-            {sortOrder.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {sortOrder.map((sortKey, index) => (
-                  <div key={sortKey} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '6px 10px',
-                    backgroundColor: `${theme.status.info}15`,
-                    borderRadius: theme.borderRadius.sm,
-                    fontSize: '0.85rem',
-                    border: `1px solid ${theme.status.info}30`
-                  }}>
-                    <span style={{ fontWeight: 600, color: theme.status.info, marginRight: '8px' }}>{index + 1}.</span>
-                    <span style={{ flex: 1 }}>
-                      {sortKey === 'combined-desc' && 'VG + BR + SS % (High to Low)'}
-                      {sortKey === 'combined-asc' && 'VG + BR + SS % (Low to High)'}
-                      {sortKey === 'vg-desc' && 'VG % (High to Low)'}
-                      {sortKey === 'vg-asc' && 'VG % (Low to High)'}
-                      {sortKey === 'br-desc' && 'BR % (High to Low)'}
-                      {sortKey === 'br-asc' && 'BR % (Low to High)'}
-                      {sortKey === 'ss-desc' && 'SS % (High to Low)'}
-                      {sortKey === 'ss-asc' && 'SS % (Low to High)'}
-                      {sortKey === 'fire-desc' && 'Fire Level (High to Low)'}
-                      {sortKey === 'price-desc' && 'Price (High to Low)'}
-                      {sortKey === 'price-asc' && 'Price (Low to High)'}
-                      {sortKey === 'price-change-desc' && 'Price Change % (High to Low)'}
-                      {sortKey === 'price-change-asc' && 'Price Change % (Low to High)'}
-                      {sortKey === 'market-value-desc' && 'Market Value (High to Low)'}
-                      {sortKey === 'market-value-asc' && 'Market Value (Low to High)'}
-                      {sortKey === 'daily-gainers' && 'Daily Gainers'}
-                      {sortKey === 'daily-losers' && 'Daily Losers'}
-                      {sortKey === 'weekly-gainers' && 'Weekly Gainers'}
-                      {sortKey === 'weekly-losers' && 'Weekly Losers'}
-                      {sortKey === 'monthly-gainers' && 'Monthly Gainers'}
-                      {sortKey === 'monthly-losers' && 'Monthly Losers'}
-                      {sortKey === 'ipo-newest' && 'IPO Date (Newest)'}
-                      {sortKey === 'ipo-oldest' && 'IPO Date (Oldest)'}
-                      {sortKey === 'employees-desc' && 'Employees (High to Low)'}
-                      {sortKey === 'inst-trans-desc' && 'Inst. Buying (High to Low)'}
-                      {sortKey === 'inst-trans-asc' && 'Inst. Selling (Low to High)'}
-                      {sortKey === 'inst-own-desc' && 'Inst. Ownership (High to Low)'}
-                      {sortKey === 'inst-own-asc' && 'Inst. Ownership (Low to High)'}
-                      {sortKey === 'price-asc-combined-desc' && 'Low Price + High %'}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.sm, marginBottom: theme.spacing.sm }}>
+              {[
+                { key: 'combined', label: '🔥 Big 3 %', icon: '🔥' },
+                { key: 'fire', label: '🔥 Fire Level', icon: '🔥' },
+                { key: 'price', label: '💰 Price', icon: '💰' },
+                { key: 'price-change', label: '📈 Price change', icon: '📊' },
+                { key: 'market-value', label: '💎 Market Cap', icon: '💎' },
+                { key: 'employees', label: '👥 Employees', icon: '👥' },
+                { key: 'inst-trans', label: '🟢 Inst. Activity', icon: '📊' },
+                { key: 'inst-own', label: '🏢 Inst. Own', icon: '🏢' },
+                { key: 'ipo-date', label: '📅 IPO Date', icon: '📅' },
+                { key: 'daily-change', label: '📈 Daily %', icon: '📈' },
+                { key: 'weekly-change', label: '📅 Weekly %', icon: '📅' },
+                { key: 'monthly-change', label: '📆 Monthly %', icon: '📆' },
+              ].map(sort => {
+                const descKey = `${sort.key}-desc`;
+                const ascKey = `${sort.key}-asc`;
+                const isDescActive = sortOrder.includes(descKey);
+                const isAscActive = sortOrder.includes(ascKey);
+                const isActive = isDescActive || isAscActive;
+                
+                return (
+                  <button
+                    key={sort.key}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // Toggle between desc and asc indefinitely
+                      if (!isActive) {
+                        // First click: Add desc
+                        onSortChange(descKey);
+                      } else if (isDescActive) {
+                        // Currently desc, switch to asc
+                        onSortChange(`TOGGLE_${sort.key}_TO_ASC`);
+                      } else {
+                        // Currently asc, switch to desc
+                        onSortChange(`TOGGLE_${sort.key}_TO_DESC`);
+                      }
+                    }}
+                    onDoubleClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      // Double click removes the sort
+                      if (isDescActive) onSortChange(descKey);
+                      if (isAscActive) onSortChange(ascKey);
+                    }}
+                    style={{
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      border: `1px solid ${isActive ? theme.status.info : theme.ui.border}`,
+                      backgroundColor: isActive ? `${theme.status.info}15` : theme.ui.surface,
+                      color: isActive ? theme.status.info : theme.ui.text.secondary,
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '4px',
+                      fontWeight: isActive ? 600 : 400,
+                      width: '100%'
+                    }}
+                  >
+                    <span>{sort.label}</span>
+                    <span style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', minWidth: '16px', justifyContent: 'center' }}>
+                      {isDescActive ? BsSortDown({}) : isAscActive ? BsSortUp({}) : ''}
                     </span>
-                    <button
-                      onClick={() => onSortChange(sortKey)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: theme.ui.text.secondary,
-                        padding: '2px'
-                      }}
-                    >
-                      {FaTimes({ size: 12 })}
-                    </button>
-                  </div>
-                ))}
-              </div>
+                  </button>
+                );
+              })}
+            </div>
+            
+            {sortOrder.length > 0 && (
+              <button
+                onClick={() => onSortChange('CLEAR_ALL')}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '6px',
+                  border: `1px solid ${theme.status.danger}`,
+                  backgroundColor: `${theme.status.danger}10`,
+                  color: theme.status.danger,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  fontWeight: 600
+                }}
+              >
+                ❌ Clear All Sorts
+              </button>
             )}
           </FilterSection>
 

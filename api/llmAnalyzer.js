@@ -11,9 +11,39 @@ const { getComprehensiveFinvizData } = require('./finvizScraper');
 const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
 
 /**
+ * Get company description using LLM
+ */
+async function getCompanyDescription(ticker, sector, industry) {
+  if (!groq) return null;
+  
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a financial research assistant. Provide concise company descriptions (2-3 sentences) about what the company does, their main products/services, and market focus.'
+        },
+        {
+          role: 'user',
+          content: `What does ${ticker} do? Sector: ${sector || 'Unknown'}, Industry: ${industry || 'Unknown'}. Keep it brief (2-3 sentences).`
+        }
+      ],
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.3,
+      max_tokens: 150
+    });
+    
+    return completion.choices[0].message.content.trim();
+  } catch (error) {
+    console.error(`Error fetching description for ${ticker}:`, error.message);
+    return null;
+  }
+}
+
+/**
  * Generate enhanced analysis prompt with comprehensive Finviz data
  */
-async function generateEnhancedPrompt(stock) {
+async function generateEnhancedPrompt(stock, description = null) {
   const combined = (stock.blackrock_pct || 0) + (stock.vanguard_pct || 0) + (stock.statestreet_pct || 0);
   
   // Fetch comprehensive data from Finviz
@@ -22,7 +52,16 @@ async function generateEnhancedPrompt(stock) {
   
   if (!finvizData) {
     console.log('⚠️ Falling back to basic prompt');
-    return generateBasicPrompt(stock);
+    return { prompt: generateBasicPrompt(stock), description: null };
+  }
+  
+  // Get company description using LLM if not provided
+  if (!description) {
+    description = await getCompanyDescription(
+      stock.ticker,
+      finvizData.company?.sector || stock.sector,
+      finvizData.company?.industry
+    );
   }
   
   let prompt = `Analyze this penny stock with ALL available data:
@@ -74,6 +113,7 @@ ANALYST:
 COMPANY:
 - Employees: ${finvizData.company?.employees || stock.employee_count || 'N/A'}
 - IPO: ${finvizData.company?.ipoDate || stock.ipo_date || 'N/A'}
+- Description: ${description || 'N/A'}
 
 Provide COMPREHENSIVE analysis:
 1. Risk Score (1-10, higher=riskier)
@@ -84,7 +124,7 @@ Provide COMPREHENSIVE analysis:
 
 Use ALL data points. Be thorough but concise.`;
 
-  return prompt;
+  return { prompt, description };
 }
 
 /**
@@ -126,7 +166,16 @@ async function analyzeWithGroq(stock, useEnhanced = true) {
     throw new Error('GROQ_API_KEY not set in environment variables');
   }
 
-  const prompt = useEnhanced ? await generateEnhancedPrompt(stock) : generateBasicPrompt(stock);
+  let description = null;
+  let prompt;
+  
+  if (useEnhanced) {
+    const result = await generateEnhancedPrompt(stock);
+    prompt = result.prompt;
+    description = result.description;
+  } else {
+    prompt = generateBasicPrompt(stock);
+  }
   
   const startTime = Date.now();
   const completion = await groq.chat.completions.create({
@@ -150,6 +199,7 @@ async function analyzeWithGroq(stock, useEnhanced = true) {
   return {
     provider: 'Groq (Llama 3.1 70B)',
     analysis: completion.choices[0].message.content,
+    description: description,
     responseTime: `${responseTime}ms`,
     tokensUsed: completion.usage
   };
@@ -193,5 +243,6 @@ async function batchAnalyze(stocks) {
 module.exports = {
   analyzeStock,
   analyzeWithGroq,
-  batchAnalyze
+  batchAnalyze,
+  getCompanyDescription
 };

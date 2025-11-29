@@ -655,6 +655,11 @@ const Dashboard: React.FC = () => {
               const fireB = stockB.fire_level || 0;
               comparison = fireB - fireA;
               break;
+            case 'fire-asc':
+              const fireAscA = stockA.fire_level || 0;
+              const fireAscB = stockB.fire_level || 0;
+              comparison = fireAscA - fireAscB;
+              break;
             case 'price-desc':
               comparison = stockB.price - stockA.price;
               break;
@@ -681,35 +686,35 @@ const Dashboard: React.FC = () => {
               const marketCapAscB = stockB.market_cap || 0;
               comparison = marketCapAscA - marketCapAscB;
               break;
-            case 'daily-gainers':
-              const indexA_gainers = topGainers.indexOf(a);
-              const indexB_gainers = topGainers.indexOf(b);
-              if (indexA_gainers === -1 && indexB_gainers === -1) comparison = 0;
-              else if (indexA_gainers === -1) comparison = 1;
-              else if (indexB_gainers === -1) comparison = -1;
-              else comparison = indexA_gainers - indexB_gainers;
+            case 'daily-change-desc':
+              // Sort by daily price change (gainers first = highest percentage first)
+              const dailyChangeA = livePriceData.get(a)?.priceChange || 0;
+              const dailyChangeB = livePriceData.get(b)?.priceChange || 0;
+              comparison = dailyChangeB - dailyChangeA;
               break;
-            case 'daily-losers':
-              const indexA_losers = topLosers.indexOf(a);
-              const indexB_losers = topLosers.indexOf(b);
-              if (indexA_losers === -1 && indexB_losers === -1) comparison = 0;
-              else if (indexA_losers === -1) comparison = 1;
-              else if (indexB_losers === -1) comparison = -1;
-              else comparison = indexA_losers - indexB_losers;
+            case 'daily-change-asc':
+              // Sort by daily price change (losers first = lowest percentage first)
+              const dailyChangeAscA = livePriceData.get(a)?.priceChange || 0;
+              const dailyChangeAscB = livePriceData.get(b)?.priceChange || 0;
+              comparison = dailyChangeAscA - dailyChangeAscB;
               break;
-            case 'weekly-gainers':
+            case 'weekly-change-desc':
+              // Sort by weekly performance (gainers first = highest percentage first)
               if (!stockA?.performance || !stockB?.performance) comparison = 0;
               else comparison = (stockB.performance.week || 0) - (stockA.performance.week || 0);
               break;
-            case 'weekly-losers':
+            case 'weekly-change-asc':
+              // Sort by weekly performance (losers first = lowest percentage first)
               if (!stockA?.performance || !stockB?.performance) comparison = 0;
               else comparison = (stockA.performance.week || 0) - (stockB.performance.week || 0);
               break;
-            case 'monthly-gainers':
+            case 'monthly-change-desc':
+              // Sort by monthly performance (gainers first = highest percentage first)
               if (!stockA?.performance || !stockB?.performance) comparison = 0;
               else comparison = (stockB.performance.month || 0) - (stockA.performance.month || 0);
               break;
-            case 'monthly-losers':
+            case 'monthly-change-asc':
+              // Sort by monthly performance (losers first = lowest percentage first)
               if (!stockA?.performance || !stockB?.performance) comparison = 0;
               else comparison = (stockA.performance.month || 0) - (stockB.performance.month || 0);
               break;
@@ -730,7 +735,12 @@ const Dashboard: React.FC = () => {
               const empB = stockB.employee_count || 0;
               comparison = empB - empA;
               break;
-            case 'ipo-newest':
+            case 'employees-asc':
+              const empAscA = stockA.employee_count || 0;
+              const empAscB = stockB.employee_count || 0;
+              comparison = empAscA - empAscB;
+              break;
+            case 'ipo-date-desc':
               // Sort by IPO date (newest first = most recent dates first)
               if (!stockA?.ipo_date && !stockB?.ipo_date) comparison = 0;
               else if (!stockA?.ipo_date) comparison = 1; // No IPO date goes to end
@@ -741,7 +751,7 @@ const Dashboard: React.FC = () => {
                 comparison = dateB - dateA; // Newer dates (higher timestamp) first
               }
               break;
-            case 'ipo-oldest':
+            case 'ipo-date-asc':
               // Sort by IPO date (oldest first = earliest dates first)
               if (!stockA?.ipo_date && !stockB?.ipo_date) comparison = 0;
               else if (!stockA?.ipo_date) comparison = 1; // No IPO date goes to end
@@ -1183,15 +1193,32 @@ const Dashboard: React.FC = () => {
           if (sort === 'CLEAR_ALL') {
             setSortOrder([]);
             setSortBy('');
+          } else if (sort.startsWith('TOGGLE_')) {
+            // Handle toggle from desc to asc or vice versa
+            const match = sort.match(/TOGGLE_(.+)_TO_(ASC|DESC)/);
+            if (match) {
+              const sortKey = match[1];
+              const direction = match[2].toLowerCase();
+              const oldKey = direction === 'asc' ? `${sortKey}-desc` : `${sortKey}-asc`;
+              const newKey = `${sortKey}-${direction}`;
+              
+              setSortOrder(prev => {
+                const newOrder = prev.filter(s => s !== oldKey);
+                newOrder.push(newKey);
+                return newOrder;
+              });
+              setSortBy(newKey);
+            }
           } else if (sortOrder.includes(sort)) {
+            // Remove the sort
             const newSortOrder = sortOrder.filter(s => s !== sort);
             setSortOrder(newSortOrder);
-            // Set sortBy to the first remaining sort or empty
             setSortBy(newSortOrder.length > 0 ? newSortOrder[0] : '');
           } else {
+            // Add the sort
             const newSortOrder = [...sortOrder, sort];
             setSortOrder(newSortOrder);
-            setSortBy(sort); // Set the most recently added sort as active
+            setSortBy(sort);
           }
         }}
         availableSectors={availableSectors}

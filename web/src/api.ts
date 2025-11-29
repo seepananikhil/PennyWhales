@@ -50,7 +50,7 @@ export const api = {
   },
 
   // AI Analysis
-  analyzeStock: async (ticker: string): Promise<{ ticker: string; analysis: string; responseTime: string; tokensUsed: any; timestamp: string }> => {
+  analyzeStock: async (ticker: string): Promise<{ ticker: string; analysis: string; description?: string; responseTime: string; tokensUsed: any; timestamp: string }> => {
     const response = await axios.post(`${API_BASE}/api/analyze/${ticker}`);
     return response.data;
   },

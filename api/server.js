@@ -779,6 +779,7 @@ app.post("/api/analyze/:ticker", async (req, res) => {
     res.json({
       ticker: stock.ticker,
       analysis: analysis.analysis,
+      description: analysis.description,
       responseTime: analysis.responseTime,
       tokensUsed: analysis.tokensUsed,
       timestamp: new Date().toISOString()

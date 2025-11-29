@@ -70,6 +70,7 @@ const StockCard: React.FC<StockCardProps> = ({
   const [showTooltip, setShowTooltip] = useState(false);
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [aiAnalysis, setAIAnalysis] = useState<string | null>(null);
+  const [companyDescription, setCompanyDescription] = useState<string | null>(null);
   const [aiLoading, setAILoading] = useState(false);
 
   const fireLevel = stock.fire_level || 0;
@@ -125,6 +126,7 @@ const StockCard: React.FC<StockCardProps> = ({
       setShowAIAnalysis(true);
       const data = await api.analyzeStock(stock.ticker);
       setAIAnalysis(data.analysis);
+      setCompanyDescription(data.description || null);
     } catch (error) {
       console.error(`Error fetching AI analysis for ${stock.ticker}:`, error);
       setAIAnalysis("Failed to load AI analysis. Please try again.");
@@ -249,58 +251,10 @@ const StockCard: React.FC<StockCardProps> = ({
                 fontSize: "1.05rem",
                 color: "#333",
                 textTransform: "uppercase",
-                cursor: "help",
                 position: "relative",
               }}
-              onMouseEnter={() => setShowTooltip(true)}
-              onMouseLeave={() => setShowTooltip(false)}
             >
               {stock.ticker}
-              {showTooltip && (stock.sector || stock.industry || stock.description) && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "100%",
-                    left: "0",
-                    marginTop: "4px",
-                    backgroundColor: "#ffffff",
-                    border: "2px solid #4F46E5",
-                    borderRadius: "8px",
-                    padding: "10px 12px",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                    zIndex: 1000,
-                    minWidth: "250px",
-                    maxWidth: "350px",
-                    whiteSpace: "normal",
-                    fontSize: "0.85rem",
-                    lineHeight: "1.4",
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {stock.sector && (
-                    <div style={{ marginBottom: "6px" }}>
-                      <strong style={{ color: "#4F46E5" }}>Sector:</strong>{" "}
-                      <span style={{ color: "#333" }}>{stock.sector}</span>
-                    </div>
-                  )}
-                  {stock.industry && (
-                    <div style={{ marginBottom: stock.description ? "6px" : "0" }}>
-                      <strong style={{ color: "#4F46E5" }}>Industry:</strong>{" "}
-                      <span style={{ color: "#333" }}>{stock.industry}</span>
-                    </div>
-                  )}
-                  {stock.description && (
-                    <div style={{ 
-                      borderTop: (stock.sector || stock.industry) ? "1px solid #e9ecef" : "none",
-                      paddingTop: (stock.sector || stock.industry) ? "6px" : "0",
-                      color: "#555",
-                      fontSize: "0.8rem"
-                    }}>
-                      {stock.description}
-                    </div>
-                  )}
-                </div>
-              )}
             </span>
             <span style={{ fontSize: "1rem" }}>{getFireEmoji(fireLevel)}</span>
             {sectorStyle && (
@@ -641,6 +595,10 @@ const StockCard: React.FC<StockCardProps> = ({
               }}
               onClick={(e) => {
                 e.stopPropagation();
+                // Select the stock by opening chart
+                if (!showAIAnalysis) {
+                  onOpenChart(stock.ticker);
+                }
                 fetchAIAnalysis();
               }}
               onMouseEnter={(e) => {
@@ -714,6 +672,18 @@ const StockCard: React.FC<StockCardProps> = ({
                 ×
               </button>
             </div>
+            {companyDescription && (
+              <div style={{ 
+                marginBottom: "12px", 
+                paddingBottom: "12px", 
+                borderBottom: "1px solid #DDD6FE",
+                fontStyle: "italic",
+                color: "#555"
+              }}>
+                <strong style={{ color: "#7C3AED", fontStyle: "normal" }}>Company: </strong>
+                {companyDescription}
+              </div>
+            )}
             <div style={{ whiteSpace: "pre-wrap" }}>
               {aiAnalysis}
             </div>
