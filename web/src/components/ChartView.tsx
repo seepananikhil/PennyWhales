@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Stock } from '../types';
-import { theme, getFireLevelStyle } from '../theme';
-import LazyStockCard from './LazyStockCard';
+import { theme } from '../theme';
+import StockCard from './StockCard';
 
 interface ChartViewProps {
   stocks: string[];
@@ -16,10 +16,10 @@ interface ChartViewProps {
   onToggleHolding: (ticker: string) => void;
   onToggleWatchlist?: (ticker: string) => void;
   onDeleteTicker?: (ticker: string) => void;
-  onLoadLivePrice: (ticker: string) => Promise<void>;
   showWatchButton?: boolean;
   showDeleteButton?: boolean;
   tradingViewChartUrl?: string;
+  initialSelectedTicker?: string | null;
 }
 
 const ChartView: React.FC<ChartViewProps> = ({
@@ -31,14 +31,29 @@ const ChartView: React.FC<ChartViewProps> = ({
   onToggleHolding,
   onToggleWatchlist,
   onDeleteTicker,
-  onLoadLivePrice,
   showWatchButton = true,
   showDeleteButton = false,
-  tradingViewChartUrl = 'https://www.tradingview.com/chart/StTMbjgz/?symbol='
+  tradingViewChartUrl = 'https://www.tradingview.com/chart/StTMbjgz/?symbol=',
+  initialSelectedTicker = null
 }) => {
   const [selectedTicker, setSelectedTicker] = useState<string | null>(
     stocks.length > 0 ? stocks[0] : null
   );
+
+  // Handle URL ticker selection and scroll
+  useEffect(() => {
+    if (initialSelectedTicker && stocks.includes(initialSelectedTicker)) {
+      setSelectedTicker(initialSelectedTicker);
+      
+      // Scroll to the ticker after a short delay to ensure DOM is ready
+      setTimeout(() => {
+        const element = document.getElementById(`stock-card-${initialSelectedTicker}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 200);
+    }
+  }, [initialSelectedTicker, stocks]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -104,6 +119,7 @@ const ChartView: React.FC<ChartViewProps> = ({
             return (
               <div 
                 key={ticker}
+                id={`stock-card-${ticker}`}
                 data-ticker={ticker}
                 onClick={() => setSelectedTicker(ticker)}
                 style={{
@@ -113,8 +129,7 @@ const ChartView: React.FC<ChartViewProps> = ({
                   boxShadow: isSelected ? theme.ui.shadow.lg : 'none',
                 }}
               >
-                <LazyStockCard
-                  ticker={ticker}
+                <StockCard
                   stock={stock}
                   livePrice={livePrice}
                   isHolding={holdings.has(ticker)}
@@ -124,7 +139,6 @@ const ChartView: React.FC<ChartViewProps> = ({
                   onOpenChart={(t) => {
                     setSelectedTicker(t);
                   }}
-                  onLoadLivePrice={onLoadLivePrice}
                   showWatchButton={showWatchButton}
                   showDeleteButton={showDeleteButton}
                   onDeleteTicker={onDeleteTicker}

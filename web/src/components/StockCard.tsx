@@ -160,27 +160,50 @@ const StockCard: React.FC<StockCardProps> = ({
     }
   }, [livePrice]);
 
-  // Set up auto-refresh only if no livePrice is provided (fallback mode)
+  // Visibility-based live price fetching
+  // Only fetch if card is visible for 3+ seconds (avoids auto-scroll triggers)
   useEffect(() => {
     if (livePrice) {
       // If live price is provided from parent, don't fetch independently
       return;
     }
 
-    // Initial fetch after component mounts (with small delay to stagger requests)
-    const initialDelay = Math.random() * 5000; // Random delay 0-5 seconds
-    const initialTimer = setTimeout(() => {
-      fetchLivePrice();
-    }, initialDelay);
+    let visibilityTimer: NodeJS.Timeout | null = null;
+    let hasFetched = false;
 
-    // Set up interval for every 5 minutes
-    const interval = setInterval(() => {
-      fetchLivePrice();
-    }, 5 * 60 * 1000); // 5 minutes
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasFetched) {
+            // Card is visible - wait 1.5 seconds before fetching
+            visibilityTimer = setTimeout(() => {
+              fetchLivePrice();
+              hasFetched = true;
+            }, 1500);
+          } else if (!entry.isIntersecting && visibilityTimer) {
+            // Card left viewport before 3 seconds - cancel fetch
+            clearTimeout(visibilityTimer);
+            visibilityTimer = null;
+          }
+        });
+      },
+      {
+        threshold: 0.5, // At least 50% of card must be visible
+        rootMargin: '0px',
+      }
+    );
+
+    // Find the card element and observe it
+    const cardElement = document.getElementById(`stock-card-${stock.ticker}`);
+    if (cardElement) {
+      observer.observe(cardElement);
+    }
 
     return () => {
-      clearTimeout(initialTimer);
-      clearInterval(interval);
+      if (visibilityTimer) {
+        clearTimeout(visibilityTimer);
+      }
+      observer.disconnect();
     };
   }, [stock.ticker, livePrice]);
 
@@ -204,7 +227,12 @@ const StockCard: React.FC<StockCardProps> = ({
         `}
       </style>
       <div
-        onClick={() => onOpenChart(stock.ticker)}
+        onClick={() => {
+          onOpenChart(stock.ticker);
+          const url = new URL(window.location.href);
+          url.searchParams.set('ticker', stock.ticker);
+          window.history.pushState({}, '', url);
+        }}
         style={{
           padding: "6px",
           backgroundColor: cardBackgroundColor,

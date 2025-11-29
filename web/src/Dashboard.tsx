@@ -49,9 +49,27 @@ const Dashboard: React.FC = () => {
   const [topGainers, setTopGainers] = useState<string[]>([]);
   const [topLosers, setTopLosers] = useState<string[]>([]);
   const [filterPanelOpen, setFilterPanelOpen] = useState<boolean>(false);
+  const [urlTicker, setUrlTicker] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
+  }, []);
+  
+  useEffect(() => {
+    // Read ticker from URL
+    const params = new URLSearchParams(window.location.search);
+    const ticker = params.get('ticker');
+    setUrlTicker(ticker ? ticker.toUpperCase() : null);
+    
+    // Listen for browser back/forward navigation
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const ticker = params.get('ticker');
+      setUrlTicker(ticker ? ticker.toUpperCase() : null);
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   useEffect(() => {
@@ -1141,10 +1159,10 @@ const Dashboard: React.FC = () => {
               onToggleHolding={handleToggleHolding}
               onToggleWatchlist={handleToggleWatchlist}
               onDeleteTicker={handleDeleteTicker}
-              onLoadLivePrice={loadLivePriceForTicker}
               showWatchButton={watchlists.length > 0}
               showDeleteButton={true}
               tradingViewChartUrl="https://www.tradingview.com/chart/StTMbjgz/?symbol="
+              initialSelectedTicker={urlTicker}
             />
           </>
         ) : (

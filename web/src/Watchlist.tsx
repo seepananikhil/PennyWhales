@@ -22,9 +22,27 @@ const Watchlist: React.FC = () => {
   const [selectedPriceFilter, setSelectedPriceFilter] = useState<string | null>(null);
   const [showChartView, setShowChartView] = useState<boolean>(true);
   const [livePriceData, setLivePriceData] = useState<Map<string, { price: number; priceChange: number; timestamp: string }>>(new Map());
+  const [urlTicker, setUrlTicker] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
+  }, []);
+  
+  useEffect(() => {
+    // Read ticker from URL
+    const params = new URLSearchParams(window.location.search);
+    const ticker = params.get('ticker');
+    setUrlTicker(ticker ? ticker.toUpperCase() : null);
+    
+    // Listen for browser back/forward navigation
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const ticker = params.get('ticker');
+      setUrlTicker(ticker ? ticker.toUpperCase() : null);
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   useEffect(() => {
@@ -909,10 +927,10 @@ const Watchlist: React.FC = () => {
                 onToggleHolding={handleToggleHolding}
                 onToggleWatchlist={handleToggleWatchlist}
                 onDeleteTicker={handleDeleteTicker}
-                onLoadLivePrice={loadLivePriceForTicker}
                 showWatchButton={true}
                 showDeleteButton={false}
                 tradingViewChartUrl="https://www.tradingview.com/chart/StTMbjgz/?symbol="
+                initialSelectedTicker={urlTicker}
               />
             ) : (
               <GridView
@@ -925,7 +943,6 @@ const Watchlist: React.FC = () => {
                 onToggleWatchlist={handleToggleWatchlist}
                 onOpenChart={handleOpenChart}
                 onDeleteTicker={handleDeleteTicker}
-                onLoadLivePrice={loadLivePriceForTicker}
                 showWatchButton={true}
                 showDeleteButton={false}
                 activeFilter={activeFilter}

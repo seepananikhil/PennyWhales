@@ -1,7 +1,7 @@
 import React from 'react';
 import { Stock } from '../types';
 import { theme } from '../theme';
-import LazyStockCard from './LazyStockCard';
+import StockCard from './StockCard';
 
 interface StockGridProps {
   stocks: Stock[];
@@ -82,9 +82,8 @@ const StockGrid: React.FC<StockGridProps> = ({
       }}
     >
       {stocks.map((stock) => (
-                <LazyStockCard
+                <StockCard
           key={stock.ticker}
-          ticker={stock.ticker}
           stock={stock}
           isHolding={holdings.has(stock.ticker)}
           isInWatchlist={watchlistStocks?.has(stock.ticker)}

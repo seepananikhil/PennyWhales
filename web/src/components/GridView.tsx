@@ -1,7 +1,7 @@
 import React from 'react';
 import { Stock } from '../types';
 import { theme } from '../theme';
-import LazyStockCard from './LazyStockCard';
+import StockCard from './StockCard';
 
 interface GridViewProps {
   stocks: string[];
@@ -17,7 +17,6 @@ interface GridViewProps {
   onToggleWatchlist?: (ticker: string) => void;
   onOpenChart: (ticker: string) => void;
   onDeleteTicker?: (ticker: string) => void;
-  onLoadLivePrice: (ticker: string) => Promise<void>;
   showWatchButton?: boolean;
   showDeleteButton?: boolean;
   activeFilter?: string;
@@ -33,7 +32,6 @@ const GridView: React.FC<GridViewProps> = ({
   onToggleWatchlist,
   onOpenChart,
   onDeleteTicker,
-  onLoadLivePrice,
   showWatchButton = true,
   showDeleteButton = false,
   activeFilter
@@ -125,12 +123,11 @@ const GridView: React.FC<GridViewProps> = ({
           );
         }
         
-        // For stocks with data, show the lazy-loaded StockCard
+        // For stocks with data, show the StockCard
         if (stock) {
           return (
-            <LazyStockCard
+            <StockCard
               key={ticker}
-              ticker={ticker}
               stock={stock}
               livePrice={livePrice}
               isHolding={holdings.has(ticker)}
@@ -138,7 +135,6 @@ const GridView: React.FC<GridViewProps> = ({
               onToggleHolding={onToggleHolding}
               onToggleWatchlist={onToggleWatchlist}
               onOpenChart={onOpenChart}
-              onLoadLivePrice={onLoadLivePrice}
               showWatchButton={showWatchButton}
               showDeleteButton={showDeleteButton}
               onDeleteTicker={onDeleteTicker}
