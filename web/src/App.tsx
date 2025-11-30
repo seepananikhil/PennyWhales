@@ -4,7 +4,6 @@ import './App.css';
 import { ThemeProvider, useTheme } from './ThemeContext';
 import Dashboard from './Dashboard';
 import Scans from './Scans';
-import Watchlist from './Watchlist';
 import Alerts from './Alerts';
 import Settings from './Settings';
 import Sectors from './Sectors';
@@ -27,7 +26,6 @@ const AppContent: React.FC = () => {
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/scans" element={<Scans />} />
-              <Route path="/watchlist" element={<Watchlist />} />
               <Route path="/alerts" element={<Alerts />} />
               <Route path="/sectors" element={<Sectors />} />
               <Route path="/settings" element={<Settings />} />

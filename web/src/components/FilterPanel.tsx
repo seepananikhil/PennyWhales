@@ -178,6 +178,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 { key: 'daily-change', label: '📈 Daily %', icon: '📈' },
                 { key: 'weekly-change', label: '📅 Weekly %', icon: '📅' },
                 { key: 'monthly-change', label: '📆 Monthly %', icon: '📆' },
+                { key: 'sma200', label: '📊 SMA200', icon: '📊' },
               ].map(sort => {
                 const descKey = `${sort.key}-desc`;
                 const ascKey = `${sort.key}-asc`;

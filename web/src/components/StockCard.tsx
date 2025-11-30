@@ -799,6 +799,22 @@ const StockCard: React.FC<StockCardProps> = ({
                 })()}
               </span>
             )}
+            {stock.sma200 !== null && stock.sma200 !== undefined && (
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  color: stock.sma200 > 0 ? "#28a745" : "#dc3545",
+                  fontWeight: "600",
+                  backgroundColor: stock.sma200 > 0 ? "#d4edda" : "#f8d7da",
+                  padding: "2px 6px",
+                  borderRadius: "5px",
+                  border: `1px solid ${stock.sma200 > 0 ? "#c3e6cb" : "#f5c6cb"}`,
+                }}
+                title={`${stock.sma200 > 0 ? "Above" : "Below"} 200-day moving average by ${Math.abs(stock.sma200).toFixed(1)}%`}
+              >
+                📈 {stock.sma200 > 0 ? "+" : ""}{stock.sma200.toFixed(1)}%
+              </span>
+            )}
             {stock.market_cap && stock.market_cap > 0 && (
               <span
                 style={{

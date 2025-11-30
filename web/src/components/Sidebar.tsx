@@ -19,8 +19,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           <img 
             src="/icons8-whale-50.png" 
             alt="PennyWhales" 
-            width="24" 
-            height="24"
+            width="20" 
+            height="20"
           />
         </div>
         <h1 className="brand-text">PennyWhales</h1>
@@ -35,15 +35,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           <span className="nav-icon">🔥</span>
           <span className="nav-text">Dashboard</span>
-        </NavLink>
-        
-        <NavLink
-          to="/watchlist"
-          className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
-          title="Watchlist"
-        >
-          <span className="nav-icon">👀</span>
-          <span className="nav-text">Watchlist</span>
         </NavLink>
 
         <NavLink

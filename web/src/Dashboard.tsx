@@ -171,14 +171,6 @@ const Dashboard: React.FC = () => {
       const data = await api.getWatchlists();
       console.log('Loaded watchlists:', data.watchlists);
       setWatchlists(data.watchlists || []);
-      
-      // Set first watchlist as active if none selected
-      if (data.watchlists && data.watchlists.length > 0 && !activeWatchlistId) {
-        console.log('Setting active watchlist to:', data.watchlists[0].id);
-        const watchlistId = data.watchlists[0].id;
-        setActiveWatchlistId(watchlistId);
-        loadActiveWatchlist(watchlistId);
-      }
     } catch (err) {
       console.error('Error loading watchlists:', err);
     }
@@ -439,6 +431,11 @@ const Dashboard: React.FC = () => {
         (type === 'employee' ? (multiFilters.employeeCount.has(value as string) ? multiFilters.employeeCount.size - 1 : multiFilters.employeeCount.size + 1) : multiFilters.employeeCount.size) +
         (type === 'ipo' ? (multiFilters.ipoDate.has(value as string) ? multiFilters.ipoDate.size - 1 : multiFilters.ipoDate.size + 1) : multiFilters.ipoDate.size);
       
+      // If we're currently on a watchlist, keep the watchlist active
+      if (prev.startsWith('watchlist-')) {
+        return prev;
+      }
+      
       return newFiltersSize > 0 ? 'multifilter' : 'anyfire';
     });
   };
@@ -452,17 +449,53 @@ const Dashboard: React.FC = () => {
       employeeCount: new Set(),
       ipoDate: new Set()
     });
+    
+    // Clear URL parameters
+    window.history.pushState({}, '', window.location.pathname);
+    
+    // Don't clear watchlist selection - keep activeFilter as is if it's a watchlist
   };
 
-  // Calculate stats
-  const tickersWithData = tickers.filter(ticker => stockData.has(ticker));
-  const fire5Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 5);
-  const fire4Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 4);
-  const fire3Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 3);
-  const fire2Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 2);
-  const fire1Tickers = tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 1);
-  const anyFireTickers = tickersWithData.filter(ticker => (stockData.get(ticker)?.fire_level || 0) > 0);
-  const holdingTickers = tickers.filter(ticker => holdings.has(ticker));
+  // Calculate stats - memoized to prevent re-renders
+  const tickersWithData = React.useMemo(() => 
+    tickers.filter(ticker => stockData.has(ticker)), 
+    [tickers, stockData]
+  );
+  
+  const fire5Tickers = React.useMemo(() => 
+    tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 5),
+    [tickersWithData, stockData]
+  );
+  
+  const fire4Tickers = React.useMemo(() => 
+    tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 4),
+    [tickersWithData, stockData]
+  );
+  
+  const fire3Tickers = React.useMemo(() => 
+    tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 3),
+    [tickersWithData, stockData]
+  );
+  
+  const fire2Tickers = React.useMemo(() => 
+    tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 2),
+    [tickersWithData, stockData]
+  );
+  
+  const fire1Tickers = React.useMemo(() => 
+    tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 1),
+    [tickersWithData, stockData]
+  );
+  
+  const anyFireTickers = React.useMemo(() => 
+    tickersWithData.filter(ticker => (stockData.get(ticker)?.fire_level || 0) > 0),
+    [tickersWithData, stockData]
+  );
+  
+  const holdingTickers = React.useMemo(() => 
+    tickers.filter(ticker => holdings.has(ticker)),
+    [tickers, holdings]
+  );
 
   // Filter stocks based on active filter and search query
   const getFilteredStocks = () => {
@@ -489,7 +522,14 @@ const Dashboard: React.FC = () => {
       case 'multifire':
       case 'multifilter':
         // Multi-select filtering
-        stocks = tickersWithData;
+        // Check if we're filtering a watchlist
+        if (activeFilter.startsWith('watchlist-')) {
+          // Start with watchlist stocks
+          stocks = Array.from(watchlistStocks).filter(ticker => stockData.has(ticker));
+        } else {
+          // Start with all tickers
+          stocks = tickersWithData;
+        }
         
         // Apply fire level filters
         if (multiFilters.fireLevels.size > 0) {
@@ -503,7 +543,21 @@ const Dashboard: React.FC = () => {
         stocks = holdingTickers;
         break;
       default:
-        stocks = tickersWithData;
+        // Check if it's a watchlist filter (starts with 'watchlist-')
+        if (activeFilter.startsWith('watchlist-')) {
+          // Get tickers from watchlist that also have stock data
+          stocks = Array.from(watchlistStocks).filter(ticker => stockData.has(ticker));
+          
+          // Apply fire level filters if any are selected
+          if (multiFilters.fireLevels.size > 0) {
+            stocks = stocks.filter(ticker => {
+              const fireLevel = stockData.get(ticker)?.fire_level || 0;
+              return multiFilters.fireLevels.has(fireLevel);
+            });
+          }
+        } else {
+          stocks = tickersWithData;
+        }
     }
     
     // Apply price filter if selected
@@ -817,6 +871,14 @@ const Dashboard: React.FC = () => {
               // Sort by institutional ownership (lowest first)
               comparison = (stockA.inst_own || 0) - (stockB.inst_own || 0);
               break;
+            case 'sma200-desc':
+              // Sort by SMA200 (highest/most above 200MA first)
+              comparison = (stockB.sma200 || 0) - (stockA.sma200 || 0);
+              break;
+            case 'sma200-asc':
+              // Sort by SMA200 (lowest/most below 200MA first)
+              comparison = (stockA.sma200 || 0) - (stockB.sma200 || 0);
+              break;
           }
           
           // If this sort criteria produces a difference, return it
@@ -956,7 +1018,29 @@ const Dashboard: React.FC = () => {
     });
   };
 
-  const filteredStocks = getFilteredStocks();
+  const filteredStocks = React.useMemo(() => 
+    getFilteredStocks(), 
+    [
+      activeFilter, 
+      multiFilters, 
+      searchQuery, 
+      sortBy, 
+      sortOrder, 
+      tickersWithData, 
+      fire5Tickers, 
+      fire4Tickers, 
+      fire3Tickers, 
+      fire2Tickers, 
+      fire1Tickers, 
+      anyFireTickers, 
+      holdingTickers, 
+      stockData, 
+      livePriceData, 
+      topGainers, 
+      topLosers,
+      watchlistStocks
+    ]
+  );
 
   // Calculate available sectors from all stocks with data
   const availableSectors = React.useMemo(() => {
@@ -996,40 +1080,63 @@ const Dashboard: React.FC = () => {
     }}>
       {/* Header Section */}
       <div style={{
-        padding: theme.spacing.lg,
-        borderBottom: `1px solid ${theme.ui.border}`,
+        padding: `${theme.spacing.md} ${theme.spacing.xl}`,
+        borderBottom: `2px solid ${theme.ui.border}`,
         backgroundColor: theme.ui.surface,
-        flexShrink: 0
+        flexShrink: 0,
+        boxShadow: theme.ui.shadow.sm
       }}>
+        {/* Single Row Layout */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: theme.spacing.md
+          gap: theme.spacing.lg
         }}>
-          <h1 style={{
-            margin: 0,
-            fontSize: theme.typography.fontSize.xxl,
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.ui.text.primary,
-            display: 'flex',
-            alignItems: 'center',
-            gap: theme.spacing.md
-          }}>
-            🎯 Dashboard
+          {/* Left: Title and Badges */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md, flex: 1 }}>
+            <h1 style={{
+              margin: 0,
+              fontSize: '1.75rem',
+              fontWeight: theme.typography.fontWeight.bold,
+              color: theme.ui.text.primary,
+              whiteSpace: 'nowrap'
+            }}>
+              🎯 Dashboard
+            </h1>
             <span style={{
               fontSize: theme.typography.fontSize.base,
               backgroundColor: theme.status.success,
               color: 'white',
-              padding: `${theme.spacing.xs} ${theme.spacing.md}`,
-              borderRadius: theme.borderRadius.md,
-              fontWeight: theme.typography.fontWeight.semibold
+              padding: `6px ${theme.spacing.md}`,
+              borderRadius: theme.borderRadius.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              boxShadow: theme.ui.shadow.sm,
+              whiteSpace: 'nowrap'
             }}>
               {filteredStocks.length} {filteredStocks.length === 1 ? 'Stock' : 'Stocks'}
             </span>
+            
+            {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0 || multiFilters.sectors.size > 0 || multiFilters.employeeCount.size > 0 || multiFilters.ipoDate.size > 0) && (
+              <span style={{
+                fontSize: theme.typography.fontSize.sm,
+                backgroundColor: theme.status.info,
+                color: 'white',
+                padding: `6px ${theme.spacing.sm}`,
+                borderRadius: theme.borderRadius.md,
+                fontWeight: theme.typography.fontWeight.semibold,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                whiteSpace: 'nowrap'
+              }}>
+                <span>🔍</span>
+                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size + multiFilters.sectors.size + multiFilters.employeeCount.size + multiFilters.ipoDate.size} active
+              </span>
+            )}
+            
             <button
               onClick={() => {
-                // Create JSON with filtered tickers and their fire levels
                 const shareData = filteredStocks.map(ticker => {
                   const stock = stockData.get(ticker);
                   return {
@@ -1042,12 +1149,10 @@ const Dashboard: React.FC = () => {
                 
                 const jsonString = JSON.stringify(shareData, null, 2);
                 
-                // Copy to clipboard
                 navigator.clipboard.writeText(jsonString).then(() => {
                   alert(`Copied ${filteredStocks.length} tickers with fire levels to clipboard!`);
                 }).catch(err => {
                   console.error('Failed to copy:', err);
-                  // Fallback: create a download
                   const blob = new Blob([jsonString], { type: 'application/json' });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
@@ -1058,90 +1163,160 @@ const Dashboard: React.FC = () => {
                 });
               }}
               style={{
-                padding: '4px 8px',
-                border: 'none',
+                padding: '6px 10px',
+                border: `1px solid ${theme.ui.border}`,
                 borderRadius: theme.borderRadius.md,
-                backgroundColor: theme.status.success,
-                color: 'white',
+                backgroundColor: theme.ui.background,
+                color: theme.ui.text.secondary,
                 cursor: 'pointer',
-                fontSize: theme.typography.fontSize.sm,
+                fontSize: theme.typography.fontSize.xs,
                 fontWeight: theme.typography.fontWeight.semibold,
                 transition: `all ${theme.transition.normal}`,
-                boxShadow: theme.ui.shadow.sm,
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '4px'
+                gap: '4px',
+                whiteSpace: 'nowrap'
               }}
               onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = theme.status.success;
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.borderColor = theme.status.success;
                 e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
               }}
               onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = theme.ui.background;
+                e.currentTarget.style.color = theme.ui.text.secondary;
+                e.currentTarget.style.borderColor = theme.ui.border;
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }}
               title="Copy filtered stocks as JSON"
             >
-              {FaShareAlt({ size: 12 })}
+              {FaShareAlt({ size: 11 })}
+              <span>Export</span>
             </button>
-            {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0 || multiFilters.sectors.size > 0 || multiFilters.employeeCount.size > 0 || multiFilters.ipoDate.size > 0) && (
-              <span style={{
-                fontSize: theme.typography.fontSize.sm,
-                backgroundColor: theme.status.info,
-                color: 'white',
-                padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                borderRadius: theme.borderRadius.md,
-                fontWeight: theme.typography.fontWeight.medium
-              }}>
-                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size + multiFilters.sectors.size + multiFilters.employeeCount.size + multiFilters.ipoDate.size} filters active
-              </span>
-            )}
-          </h1>
-          <div style={{ display: 'flex', gap: theme.spacing.md, alignItems: 'center' }}>
+          </div>
+          
+          {/* Right: Search and Actions */}
+          <div style={{ display: 'flex', gap: theme.spacing.sm, alignItems: 'center' }}>
             {/* Search Input */}
             <input
               type="text"
-              placeholder="🔍 Search tickers..."
+              placeholder="Search tickers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                border: `1px solid ${theme.ui.border}`,
-                borderRadius: theme.borderRadius.md,
-                backgroundColor: theme.ui.surface,
+                paddingLeft: '36px',
+                border: `2px solid ${theme.ui.border}`,
+                borderRadius: theme.borderRadius.lg,
+                backgroundColor: theme.ui.background,
                 color: theme.ui.text.primary,
                 fontSize: theme.typography.fontSize.sm,
                 fontFamily: theme.typography.fontFamily,
-                width: '200px',
+                width: '220px',
                 outline: 'none',
-                transition: `all ${theme.transition.normal}`
+                transition: `all ${theme.transition.normal}`,
+                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'%3e%3c/circle%3e%3cpath d='m21 21-4.35-4.35'%3e%3c/path%3e%3c/svg%3e")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: '10px center',
+                backgroundSize: '18px'
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = theme.status.info;
-                e.currentTarget.style.boxShadow = `0 0 0 2px ${theme.status.info}20`;
+                e.currentTarget.style.boxShadow = `0 0 0 3px ${theme.status.info}20`;
+                e.currentTarget.style.backgroundColor = theme.ui.surface;
               }}
               onBlur={(e) => {
                 e.currentTarget.style.borderColor = theme.ui.border;
                 e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.backgroundColor = theme.ui.background;
               }}
             />
           
+            {/* Watchlist Dropdown */}
+            {watchlists.length > 0 && (
+              <select
+                value={activeWatchlistId || ''}
+                onChange={(e) => {
+                  const watchlistId = e.target.value;
+                  if (watchlistId) {
+                    setActiveWatchlistId(watchlistId);
+                    setActiveFilter(`watchlist-${watchlistId}`);
+                    loadActiveWatchlist(watchlistId);
+                  } else {
+                    setActiveWatchlistId('');
+                    setActiveFilter('multifilter');
+                  }
+                }}
+                style={{
+                  padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                  paddingRight: '36px',
+                  border: `2px solid ${activeWatchlistId ? theme.status.warning : theme.ui.border}`,
+                  borderRadius: theme.borderRadius.lg,
+                  backgroundColor: activeWatchlistId ? theme.status.warning : theme.ui.background,
+                  color: activeWatchlistId ? 'white' : theme.ui.text.primary,
+                  cursor: 'pointer',
+                  fontSize: theme.typography.fontSize.sm,
+                  fontWeight: activeWatchlistId ? theme.typography.fontWeight.bold : theme.typography.fontWeight.medium,
+                  fontFamily: theme.typography.fontFamily,
+                  outline: 'none',
+                  appearance: 'none',
+                  backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${activeWatchlistId ? 'white' : '%23888'}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 10px center',
+                  backgroundSize: '18px',
+                  transition: `all ${theme.transition.normal}`,
+                  boxShadow: activeWatchlistId ? theme.ui.shadow.md : 'none',
+                  minWidth: '180px'
+                }}
+                onMouseEnter={(e) => {
+                  if (!activeWatchlistId) {
+                    e.currentTarget.style.borderColor = theme.status.warning;
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!activeWatchlistId) {
+                    e.currentTarget.style.borderColor = theme.ui.border;
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 3px ${activeWatchlistId ? theme.status.warning : theme.status.info}30`;
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = activeWatchlistId ? theme.ui.shadow.md : 'none';
+                }}
+              >
+                <option value="">📊 All Stocks ({tickersWithData.length})</option>
+                {watchlists.map((watchlist) => {
+                  const watchlistId = watchlist.id || watchlist._id;
+                  return (
+                    <option key={watchlistId} value={watchlistId}>
+                      👀 {watchlist.name} ({watchlist.stocks?.length || 0})
+                    </option>
+                  );
+                })}
+              </select>
+            )}
+            
             <button
               onClick={() => setFilterPanelOpen(true)}
               style={{
                 padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
                 border: 'none',
-                borderRadius: theme.borderRadius.md,
+                borderRadius: theme.borderRadius.lg,
                 backgroundColor: theme.status.warning,
                 color: 'white',
                 cursor: 'pointer',
                 fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.semibold,
+                fontWeight: theme.typography.fontWeight.bold,
                 transition: `all ${theme.transition.normal}`,
-                boxShadow: theme.ui.shadow.sm
+                boxShadow: theme.ui.shadow.sm,
+                whiteSpace: 'nowrap'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.md;
               }}
               onMouseLeave={(e) => {
@@ -1151,22 +1326,24 @@ const Dashboard: React.FC = () => {
             >
               🔍 Filters & Sort
             </button>
+            
             <button
               onClick={() => setShowModal(true)}
               style={{
                 padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
                 border: 'none',
-                borderRadius: theme.borderRadius.md,
+                borderRadius: theme.borderRadius.lg,
                 backgroundColor: theme.status.info,
                 color: 'white',
                 cursor: 'pointer',
                 fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.semibold,
+                fontWeight: theme.typography.fontWeight.bold,
                 transition: `all ${theme.transition.normal}`,
-                boxShadow: theme.ui.shadow.sm
+                boxShadow: theme.ui.shadow.sm,
+                whiteSpace: 'nowrap'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
                 e.currentTarget.style.boxShadow = theme.ui.shadow.md;
               }}
               onMouseLeave={(e) => {
@@ -1174,7 +1351,7 @@ const Dashboard: React.FC = () => {
                 e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
               }}
             >
-              🎯 Manage Tickers
+              ⚙️ Manage Tickers
             </button>
           </div>
         </div>

@@ -20,6 +20,7 @@ export interface Stock {
   description?: string; // Company description
   inst_own?: number; // Total institutional ownership %
   inst_trans?: number; // Institutional transaction % (positive = buying, negative = selling)
+  sma200?: number; // SMA200 - percentage distance from 200-day moving average
   blackrock_source: string;
   vanguard_source: string;
   data_quality: string;

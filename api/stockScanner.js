@@ -3,7 +3,7 @@ const path = require('path');
 const dbService = require('./database');
 const { getStockPriceData } = require('./priceUtils');
 const { calculateFireLevel } = require('./fireUtils');
-const { getFinvizTickerData } = require('./finvizScraper');
+const { getComprehensiveFinvizData } = require('./finvizScraper');
 
 // HOLDING_THRESHOLD = 3.0; // 3% minimum holding
 const DELAY_BETWEEN_REQUESTS = 500; // ms
@@ -144,19 +144,20 @@ class StockScanner {
         return { success: false, reason: 'no_holdings_data' };
       }
 
-      // Get ticker data from Finviz (performance, employee count, IPO date, sector, industry, market cap) in a single call
-      const finvizData = await getFinvizTickerData(ticker);
+      // Get comprehensive ticker data from Finviz (all metrics including performance, valuation, profitability, etc.)
+      const finvizData = await getComprehensiveFinvizData(ticker);
       
       // Extract data with fallbacks
       const performance = finvizData?.performance || { week: null, month: null, year: null };
-      let employeeCount = finvizData?.employee_count || null;
-      const ipoDate = finvizData?.ipo_date || null;
-      const sector = finvizData?.sector || null;
-      const industry = finvizData?.industry || null;
-      const description = finvizData?.description || null;
-      const marketCap = finvizData?.market_cap || null;
-      const instOwn = finvizData?.inst_own || null;
-      const instTrans = finvizData?.inst_trans || null;
+      let employeeCount = finvizData?.company?.employees || null;
+      const ipoDate = finvizData?.company?.ipoDate || null;
+      const sector = finvizData?.company?.sector || null;
+      const industry = finvizData?.company?.industry || null;
+      const description = null; // getComprehensiveFinvizData doesn't include description
+      const marketCap = finvizData?.valuation?.marketCap || null;
+      const instOwn = finvizData?.ownership?.instOwn || null;
+      const instTrans = finvizData?.ownership?.instTrans || null;
+      const sma200 = finvizData?.technical?.sma200 || null;
 
       // Parse holdings and filter by market cap
       const holdings = this.parseHoldings(holdingsData, marketCap);
@@ -188,6 +189,7 @@ class StockScanner {
           description: description, // Company description from Finviz
           inst_own: instOwn, // Institutional ownership % from Finviz
           inst_trans: instTrans, // Institutional transaction % from Finviz (positive = buying)
+          sma200: sma200, // SMA200 percentage from Finviz (distance from 200-day moving average)
           performance: performance || { week: null, month: null, year: null }
         }
       };

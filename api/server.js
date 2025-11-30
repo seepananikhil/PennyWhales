@@ -35,27 +35,6 @@ let scanState = {
 
 let currentScanner = null;
 
-// Fetch stocks that crossed 200 SMA from Finviz
-async function fetch200SMACrossoverStocks() {
-  try {
-    console.log("📊 Fetching 200 SMA crossover stocks from Finviz...");
-    const sma200CrossUrl = process.env.SMA_200_CROSSOVER_URL || "https://finviz.com/screener.ashx?v=411&f=exch_nasd,sh_price_u3,ta_sma200_pca&o=-pe";
-    const sma200Stocks = await scrapeFinvizScreener(sma200CrossUrl);
-    
-    if (sma200Stocks && sma200Stocks.length > 0) {
-      const tickers = sma200Stocks.map((s) => s.ticker.toUpperCase().trim());
-      console.log(`✅ Fetched ${tickers.length} tickers from 200 SMA crossover screener`);
-      return tickers;
-    }
-    
-    console.log("⚠️ No stocks found from 200 SMA crossover screener");
-    return [];
-  } catch (error) {
-    console.error("❌ Error fetching 200 SMA crossover stocks:", error.message);
-    return [];
-  }
-}
-
 // Auto-populate watchlist with hot picks (fire 3-5, price <= $0.9)
 async function autoPopulateHotPicks() {
   try {
@@ -70,7 +49,7 @@ async function autoPopulateHotPicks() {
     // Filter for fire stocks (3-5) with price <= $1.00
     const hotPicks = scanResults.stocks.filter(
       (stock) =>
-        stock.fire_level >= 3 && stock.fire_level <= 5 && stock.price <= 1.0
+        stock.fire_level >= 4 && stock.fire_level <= 5 && stock.price <= 1.2
     );
 
     if (hotPicks.length === 0) {
@@ -80,8 +59,13 @@ async function autoPopulateHotPicks() {
       return;
     }
 
-    // Sort by fire level (highest first)
-    hotPicks.sort((a, b) => b.fire_level - a.fire_level);
+    // Sort by fire level (highest first), then by price (lowest first)
+    hotPicks.sort((a, b) => {
+      if (b.fire_level !== a.fire_level) {
+        return b.fire_level - a.fire_level;
+      }
+      return a.price - b.price;
+    });
 
     const hotPickTickers = hotPicks.map((s) => s.ticker);
     console.log(
@@ -192,120 +176,6 @@ async function autoPopulateHotPicks() {
     return { success: true, count: hotPickTickers.length };
   } catch (error) {
     console.error("❌ Error auto-populating Hot Picks:", error);
-    return { success: false, error: error.message };
-  }
-}
-
-// Auto-populate watchlist with 200 SMA crossover stocks (fire 3-5)
-async function autoPopulateSMACross() {
-  try {
-    console.log("📈 Auto-populating 200 SMA Crossover watchlist...");
-
-    // Fetch 200 SMA crossover tickers from Finviz
-    const sma200Tickers = await fetch200SMACrossoverStocks();
-    
-    if (sma200Tickers.length === 0) {
-      console.log("⚠️ No 200 SMA crossover tickers found from Finviz");
-      return { success: false, count: 0 };
-    }
-
-    // Get scan results to find stocks and their fire levels
-    const scanResults = await dbService.getScanResults();
-    if (!scanResults || !scanResults.stocks) {
-      console.log("⚠️ No scan results found for auto-population");
-      return { success: false, count: 0 };
-    }
-
-    // Filter for stocks that are in the SMA crossover list AND have high fire (3-5)
-    const highFireStocks = scanResults.stocks.filter(
-      (stock) => 
-        sma200Tickers.includes(stock.ticker) &&
-        stock.fire_level >= 3 && 
-        stock.fire_level <= 5
-    );
-
-    if (highFireStocks.length === 0) {
-      console.log(
-        "📊 No stocks match high fire criteria (fire 3-5) from 200 SMA crossover list"
-      );
-      return { success: false, count: 0 };
-    }
-
-    // Sort by fire level (highest first)
-    highFireStocks.sort((a, b) => b.fire_level - a.fire_level);
-
-    const smaCrossTickers = highFireStocks.map((s) => s.ticker);
-    console.log(
-      `🎯 Found ${smaCrossTickers.length} high-fire stocks for 200 SMA crossover: ${smaCrossTickers.join(
-        ", "
-      )}`
-    );
-
-    // Send Telegram notification for high fire SMA crossover stocks
-    const settings = await dbService.getSettings();
-    console.log(`🔍 Telegram settings check: chatId=${settings.telegramChatId ? 'configured' : 'NOT configured'}`);
-    
-    if (settings.telegramChatId) {
-      const stockList = highFireStocks
-        .slice(0, 10) // Limit to top 10 to avoid message being too long
-        .map(
-          (stock) =>
-            `• ${stock.ticker}: $${stock.price.toFixed(2)} ${'🔥'.repeat(stock.fire_level)}\n` +
-            `   BlackRock: ${stock.blackrock_pct.toFixed(1)}% | Vanguard: ${stock.vanguard_pct.toFixed(1)}%\n` +
-            `   📊 [View Chart](https://www.tradingview.com/chart/?symbol=${stock.ticker})`
-        )
-        .join("\n\n");
-
-      const totalCount = highFireStocks.length;
-      const message = `🚨 200 SMA CROSSOVER DETECTED! 🚨\n\n${stockList}${
-        totalCount > 10 ? `\n\n... and ${totalCount - 10} more stocks!` : ""
-      }`;
-
-      try {
-        console.log(`📤 Sending Telegram notification for ${highFireStocks.length} high-fire SMA crossover stocks...`);
-        await telegramService.sendMessage(settings.telegramChatId, message);
-        console.log(
-          `✅ Telegram notification sent for ${highFireStocks.length} high-fire SMA crossover stocks`
-        );
-      } catch (error) {
-        console.error(
-          "❌ Failed to send Telegram notification:",
-          error.message,
-          error.stack
-        );
-      }
-    } else {
-      console.log("⚠️ Telegram chat ID not configured in settings");
-    }
-
-    // Check if "200 SMA Crossover" watchlist exists
-    const watchlists = await dbService.getWatchlists();
-    let smaCrossWatchlist = watchlists.find(
-      (w) => w.name === "200 SMA Crossover"
-    );
-
-    if (!smaCrossWatchlist) {
-      // Create new 200 SMA Crossover watchlist
-      smaCrossWatchlist = await dbService.createWatchlist(
-        "200 SMA Crossover",
-        smaCrossTickers
-      );
-      console.log(
-        `✅ Created 200 SMA Crossover watchlist with ${smaCrossTickers.length} stocks`
-      );
-    } else {
-      // Update existing watchlist (will append to existing stocks)
-      await dbService.updateWatchlist(smaCrossWatchlist.id, {
-        stocks: smaCrossTickers,
-      });
-      console.log(
-        `✅ Updated 200 SMA Crossover watchlist with ${smaCrossTickers.length} new stocks (appended to existing)`
-      );
-    }
-
-    return { success: true, count: smaCrossTickers.length };
-  } catch (error) {
-    console.error("❌ Error auto-populating 200 SMA Crossover:", error);
     return { success: false, error: error.message };
   }
 }
@@ -537,10 +407,7 @@ app.post("/api/scan/start", async (req, res) => {
         console.log(`💾 Updated ticker list with ${qualifyingTickers.length} qualifying tickers`);
 
         // Auto-populate Hot Picks watchlist after scan completes
-        // await autoPopulateHotPicks();
-
-        // Auto-populate 200 SMA Crossover watchlist with high fire stocks (3-5)
-        await autoPopulateSMACross();
+        await autoPopulateHotPicks();
 
         scanState.scanning = false;
         scanState.last_scan = new Date().toISOString();
@@ -1082,19 +949,6 @@ app.get("/api/watchlists/hot-picks/populate", async (req, res) => {
     res
       .status(500)
       .json({ success: false, error: "Failed to populate Hot Picks" });
-  }
-});
-
-// 200 SMA Crossover auto-population endpoint
-app.get("/api/watchlists/sma-crossover/populate", async (req, res) => {
-  try {
-    const result = await autoPopulateSMACross();
-    res.json(result);
-  } catch (error) {
-    console.error("Error populating 200 SMA Crossover:", error);
-    res
-      .status(500)
-      .json({ success: false, error: "Failed to populate 200 SMA Crossover" });
   }
 });
 

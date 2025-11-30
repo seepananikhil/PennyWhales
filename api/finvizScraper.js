@@ -104,18 +104,22 @@ function extractPerformance(html, label) {
 function extractValue(html, label, occurrence = 1) {
   try {
     const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = new RegExp(`>${escapedLabel}<\\/td><td[^>]*class="snapshot-td2[^"]*"[^>]*>(?:<b>)?([^<]+)(?:<\\/b>)?<\\/td>`, 'g');
+    // Updated pattern to capture content including nested tags
+    const pattern = new RegExp(`>${escapedLabel}<\\/td><td[^>]*class="snapshot-td2[^"]*"[^>]*>(?:<b>)?(.*?)(?:<\\/b>)?<\\/td>`, 'g');
     
     let match;
     let count = 0;
     while ((match = pattern.exec(html)) !== null) {
       count++;
       if (count === occurrence) {
-        const value = match[1].trim();
+        let value = match[1].trim();
         if (value === '-' || value === '') return null;
         
+        // Remove HTML tags to get clean value
+        value = value.replace(/<[^>]*>/g, '');
+        
         // Parse numeric values with suffixes (M, B, T)
-        const numMatch = value.match(/([-+]?\d+\.?\d*)\s*([MBT])?/);
+        const numMatch = value.match(/([\-+]?\d+\.?\d*)\s*([MBT])?/);
         if (numMatch) {
           let num = parseFloat(numMatch[1]);
           const suffix = numMatch[2];
@@ -142,7 +146,8 @@ function extractValue(html, label, occurrence = 1) {
 function extractPercent(html, label, occurrence = 1) {
   try {
     const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = new RegExp(`>${escapedLabel}<\\/td><td[^>]*class="snapshot-td2[^"]*"[^>]*>(?:<b>)?([^<]+)(?:<\\/b>)?<\\/td>`, 'g');
+    // Updated pattern to capture content including nested tags
+    const pattern = new RegExp(`>${escapedLabel}<\\/td><td[^>]*class="snapshot-td2[^"]*"[^>]*>(?:<b>)?(.*?)(?:<\\/b>)?<\\/td>`, 'g');
     
     let match;
     let count = 0;
@@ -153,6 +158,7 @@ function extractPercent(html, label, occurrence = 1) {
         if (value === '-' || value === '') return null;
         
         // Extract percentage from the value (look for pattern like "+24.62%" or "-5.23%")
+        // This will work even if the percentage is inside span tags
         const percentMatch = value.match(/([-+]?\d+\.?\d*)%/);
         if (percentMatch) {
           return parseFloat(percentMatch[1]);
@@ -393,7 +399,7 @@ async function getComprehensiveFinvizData(ticker) {
       
       // EPS Metrics
       eps: {
-        ttm: extractValue(html, 'EPS \\(ttm\\)'),
+        ttm: extractValue(html, 'EPS (ttm)'),
         nextY: extractValue(html, 'EPS next Y'),
         nextQ: extractValue(html, 'EPS next Q'),
         thisYGrowth: extractPercent(html, 'EPS this Y'),
@@ -428,7 +434,7 @@ async function getComprehensiveFinvizData(ticker) {
       technical: {
         beta: extractValue(html, 'Beta'),
         atr: extractValue(html, 'ATR'),
-        rsi: extractValue(html, 'RSI'),
+        rsi: extractValue(html, 'RSI (14)'),
         sma20: extractPercent(html, 'SMA20'),
         sma50: extractPercent(html, 'SMA50'),
         sma200: extractPercent(html, 'SMA200'),
@@ -495,6 +501,5 @@ async function getComprehensiveFinvizData(ticker) {
 // Export functions
 module.exports = {
   scrapeFinvizScreener,
-  getFinvizTickerData,
   getComprehensiveFinvizData
 };
