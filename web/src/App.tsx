@@ -7,6 +7,7 @@ import Scans from './Scans';
 import Watchlist from './Watchlist';
 import Alerts from './Alerts';
 import Settings from './Settings';
+import Sectors from './Sectors';
 import Sidebar from './components/Sidebar';
 
 const AppContent: React.FC = () => {
@@ -28,6 +29,7 @@ const AppContent: React.FC = () => {
               <Route path="/scans" element={<Scans />} />
               <Route path="/watchlist" element={<Watchlist />} />
               <Route path="/alerts" element={<Alerts />} />
+              <Route path="/sectors" element={<Sectors />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>

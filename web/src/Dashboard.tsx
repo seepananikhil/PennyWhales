@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from './api';
 import { Stock } from './types';
-import { theme, getFireLevelStyle } from './theme';
+import { theme } from './theme';
 import TickerModal from './components/TickerModal';
 import ChartView from './components/ChartView';
-import GridView from './components/GridView';
 import FilterPanel from './components/FilterPanel';
+import { FaShareAlt } from 'react-icons/fa';
 
 const Dashboard: React.FC = () => {
   const [tickers, setTickers] = useState<string[]>([]);
@@ -56,16 +56,37 @@ const Dashboard: React.FC = () => {
   }, []);
   
   useEffect(() => {
-    // Read ticker from URL
+    // Read ticker and sector from URL
     const params = new URLSearchParams(window.location.search);
     const ticker = params.get('ticker');
+    const sector = params.get('sector');
+    
     setUrlTicker(ticker ? ticker.toUpperCase() : null);
+    
+    // Apply sector filter if present
+    if (sector) {
+      setMultiFilters(prev => ({
+        ...prev,
+        sectors: new Set([sector])
+      }));
+      setActiveFilter('multifilter');
+    }
     
     // Listen for browser back/forward navigation
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
       const ticker = params.get('ticker');
+      const sector = params.get('sector');
+      
       setUrlTicker(ticker ? ticker.toUpperCase() : null);
+      
+      if (sector) {
+        setMultiFilters(prev => ({
+          ...prev,
+          sectors: new Set([sector])
+        }));
+        setActiveFilter('multifilter');
+      }
     };
     
     window.addEventListener('popstate', handlePopState);
@@ -1006,6 +1027,63 @@ const Dashboard: React.FC = () => {
             }}>
               {filteredStocks.length} {filteredStocks.length === 1 ? 'Stock' : 'Stocks'}
             </span>
+            <button
+              onClick={() => {
+                // Create JSON with filtered tickers and their fire levels
+                const shareData = filteredStocks.map(ticker => {
+                  const stock = stockData.get(ticker);
+                  return {
+                    ticker,
+                    fire_level: stock?.fire_level || 0,
+                    blackrock_pct: stock?.blackrock_pct || 0,
+                    vanguard_pct: stock?.vanguard_pct || 0
+                  };
+                }).sort((a, b) => b.fire_level - a.fire_level);
+                
+                const jsonString = JSON.stringify(shareData, null, 2);
+                
+                // Copy to clipboard
+                navigator.clipboard.writeText(jsonString).then(() => {
+                  alert(`Copied ${filteredStocks.length} tickers with fire levels to clipboard!`);
+                }).catch(err => {
+                  console.error('Failed to copy:', err);
+                  // Fallback: create a download
+                  const blob = new Blob([jsonString], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `filtered-stocks-${new Date().toISOString().split('T')[0]}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                });
+              }}
+              style={{
+                padding: '4px 8px',
+                border: 'none',
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: theme.status.success,
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.semibold,
+                transition: `all ${theme.transition.normal}`,
+                boxShadow: theme.ui.shadow.sm,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = theme.ui.shadow.sm;
+              }}
+              title="Copy filtered stocks as JSON"
+            >
+              {FaShareAlt({ size: 12 })}
+            </button>
             {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0 || multiFilters.sectors.size > 0 || multiFilters.employeeCount.size > 0 || multiFilters.ipoDate.size > 0) && (
               <span style={{
                 fontSize: theme.typography.fontSize.sm,

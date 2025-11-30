@@ -824,6 +824,64 @@ app.post("/api/analyze/:ticker", async (req, res) => {
   }
 });
 
+// Sector Performance Endpoint
+app.get("/api/sectors/performance", async (req, res) => {
+  try {
+    const { timeframe = 'yearOne' } = req.query;
+    console.log(`📊 Fetching sector performance data for ${timeframe}...`);
+    
+    // Fetch directly from SPDR API
+    const axios = require('axios');
+    const apiUrl = 'https://www.ssga.com/bin/v1/ssmp/fund/sectortool.fp.json';
+    
+    const response = await axios.get(apiUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': 'https://www.ssga.com/us/en/intermediary/resources/sector-tracker',
+      },
+      timeout: 15000
+    });
+
+    const sectors = [];
+    
+    if (response.data && response.data.data) {
+      const performanceData = response.data.data[timeframe] || [];
+      
+      performanceData.forEach(fund => {
+        sectors.push({
+          ticker: fund.fundTicker.toUpperCase(),
+          sector: fund.name,
+          currentPrice: parseFloat(fund.currentPrice),
+          lastPrice: parseFloat(fund.lastPrice),
+          changeAmount: parseFloat(fund.change),
+          changePercent: parseFloat(fund.changePercentage),
+          priceDate: fund.currentPriceDate,
+          lastPriceDate: fund.lastPriceDate,
+          isBenchmark: fund.isBenchmark || false,
+          timestamp: new Date().toISOString()
+        });
+      });
+      
+      console.log(`✅ Successfully fetched ${sectors.length} sectors from SPDR API (${timeframe})`);
+    }
+    
+    res.json({
+      sectors,
+      count: sectors.length,
+      timeframe,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Error getting sector performance:", error);
+    res.status(500).json({ 
+      error: "Failed to get sector performance",
+      message: error.message 
+    });
+  }
+});
+
 // Rejected Tickers Endpoints
 app.get("/api/rejected-tickers", async (req, res) => {
   try {
