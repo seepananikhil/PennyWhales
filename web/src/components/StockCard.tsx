@@ -71,7 +71,6 @@ const StockCard: React.FC<StockCardProps> = ({
   const [showTooltip, setShowTooltip] = useState(false);
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [aiAnalysis, setAIAnalysis] = useState<string | null>(null);
-  const [companyDescription, setCompanyDescription] = useState<string | null>(null);
   const [aiLoading, setAILoading] = useState(false);
 
   const fireLevel = stock.fire_level || 0;
@@ -127,7 +126,6 @@ const StockCard: React.FC<StockCardProps> = ({
       setShowAIAnalysis(true);
       const data = await api.analyzeStock(stock.ticker);
       setAIAnalysis(data.analysis);
-      setCompanyDescription(data.description || null);
     } catch (error) {
       console.error(`Error fetching AI analysis for ${stock.ticker}:`, error);
       setAIAnalysis("Failed to load AI analysis. Please try again.");
@@ -234,10 +232,10 @@ const StockCard: React.FC<StockCardProps> = ({
           window.history.pushState({}, '', url);
         }}
         style={{
-          padding: "6px",
+          padding: "10px",
           backgroundColor: cardBackgroundColor,
           border: `${isSelected ? "2px" : "1px"} solid ${cardBorderColor}`,
-          borderRadius: "6px",
+          borderRadius: "8px",
           cursor: "pointer",
           transition: "all 0.2s ease",
           boxShadow: isSelected
@@ -256,62 +254,37 @@ const StockCard: React.FC<StockCardProps> = ({
             : "0 1px 2px rgba(0,0,0,0.08)";
         }}
       >
+        {/* Header: Ticker, Fire, Action Buttons */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "6px",
+            alignItems: "flex-start",
+            marginBottom: "8px",
+            gap: "8px",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              flexWrap: "wrap",
-              position: "relative",
-            }}
-          >
+          {/* Left: Ticker + Fire */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span
               style={{
                 fontWeight: "bold",
-                fontSize: "1.05rem",
+                fontSize: "1.15rem",
                 color: "#333",
                 textTransform: "uppercase",
-                position: "relative",
               }}
-              title={stock.company_name || stock.ticker}
             >
               {stock.ticker}
             </span>
-            <span style={{ fontSize: "1rem" }}>{getFireEmoji(fireLevel)}</span>
-            {sectorStyle && (
-              <span
-                style={{
-                  fontSize: "0.7rem",
-                  color: sectorStyle.color,
-                  fontWeight: "600",
-                  backgroundColor: sectorStyle.background,
-                  padding: "2px 6px",
-                  borderRadius: "4px",
-                  border: `1px solid ${sectorStyle.border}`,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "3px",
-                }}
-                title={sectorStyle.description}
-              >
-                <span>{sectorStyle.icon}</span>
-                <span>{stock.sector}</span>
-              </span>
-            )}
+            <span style={{ fontSize: "1.1rem" }}>{getFireEmoji(fireLevel)}</span>
           </div>
+
+          {/* Right: Action Buttons */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "3px",
+              gap: "4px",
               flexShrink: 0,
             }}
           >
@@ -655,6 +628,64 @@ const StockCard: React.FC<StockCardProps> = ({
           </div>
         </div>
 
+        {/* Company Name + Description + Sector */}
+        <div style={{ marginBottom: "10px" }}>
+          {stock.company_name && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "6px",
+                flexWrap: "wrap",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "0.9rem",
+                  color: "#333",
+                  fontWeight: "600",
+                  lineHeight: "1.3",
+                }}
+              >
+                {stock.company_name}
+              </span>
+              {sectorStyle && (
+                <span
+                  style={{
+                    fontSize: "0.7rem",
+                    color: sectorStyle.color,
+                    fontWeight: "600",
+                    backgroundColor: sectorStyle.background,
+                    padding: "3px 8px",
+                    borderRadius: "5px",
+                    border: `1px solid ${sectorStyle.border}`,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                  }}
+                  title={sectorStyle.description}
+                >
+                  <span>{sectorStyle.icon}</span>
+                  <span>{stock.sector}</span>
+                </span>
+              )}
+            </div>
+          )}
+          {stock.description && (
+            <div
+              style={{
+                fontSize: "0.75rem",
+                color: "#666",
+                lineHeight: "1.4",
+                marginBottom: "6px",
+              }}
+            >
+              {stock.description}
+            </div>
+          )}
+        </div>
+
         {/* AI Analysis Section */}
         {showAIAnalysis && aiAnalysis && (
           <div
@@ -701,24 +732,7 @@ const StockCard: React.FC<StockCardProps> = ({
                 ×
               </button>
             </div>
-            {companyDescription && (
-              <div style={{ 
-                marginBottom: "12px", 
-                paddingBottom: "12px", 
-                borderBottom: "1px solid #DDD6FE",
-                color: "#555",
-                fontSize: "0.82rem",
-              }}>
-                <ReactMarkdown
-                  components={{
-                    strong: ({node, ...props}) => <strong style={{ color: "#7C3AED", fontWeight: "600" }} {...props} />,
-                    p: ({node, ...props}) => <span {...props} />
-                  }}
-                >
-                  {companyDescription}
-                </ReactMarkdown>
-              </div>
-            )}
+            
             <div>
               <ReactMarkdown
                 components={{
@@ -734,23 +748,20 @@ const StockCard: React.FC<StockCardProps> = ({
           </div>
         )}
 
-        {/* Price Section */}
+        {/* Price + Quick Stats */}
         <div
           style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            gap: "4px",
-            marginBottom: "6px",
-            paddingBottom: "6px",
-            borderBottom: "1px solid #e9ecef",
+            marginBottom: "10px",
+            paddingBottom: "10px",
+            borderBottom: "2px solid #e9ecef",
           }}
         >
-          <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+          {/* Price Row */}
+          <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "6px" }}>
             <span
               style={{
                 fontWeight: "bold",
-                fontSize: "1.1rem",
+                fontSize: "1.3rem",
                 color: "#4F46E5",
               }}
             >
@@ -759,7 +770,7 @@ const StockCard: React.FC<StockCardProps> = ({
             {isLoading && (
               <span
                 style={{
-                  fontSize: "0.65rem",
+                  fontSize: "0.7rem",
                   color: "#999",
                   animation: "pulse 1.5s ease-in-out infinite",
                 }}
@@ -770,9 +781,9 @@ const StockCard: React.FC<StockCardProps> = ({
             {priceChange !== undefined && priceChange !== 0 && (
               <span
                 style={{
-                  fontSize: "0.85rem",
+                  fontSize: "0.95rem",
                   color: priceChange > 0 ? "#28a745" : "#dc3545",
-                  fontWeight: "600",
+                  fontWeight: "700",
                 }}
               >
                 {priceChange > 0 ? "+" : ""}
@@ -780,16 +791,66 @@ const StockCard: React.FC<StockCardProps> = ({
               </span>
             )}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+
+          {/* Quick Stats Badges */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+            {stock.market_cap && stock.market_cap > 0 && (
+              <span
+                style={{
+                  fontSize: "0.7rem",
+                  color: "#495057",
+                  fontWeight: "600",
+                  backgroundColor: "#f8f9fa",
+                  padding: "3px 8px",
+                  borderRadius: "6px",
+                  border: "1px solid #dee2e6",
+                }}
+                title={`Market Cap: ${(() => {
+                  const mcap = Number(stock.market_cap);
+                  return mcap >= 1000
+                    ? `$${(mcap / 1000).toFixed(1)}B`
+                    : `$${Math.round(mcap)}M`;
+                })()}`}
+              >
+                💼 {(() => {
+                  const mcap = Number(stock.market_cap);
+                  return mcap >= 1000
+                    ? `${(mcap / 1000).toFixed(1)}B`
+                    : `${Math.round(mcap)}M`;
+                })()}
+              </span>
+            )}
+            {stock.employee_count && stock.employee_count > 0 && (
+              <span
+                style={{
+                  fontSize: "0.7rem",
+                  color: "#495057",
+                  fontWeight: "600",
+                  backgroundColor: "#f0f8ff",
+                  padding: "3px 8px",
+                  borderRadius: "6px",
+                  border: "1px solid #c8dfef",
+                }}
+                title={`${stock.employee_count.toLocaleString()} employees`}
+              >
+                👥 {(() => {
+                  const emp = stock.employee_count;
+                  if (emp >= 1000) {
+                    return `${(emp / 1000).toFixed(emp >= 10000 ? 0 : 1)}k`;
+                  }
+                  return emp.toString();
+                })()}
+              </span>
+            )}
             {stock.ipo_date && (
               <span
                 style={{
-                  fontSize: "0.75rem",
+                  fontSize: "0.7rem",
                   color: "#6c757d",
                   fontWeight: "600",
                   backgroundColor: "#fff9e6",
-                  padding: "2px 6px",
-                  borderRadius: "5px",
+                  padding: "3px 8px",
+                  borderRadius: "6px",
                   border: "1px solid #ffe8a1",
                 }}
                 title={`IPO: ${stock.ipo_date}`}
@@ -819,65 +880,17 @@ const StockCard: React.FC<StockCardProps> = ({
             {stock.sma200 !== null && stock.sma200 !== undefined && (
               <span
                 style={{
-                  fontSize: "0.75rem",
+                  fontSize: "0.7rem",
                   color: stock.sma200 > 0 ? "#28a745" : "#dc3545",
                   fontWeight: "600",
                   backgroundColor: stock.sma200 > 0 ? "#d4edda" : "#f8d7da",
-                  padding: "2px 6px",
-                  borderRadius: "5px",
+                  padding: "3px 8px",
+                  borderRadius: "6px",
                   border: `1px solid ${stock.sma200 > 0 ? "#c3e6cb" : "#f5c6cb"}`,
                 }}
                 title={`${stock.sma200 > 0 ? "Above" : "Below"} 200-day moving average by ${Math.abs(stock.sma200).toFixed(1)}%`}
               >
                 📈 {stock.sma200 > 0 ? "+" : ""}{stock.sma200.toFixed(1)}%
-              </span>
-            )}
-            {stock.market_cap && stock.market_cap > 0 && (
-              <span
-                style={{
-                  fontSize: "0.75rem",
-                  color: "#6c757d",
-                  fontWeight: "600",
-                  backgroundColor: "#fafafa",
-                  padding: "2px 6px",
-                  borderRadius: "5px",
-                  border: "1px solid #e9ecef",
-                }}
-                title={`Market Cap: ${(() => {
-                  const mcap = Number(stock.market_cap);
-                  return mcap >= 1000
-                    ? `$${(mcap / 1000).toFixed(1)}B`
-                    : `$${Math.round(mcap)}M`;
-                })()}`}
-              >
-                💼 {(() => {
-                  const mcap = Number(stock.market_cap);
-                  return mcap >= 1000
-                    ? `${(mcap / 1000).toFixed(1)}B`
-                    : `${Math.round(mcap)}M`;
-                })()}
-              </span>
-            )}
-            {stock.employee_count && stock.employee_count > 0 && (
-              <span
-                style={{
-                  fontSize: "0.75rem",
-                  color: "#6c757d",
-                  fontWeight: "600",
-                  backgroundColor: "#f0f8ff",
-                  padding: "2px 6px",
-                  borderRadius: "5px",
-                  border: "1px solid #d0e8f2",
-                }}
-                title={`${stock.employee_count.toLocaleString()} employees`}
-              >
-                👥 {(() => {
-                  const emp = stock.employee_count;
-                  if (emp >= 1000) {
-                    return `${(emp / 1000).toFixed(emp >= 10000 ? 0 : 1)}k`;
-                  }
-                  return emp.toString();
-                })()}
               </span>
             )}
           </div>
@@ -911,14 +924,16 @@ const StockCard: React.FC<StockCardProps> = ({
             >
               BLACKROCK
             </div>
-            <div
-              style={{
-                fontSize: "1rem",
-                fontWeight: "bold",
-                color: "#4F46E5",
-              }}
-            >
-              {stock.blackrock_pct.toFixed(1)}%
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <span
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: "bold",
+                  color: "#4F46E5",
+                }}
+              >
+                {stock.blackrock_pct.toFixed(1)}%
+              </span>
             </div>
             {stock.blackrock_market_value &&
               stock.blackrock_market_value > 0 && (
@@ -934,6 +949,18 @@ const StockCard: React.FC<StockCardProps> = ({
                     : `${stock.blackrock_market_value.toFixed(1)}M`}
                 </div>
               )}
+            {stock.blackrock_change !== null && stock.blackrock_change !== undefined && stock.blackrock_change !== 0 && (
+              <div
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: "600",
+                  color: stock.blackrock_change > 0 ? "#28a745" : "#dc3545",
+                  marginTop: "2px",
+                }}
+              >
+                {stock.blackrock_change > 0 ? "+" : ""}{stock.blackrock_change.toFixed(2)}%
+              </div>
+            )}
           </div>
 
           <div
@@ -955,14 +982,16 @@ const StockCard: React.FC<StockCardProps> = ({
             >
               VANGUARD
             </div>
-            <div
-              style={{
-                fontSize: "1rem",
-                fontWeight: "bold",
-                color: "#4F46E5",
-              }}
-            >
-              {stock.vanguard_pct.toFixed(1)}%
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <span
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: "bold",
+                  color: "#4F46E5",
+                }}
+              >
+                {stock.vanguard_pct.toFixed(1)}%
+              </span>
             </div>
             {stock.vanguard_market_value && stock.vanguard_market_value > 0 && (
               <div
@@ -975,6 +1004,18 @@ const StockCard: React.FC<StockCardProps> = ({
                 {stock.vanguard_market_value >= 1000
                   ? `${(stock.vanguard_market_value / 1000).toFixed(1)}B`
                   : `${stock.vanguard_market_value.toFixed(1)}M`}
+              </div>
+            )}
+            {stock.vanguard_change !== null && stock.vanguard_change !== undefined && stock.vanguard_change !== 0 && (
+              <div
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: "600",
+                  color: stock.vanguard_change > 0 ? "#28a745" : "#dc3545",
+                  marginTop: "2px",
+                }}
+              >
+                {stock.vanguard_change > 0 ? "+" : ""}{stock.vanguard_change.toFixed(2)}%
               </div>
             )}
           </div>
@@ -998,14 +1039,16 @@ const StockCard: React.FC<StockCardProps> = ({
             >
               STATE ST
             </div>
-            <div
-              style={{
-                fontSize: "1rem",
-                fontWeight: "bold",
-                color: "#4F46E5",
-              }}
-            >
-              {stock.statestreet_pct ? stock.statestreet_pct.toFixed(1) : '0.0'}%
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <span
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: "bold",
+                  color: "#4F46E5",
+                }}
+              >
+                {stock.statestreet_pct ? stock.statestreet_pct.toFixed(1) : '0.0'}%
+              </span>
             </div>
             {stock.statestreet_market_value && stock.statestreet_market_value > 0 && (
               <div
@@ -1018,6 +1061,18 @@ const StockCard: React.FC<StockCardProps> = ({
                 {stock.statestreet_market_value >= 1000
                   ? `${(stock.statestreet_market_value / 1000).toFixed(1)}B`
                   : `${stock.statestreet_market_value.toFixed(1)}M`}
+              </div>
+            )}
+            {stock.statestreet_change !== null && stock.statestreet_change !== undefined && stock.statestreet_change !== 0 && (
+              <div
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: "600",
+                  color: stock.statestreet_change > 0 ? "#28a745" : "#dc3545",
+                  marginTop: "2px",
+                }}
+              >
+                {stock.statestreet_change > 0 ? "+" : ""}{stock.statestreet_change.toFixed(2)}%
               </div>
             )}
           </div>
@@ -1064,7 +1119,7 @@ const StockCard: React.FC<StockCardProps> = ({
                     marginTop: "2px",
                   }}
                 >
-                  {stock.inst_trans > 0 ? "+" : ""}{stock.inst_trans.toFixed(1)}% {stock.inst_trans > 0 ? "🟢" : stock.inst_trans < 0 ? "🔴" : ""}
+                  {stock.inst_trans > 0 ? "+" : ""}{stock.inst_trans.toFixed(1)}%
                 </div>
               )}
             </div>
@@ -1076,10 +1131,58 @@ const StockCard: React.FC<StockCardProps> = ({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
+              gridTemplateColumns: "1fr 1fr 1fr 1fr",
               gap: "6px",
             }}
           >
+            <div
+              style={{
+                textAlign: "center",
+                backgroundColor:
+                  stock.performance.day && stock.performance.day > 0
+                    ? "#d4edda"
+                    : stock.performance.day && stock.performance.day < 0
+                    ? "#f8d7da"
+                    : "#f8f9fa",
+                padding: "5px 4px",
+                borderRadius: "6px",
+                border: `1px solid ${
+                  stock.performance.day && stock.performance.day > 0
+                    ? "#c3e6cb"
+                    : stock.performance.day && stock.performance.day < 0
+                    ? "#f5c6cb"
+                    : "#e9ecef"
+                }`,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "0.7rem",
+                  color: "#6c757d",
+                  fontWeight: "600",
+                  marginBottom: "2px",
+                }}
+              >
+                Day
+              </div>
+              <div
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: "bold",
+                  color:
+                    stock.performance.day && stock.performance.day > 0
+                      ? "#28a745"
+                      : stock.performance.day && stock.performance.day < 0
+                      ? "#dc3545"
+                      : "#6c757d",
+                }}
+              >
+                {stock.performance.day !== null && stock.performance.day !== undefined
+                  ? `${stock.performance.day > 0 ? "+" : ""}${stock.performance.day.toFixed(1)}%`
+                  : "—"}
+              </div>
+            </div>
+
             <div
               style={{
                 textAlign: "center",

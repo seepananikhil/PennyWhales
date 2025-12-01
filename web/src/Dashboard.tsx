@@ -355,29 +355,37 @@ const Dashboard: React.FC = () => {
 
   const handleToggleWatchlist = async (ticker: string) => {
     try {
-      // Always use "Personal" watchlist by name for eye icon operations
-      const personalWatchlist = watchlists.find((w: any) => w.name === 'Personal');
-      let targetWatchlistId = personalWatchlist?.id;
+      // Use the currently selected watchlist from dropdown, or fall back to "Personal"
+      let targetWatchlistId = activeWatchlistId;
       
-      // If Personal watchlist doesn't exist, create it
+      // If no watchlist is selected, try to find or create "Personal"
       if (!targetWatchlistId) {
-        try {
-          const newWatchlist = await api.createWatchlist('Personal');
-          console.log('Created Personal watchlist:', newWatchlist);
-          targetWatchlistId = newWatchlist.watchlist.id;
-          // Reload watchlists
-          const updatedData = await api.getWatchlists();
-          setWatchlists(updatedData.watchlists || []);
-        } catch (createErr) {
-          console.error('Error creating Personal watchlist:', createErr);
-          return;
+        const personalWatchlist = watchlists.find((w: any) => w.name === 'Personal');
+        targetWatchlistId = personalWatchlist?.id;
+        
+        // If Personal watchlist doesn't exist, create it
+        if (!targetWatchlistId) {
+          try {
+            const newWatchlist = await api.createWatchlist('Personal');
+            console.log('Created Personal watchlist:', newWatchlist);
+            targetWatchlistId = newWatchlist.watchlist.id;
+            // Reload watchlists
+            const updatedData = await api.getWatchlists();
+            setWatchlists(updatedData.watchlists || []);
+            // Set it as active
+            setActiveWatchlistId(targetWatchlistId);
+            await loadActiveWatchlist(targetWatchlistId);
+          } catch (createErr) {
+            console.error('Error creating Personal watchlist:', createErr);
+            return;
+          }
         }
       }
 
-      // Check if ticker is in Personal watchlist
-      const isInPersonal = watchlistStocks.has(ticker);
+      // Check if ticker is in the active watchlist
+      const isInWatchlist = watchlistStocks.has(ticker);
 
-      if (isInPersonal) {
+      if (isInWatchlist) {
         const result = await api.removeFromWatchlist(targetWatchlistId, [ticker]);
         if (result.success) {
           setWatchlistStocks(prev => {
@@ -819,16 +827,14 @@ const Dashboard: React.FC = () => {
               comparison = marketCapAscA - marketCapAscB;
               break;
             case 'daily-change-desc':
-              // Sort by daily price change (gainers first = highest percentage first)
-              const dailyChangeA = livePriceData.get(a)?.priceChange || 0;
-              const dailyChangeB = livePriceData.get(b)?.priceChange || 0;
-              comparison = dailyChangeB - dailyChangeA;
+              // Sort by daily price change from performance.day (gainers first = highest percentage first)
+              if (!stockA?.performance || !stockB?.performance) comparison = 0;
+              else comparison = (stockB.performance.day || 0) - (stockA.performance.day || 0);
               break;
             case 'daily-change-asc':
-              // Sort by daily price change (losers first = lowest percentage first)
-              const dailyChangeAscA = livePriceData.get(a)?.priceChange || 0;
-              const dailyChangeAscB = livePriceData.get(b)?.priceChange || 0;
-              comparison = dailyChangeAscA - dailyChangeAscB;
+              // Sort by daily price change from performance.day (losers first = lowest percentage first)
+              if (!stockA?.performance || !stockB?.performance) comparison = 0;
+              else comparison = (stockA.performance.day || 0) - (stockB.performance.day || 0);
               break;
             case 'weekly-change-desc':
               // Sort by weekly performance (gainers first = highest percentage first)
@@ -978,15 +984,13 @@ const Dashboard: React.FC = () => {
         case 'price-asc':
           return stockA.price - stockB.price;
         case 'price-change-desc':
-          // Sort by price change percentage (highest first)
-          const priceChangeA = livePriceData.get(a)?.priceChange || 0;
-          const priceChangeB = livePriceData.get(b)?.priceChange || 0;
-          return priceChangeB - priceChangeA;
+          // Sort by price change percentage from performance.day (highest first)
+          if (!stockA?.performance || !stockB?.performance) return 0;
+          return (stockB.performance.day || 0) - (stockA.performance.day || 0);
         case 'price-change-asc':
-          // Sort by price change percentage (lowest first)
-          const priceChangeAscA = livePriceData.get(a)?.priceChange || 0;
-          const priceChangeAscB = livePriceData.get(b)?.priceChange || 0;
-          return priceChangeAscA - priceChangeAscB;
+          // Sort by price change percentage from performance.day (lowest first)
+          if (!stockA?.performance || !stockB?.performance) return 0;
+          return (stockA.performance.day || 0) - (stockB.performance.day || 0);
         case 'market-value-desc':
           // Sort by market cap (highest first)
           const marketCapA = stockA.market_cap || 0;
@@ -998,23 +1002,13 @@ const Dashboard: React.FC = () => {
           const marketCapAscB = stockB.market_cap || 0;
           return marketCapAscA - marketCapAscB;
         case 'daily-gainers':
-          // Sort by daily gainers (from topGainers list)
-          // Stocks not in list get pushed to end
-          const indexA_gainers = topGainers.indexOf(a);
-          const indexB_gainers = topGainers.indexOf(b);
-          if (indexA_gainers === -1 && indexB_gainers === -1) return 0;
-          if (indexA_gainers === -1) return 1;
-          if (indexB_gainers === -1) return -1;
-          return indexA_gainers - indexB_gainers;
+          // Sort by daily price change from performance.day (highest gains first)
+          if (!stockA?.performance || !stockB?.performance) return 0;
+          return (stockB.performance.day || 0) - (stockA.performance.day || 0);
         case 'daily-losers':
-          // Sort by daily losers (from topLosers list)
-          // Stocks not in list get pushed to end
-          const indexA_losers = topLosers.indexOf(a);
-          const indexB_losers = topLosers.indexOf(b);
-          if (indexA_losers === -1 && indexB_losers === -1) return 0;
-          if (indexA_losers === -1) return 1;
-          if (indexB_losers === -1) return -1;
-          return indexA_losers - indexB_losers;
+          // Sort by daily price change from performance.day (lowest/most negative first)
+          if (!stockA?.performance || !stockB?.performance) return 0;
+          return (stockA.performance.day || 0) - (stockB.performance.day || 0);
         case 'weekly-gainers':
           // Sort by weekly performance (highest gains first)
           if (!stockA?.performance || !stockB?.performance) return 0;

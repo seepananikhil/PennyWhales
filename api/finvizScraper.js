@@ -258,121 +258,6 @@ function extractVolatility(html) {
 }
 
 /**
- * Get ticker data from Finviz (performance, employee count, IPO date, sector, industry)
- * and company description from Yahoo Finance
- * @param {string} ticker - Stock ticker symbol
- * @returns {Promise<Object>} Ticker data including performance, employee_count, ipo_date, sector, industry, and description
- */
-async function getFinvizTickerData(ticker) {
-  try {
-    const response = await axios.get(
-      `https://finviz.com/quote.ashx?t=${ticker}&p=d`,
-      {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-      }
-    );
-
-    if (response.status !== 200) return null;
-    const html = response.data;
-    
-    // Parse performance data from HTML using the tested helper function
-    const performance = {
-      week: extractPerformance(html, 'Perf Week'),
-      month: extractPerformance(html, 'Perf Month'),
-      year: extractPerformance(html, 'Perf Year')
-    };
-
-    // Parse employee count from HTML
-    let employeeCount = null;
-    const employeeMatch = html.match(/>Employees<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<b>([^<]+)<\/b>/);
-    if (employeeMatch) {
-      const empStr = employeeMatch[1].trim();
-      if (empStr && empStr !== '-') {
-        employeeCount = parseInt(empStr.replace(/,/g, ''));
-      }
-    }
-
-    // Parse IPO date from HTML
-    let ipoDate = null;
-    // Match pattern: <td>IPO</td><td...><b>Mar 13, 1986</b></td>
-    const ipoMatch = html.match(/>IPO<\/td>[\s\S]*?<b>([A-Z][a-z]{2}\s+\d{1,2},\s+\d{4})<\/b>/);
-    if (ipoMatch) {
-      const dateStr = ipoMatch[1].trim();
-      if (dateStr && dateStr !== '-') {
-        ipoDate = dateStr;
-      }
-    }
-
-    // Parse Sector and Industry from HTML
-    let sector = null;
-    let industry = null;
-    // Match pattern: <a href="screener.ashx?...f=sec_technology" class="tab-link">Technology</a>
-    const sectorMatch = html.match(/<a[^>]*href="[^"]*f=sec_[^"]*"[^>]*class="tab-link"[^>]*>([^<]+)<\/a>/);
-    if (sectorMatch) {
-      sector = sectorMatch[1].trim();
-    }
-    // Match pattern: <a href="screener.ashx?...f=ind_consumerelectronics" class="tab-link"...>Consumer Electronics</a>
-    const industryMatch = html.match(/<a[^>]*href="[^"]*f=ind_[^"]*"[^>]*class="tab-link[^"]*"[^>]*>([^<]+)<\/a>/);
-    if (industryMatch) {
-      industry = industryMatch[1].trim();
-    }
-
-    // Parse Market Cap from HTML
-    let marketCap = null;
-    const marketCapMatch = html.match(/>Market Cap<\/td>[\s\S]*?<b>([^<]+)<\/b>/);
-    if (marketCapMatch) {
-      const capStr = marketCapMatch[1].trim();
-      // Parse market cap: e.g., "877.36M" or "3.45B" or "1.23T"
-      const capValue = parseFloat(capStr);
-      if (!isNaN(capValue)) {
-        if (capStr.includes('T')) {
-          marketCap = capValue * 1000000; // Convert trillions to millions
-        } else if (capStr.includes('B')) {
-          marketCap = capValue * 1000; // Convert billions to millions
-        } else if (capStr.includes('M')) {
-          marketCap = capValue; // Already in millions
-        }
-      }
-    }
-
-    // Get company description from Finviz fullview-profile
-    let description = null;
-    const descMatch = html.match(/<td[^>]*class="fullview-profile"[^>]*>(.*?)<\/td>/s);
-    if (descMatch) {
-      description = descMatch[1]
-        .replace(/<[^>]*>/g, '') // Remove HTML tags
-        .replace(/\s+/g, ' ') // Normalize whitespace
-        .trim();
-      // Limit to reasonable length
-      if (description.length > 400) {
-        description = description.substring(0, 400) + '...';
-      }
-    }
-
-    // Parse institutional ownership and transactions
-    const instOwn = extractPercent(html, 'Inst Own');
-    const instTrans = extractPercent(html, 'Inst Trans');
-
-    return {
-      performance,
-      employee_count: employeeCount,
-      ipo_date: ipoDate,
-      sector: sector,
-      industry: industry,
-      market_cap: marketCap,
-      description: description,
-      inst_own: instOwn,
-      inst_trans: instTrans
-    };
-  } catch (error) {
-    console.error(`Error fetching Finviz data for ${ticker}:`, error.message);
-    return null;
-  }
-}
-
-/**
  * Extract comprehensive fundamental and technical data from Finviz
  * @param {string} ticker - Stock ticker symbol
  * @returns {Promise<Object>} Comprehensive stock data
@@ -467,6 +352,7 @@ async function getComprehensiveFinvizData(ticker) {
       
       // Performance
       performance: {
+        day: extractPercent(html, 'Change'),
         week: extractPerformance(html, 'Perf Week'),
         month: extractPerformance(html, 'Perf Month'),
         quarter: extractPerformance(html, 'Perf Quarter'),

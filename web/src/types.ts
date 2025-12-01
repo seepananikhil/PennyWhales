@@ -32,6 +32,7 @@ export interface Stock {
   previous_fire_level?: number; // Previous fire level from last scan
   is_new?: boolean; // True if this is a new fire stock
   performance?: {
+    day?: number;
     week: number;
     month: number;
     year: number;

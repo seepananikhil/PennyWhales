@@ -44,7 +44,7 @@ async function getCompanyDescription(ticker, sector, industry, companyName = nul
 /**
  * Generate enhanced analysis prompt with comprehensive Finviz data
  */
-async function generateEnhancedPrompt(stock, description = null) {
+async function generateEnhancedPrompt(stock) {
   const combined = (stock.blackrock_pct || 0) + (stock.vanguard_pct || 0) + (stock.statestreet_pct || 0);
   
   // Fetch comprehensive data from Finviz
@@ -53,17 +53,7 @@ async function generateEnhancedPrompt(stock, description = null) {
   
   if (!finvizData) {
     console.log('⚠️ Falling back to basic prompt');
-    return { prompt: generateBasicPrompt(stock), description: null };
-  }
-  
-  // Get company description using LLM if not provided
-  if (!description) {
-    description = await getCompanyDescription(
-      stock.ticker,
-      finvizData.company?.sector || stock.sector,
-      finvizData.company?.industry,
-      finvizData.company?.name
-    );
+    return { prompt: generateBasicPrompt(stock) };
   }
   
   let prompt = `Analyze this penny stock with ALL available data:
@@ -115,7 +105,6 @@ ANALYST:
 COMPANY:
 - Employees: ${finvizData.company?.employees || stock.employee_count || 'N/A'}
 - IPO: ${finvizData.company?.ipoDate || stock.ipo_date || 'N/A'}
-- Description: ${description || 'N/A'}
 
 Provide RISK ANALYSIS in this exact format (no extra text before or after):
 
@@ -138,7 +127,7 @@ Guidelines:
 - Consider: profitability, debt, institutional backing, volatility, sector risks
 - Keep each factor brief and actionable`;
 
-  return { prompt, description };
+  return { prompt };
 }
 
 /**
@@ -149,13 +138,11 @@ async function analyzeWithGroq(stock, useEnhanced = true) {
     throw new Error('GROQ_API_KEY not set in environment variables');
   }
 
-  let description = null;
   let prompt;
   
   if (useEnhanced) {
     const result = await generateEnhancedPrompt(stock);
     prompt = result.prompt;
-    description = result.description;
   } else {
     prompt = generateBasicPrompt(stock);
   }
@@ -182,7 +169,6 @@ async function analyzeWithGroq(stock, useEnhanced = true) {
   return {
     provider: 'Groq (Llama 3.1 70B)',
     analysis: completion.choices[0].message.content,
-    description: description,
     responseTime: `${responseTime}ms`,
     tokensUsed: completion.usage
   };

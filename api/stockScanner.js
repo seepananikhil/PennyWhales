@@ -149,7 +149,7 @@ class StockScanner {
       const finvizData = await getComprehensiveFinvizData(ticker);
       
       // Extract data with fallbacks
-      const performance = finvizData?.performance || { week: null, month: null, year: null };
+      const performance = finvizData?.performance || { day: null, week: null, month: null, year: null };
       let employeeCount = finvizData?.company?.employees || null;
       const ipoDate = finvizData?.company?.ipoDate || null;
       const sector = finvizData?.company?.sector || null;
@@ -205,7 +205,7 @@ class StockScanner {
           inst_own: instOwn, // Institutional ownership % from Finviz
           inst_trans: instTrans, // Institutional transaction % from Finviz (positive = buying)
           sma200: sma200, // SMA200 percentage from Finviz (distance from 200-day moving average)
-          performance: performance || { week: null, month: null, year: null }
+          performance: performance || { day: null, week: null, month: null, year: null }
         }
       };
     } catch (error) {
