@@ -6,6 +6,7 @@ import { SiTradingview } from "react-icons/si";
 import { FaBell, FaBellSlash, FaBrain } from "react-icons/fa";
 import { MdDelete, MdDeleteForever } from "react-icons/md";
 import PriceAlertModal from "./PriceAlertModal";
+import ReactMarkdown from "react-markdown";
 
 // Custom eye icons as React components
 const EyeIcon = ({ size = 16 }: { size?: number }) => (
@@ -280,6 +281,7 @@ const StockCard: React.FC<StockCardProps> = ({
                 textTransform: "uppercase",
                 position: "relative",
               }}
+              title={stock.company_name || stock.ticker}
             >
               {stock.ticker}
             </span>
@@ -658,12 +660,12 @@ const StockCard: React.FC<StockCardProps> = ({
           <div
             style={{
               marginBottom: "8px",
-              padding: "10px",
+              padding: "12px",
               backgroundColor: "#F5F3FF",
               border: "2px solid #8B5CF6",
               borderRadius: "8px",
               fontSize: "0.85rem",
-              lineHeight: "1.5",
+              lineHeight: "1.6",
               color: "#333",
             }}
             onClick={(e) => e.stopPropagation()}
@@ -673,13 +675,13 @@ const StockCard: React.FC<StockCardProps> = ({
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                marginBottom: "8px",
-                paddingBottom: "6px",
-                borderBottom: "1px solid #DDD6FE",
+                marginBottom: "10px",
+                paddingBottom: "8px",
+                borderBottom: "2px solid #DDD6FE",
               }}
             >
-              <span style={{ fontWeight: "bold", color: "#7C3AED", fontSize: "0.9rem" }}>
-                🤖 AI Analysis
+              <span style={{ fontWeight: "bold", color: "#7C3AED", fontSize: "0.95rem" }}>
+                🤖 AI Risk Analysis
               </span>
               <button
                 onClick={(e) => {
@@ -691,7 +693,7 @@ const StockCard: React.FC<StockCardProps> = ({
                   border: "none",
                   color: "#8B5CF6",
                   cursor: "pointer",
-                  fontSize: "1.2rem",
+                  fontSize: "1.3rem",
                   padding: "0 4px",
                   lineHeight: 1,
                 }}
@@ -704,15 +706,30 @@ const StockCard: React.FC<StockCardProps> = ({
                 marginBottom: "12px", 
                 paddingBottom: "12px", 
                 borderBottom: "1px solid #DDD6FE",
-                fontStyle: "italic",
-                color: "#555"
+                color: "#555",
+                fontSize: "0.82rem",
               }}>
-                <strong style={{ color: "#7C3AED", fontStyle: "normal" }}>Company: </strong>
-                {companyDescription}
+                <ReactMarkdown
+                  components={{
+                    strong: ({node, ...props}) => <strong style={{ color: "#7C3AED", fontWeight: "600" }} {...props} />,
+                    p: ({node, ...props}) => <span {...props} />
+                  }}
+                >
+                  {companyDescription}
+                </ReactMarkdown>
               </div>
             )}
-            <div style={{ whiteSpace: "pre-wrap" }}>
-              {aiAnalysis}
+            <div>
+              <ReactMarkdown
+                components={{
+                  strong: ({node, ...props}) => <strong style={{ color: "#DC2626", fontWeight: "700", fontSize: "0.9rem" }} {...props} />,
+                  p: ({node, ...props}) => <p style={{ margin: "6px 0" }} {...props} />,
+                  ul: ({node, ...props}) => <ul style={{ margin: "6px 0", paddingLeft: "20px" }} {...props} />,
+                  li: ({node, ...props}) => <li style={{ margin: "4px 0" }} {...props} />
+                }}
+              >
+                {aiAnalysis}
+              </ReactMarkdown>
             </div>
           </div>
         )}

@@ -17,6 +17,7 @@ export interface Stock {
   ipo_date?: string; // IPO date from Finviz
   sector?: string; // Sector from Finviz
   industry?: string; // Industry from Finviz
+  company_name?: string; // Company name from Finviz
   description?: string; // Company description
   inst_own?: number; // Total institutional ownership %
   inst_trans?: number; // Institutional transaction % (positive = buying, negative = selling)

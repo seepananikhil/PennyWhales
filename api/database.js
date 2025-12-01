@@ -231,6 +231,13 @@ class DatabaseService {
     }
   }
 
+  async getStockByTicker(ticker) {
+    await this.init();
+    const normalizedTicker = ticker.toUpperCase().trim();
+    const scanResults = await this.getScanResults();
+    return scanResults.stocks?.find(s => s.ticker === normalizedTicker) || null;
+  }
+
   async saveScanResults(results) {
     await this.init();
     

@@ -13,10 +13,11 @@ const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_
 /**
  * Get company description using LLM
  */
-async function getCompanyDescription(ticker, sector, industry) {
+async function getCompanyDescription(ticker, sector, industry, companyName = null) {
   if (!groq) return null;
   
   try {
+    const nameInfo = companyName ? `Company: ${companyName}, ` : '';
     const completion = await groq.chat.completions.create({
       messages: [
         {
@@ -25,7 +26,7 @@ async function getCompanyDescription(ticker, sector, industry) {
         },
         {
           role: 'user',
-          content: `What does ${ticker} do? Sector: ${sector || 'Unknown'}, Industry: ${industry || 'Unknown'}. Keep it brief (2-3 sentences).`
+          content: `What does ${ticker} (${nameInfo}Sector: ${sector || 'Unknown'}, Industry: ${industry || 'Unknown'}) do? Keep it brief (2-3 sentences).`
         }
       ],
       model: 'llama-3.3-70b-versatile',
@@ -60,7 +61,8 @@ async function generateEnhancedPrompt(stock, description = null) {
     description = await getCompanyDescription(
       stock.ticker,
       finvizData.company?.sector || stock.sector,
-      finvizData.company?.industry
+      finvizData.company?.industry,
+      finvizData.company?.name
     );
   }
   
@@ -115,49 +117,28 @@ COMPANY:
 - IPO: ${finvizData.company?.ipoDate || stock.ipo_date || 'N/A'}
 - Description: ${description || 'N/A'}
 
-Provide COMPREHENSIVE analysis:
-1. Risk Score (1-10, higher=riskier)
-2. Value Score (1-10, higher=better value)
-3. Growth Potential (Low/Medium/High)
-4. Entry Price Recommendation (specific $ target based on support levels, moving averages, and valuation)
-5. Key Insights (2-3 critical observations)
-6. Investment Verdict (STRONG BUY/BUY/HOLD/SELL/STRONG SELL)
+Provide RISK ANALYSIS in this exact format (no extra text before or after):
 
-Use ALL data points. Be thorough but concise. For entry price, consider: current price vs SMAs, support/resistance levels, RSI overbought/oversold, and intrinsic value indicators.`;
+**Risk Score: X/10**
+
+**Risk Level:** HIGH RISK
+
+**Key Factors:**
+- First key risk factor (one sentence)
+- Second key risk factor (one sentence)  
+- Third key risk factor (one sentence)
+
+Guidelines:
+- Finance/Lending = HIGH RISK (8-10)
+- Therapeutics/Biotech = HIGH RISK (8-10)
+- Technology/Established = MEDIUM RISK (4-7)
+- Utilities/Staples = LOW RISK (1-3)
+- Keep each factor concise and specific
+- Focus on: profitability, debt, sector risks, volatility
+- Consider: profitability, debt, institutional backing, volatility, sector risks
+- Keep each factor brief and actionable`;
 
   return { prompt, description };
-}
-
-/**
- * Generate basic prompt (fallback)
- */
-function generateBasicPrompt(stock) {
-  const combined = (stock.blackrock_pct || 0) + (stock.vanguard_pct || 0) + (stock.statestreet_pct || 0);
-  
-  return `Analyze this penny stock:
-
-TICKER: ${stock.ticker}
-SECTOR: ${stock.sector || 'Unknown'}
-FIRE LEVEL: ${stock.fire_level || 0}/5
-
-FUNDAMENTALS:
-- Price: $${stock.price || 0} | Market Cap: $${stock.market_cap || 0}M
-- Employees: ${stock.employee_count || 'N/A'} | IPO: ${stock.ipo_date || 'N/A'}
-
-INSTITUTIONAL:
-- VG: ${stock.vanguard_pct || 0}% | BR: ${stock.blackrock_pct || 0}% | SS: ${stock.statestreet_pct || 0}%
-- Total: ${combined.toFixed(1)}%
-
-PERFORMANCE:
-- Week: ${stock.performance?.week || 'N/A'}% | Month: ${stock.performance?.month || 'N/A'}%
-
-Provide:
-1. Risk Score (1-10)
-2. Value Score (1-10)
-3. Growth Potential
-4. Entry Price Recommendation (specific $ target)
-5. Key Insight
-6. Verdict (BUY/HOLD/SELL)`;
 }
 
 /**
@@ -184,7 +165,7 @@ async function analyzeWithGroq(stock, useEnhanced = true) {
     messages: [
       {
         role: 'system',
-        content: 'You are an expert stock analyst specializing in penny stocks, value investing, and institutional investment patterns. Analyze ALL provided data comprehensively - fundamentals, valuation, growth, technicals, and institutional backing. Provide detailed, data-driven insights.'
+        content: 'You are a risk assessment specialist for penny stocks. Provide clear, structured risk analysis with specific factors. Finance/Lending and Therapeutics/Biotech are HIGH RISK (8-10). Use the exact format provided. Be concise and specific.'
       },
       {
         role: 'user',
@@ -193,7 +174,7 @@ async function analyzeWithGroq(stock, useEnhanced = true) {
     ],
     model: 'llama-3.3-70b-versatile',
     temperature: 0.3,
-    max_tokens: 500 // Increased for comprehensive analysis
+    max_tokens: 200 // Reduced for focused risk assessment
   });
   
   const responseTime = Date.now() - startTime;

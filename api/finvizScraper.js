@@ -194,6 +194,28 @@ function extractText(html, label) {
 }
 
 /**
+ * Extract company name from HTML
+ */
+function extractCompanyName(html, ticker) {
+  try {
+    // Extract from page title - format: "AAPL - Apple Inc Stock Price and Quote"
+    const titleMatch = html.match(/<title>([^<]+)<\/title>/);
+    if (titleMatch) {
+      const title = titleMatch[1];
+      // Format: "TICKER - Company Name Stock Price and Quote"
+      const nameMatch = title.match(/[A-Z]+\s*-\s*(.+?)\s+Stock\s+Price/i);
+      if (nameMatch) {
+        return nameMatch[1].trim();
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
  * Extract sector from HTML
  */
 function extractSector(html) {
@@ -467,6 +489,7 @@ async function getComprehensiveFinvizData(ticker) {
       
       // Company Info
       company: {
+        name: extractCompanyName(html, ticker),
         employees: extractValue(html, 'Employees'),
         ipoDate: extractText(html, 'IPO'),
         sector: extractSector(html),

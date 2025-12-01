@@ -4,6 +4,7 @@ const dbService = require('./database');
 const { getStockPriceData } = require('./priceUtils');
 const { calculateFireLevel } = require('./fireUtils');
 const { getComprehensiveFinvizData } = require('./finvizScraper');
+const { getCompanyDescription } = require('./llmAnalyzer');
 
 // HOLDING_THRESHOLD = 3.0; // 3% minimum holding
 const DELAY_BETWEEN_REQUESTS = 500; // ms
@@ -153,11 +154,24 @@ class StockScanner {
       const ipoDate = finvizData?.company?.ipoDate || null;
       const sector = finvizData?.company?.sector || null;
       const industry = finvizData?.company?.industry || null;
-      const description = null; // getComprehensiveFinvizData doesn't include description
+      const companyName = finvizData?.company?.name || null;
       const marketCap = finvizData?.valuation?.marketCap || null;
       const instOwn = finvizData?.ownership?.instOwn || null;
       const instTrans = finvizData?.ownership?.instTrans || null;
       const sma200 = finvizData?.technical?.sma200 || null;
+      
+      // Get company description (one-time fetch, only if not already in database)
+      let description = null;
+      const existingStock = await dbService.getStockByTicker(ticker);
+      if (!existingStock || !existingStock.description) {
+        // Only fetch description if it's not already stored
+        description = await getCompanyDescription(ticker, sector, industry, companyName);
+        if (description) {
+          console.log(`📝 Fetched description for ${ticker}`);
+        }
+      } else {
+        description = existingStock.description;
+      }
 
       // Parse holdings and filter by market cap
       const holdings = this.parseHoldings(holdingsData, marketCap);
@@ -186,6 +200,7 @@ class StockScanner {
           ipo_date: ipoDate, // IPO date from Finviz
           sector: sector, // Sector from Finviz
           industry: industry, // Industry from Finviz
+          company_name: companyName, // Company name from Finviz
           description: description, // Company description from Finviz
           inst_own: instOwn, // Institutional ownership % from Finviz
           inst_trans: instTrans, // Institutional transaction % from Finviz (positive = buying)
