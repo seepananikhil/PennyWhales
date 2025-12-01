@@ -223,7 +223,10 @@ const Watchlist: React.FC = () => {
 
   const handleToggleWatchlist = async (ticker: string) => {
     try {
-      if (!activeWatchlistId) return;
+      if (!activeWatchlistId) {
+        console.warn('No active watchlist selected');
+        return;
+      }
 
       const isInWatchlist = watchlistStocks.has(ticker);
       if (isInWatchlist) {

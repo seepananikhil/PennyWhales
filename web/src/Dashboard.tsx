@@ -171,6 +171,29 @@ const Dashboard: React.FC = () => {
       const data = await api.getWatchlists();
       console.log('Loaded watchlists:', data.watchlists);
       setWatchlists(data.watchlists || []);
+      
+      // Auto-load "Personal" watchlist for eye icon status
+      if (data.watchlists && data.watchlists.length > 0) {
+        const personalWatchlist = data.watchlists.find((w: any) => w.name === 'Personal');
+        if (personalWatchlist) {
+          await loadActiveWatchlist(personalWatchlist.id);
+        } else {
+          // Create "Personal" watchlist if it doesn't exist
+          try {
+            const newWatchlist = await api.createWatchlist('Personal');
+            console.log('Created Personal watchlist:', newWatchlist);
+            // Reload watchlists to get the new one
+            const updatedData = await api.getWatchlists();
+            setWatchlists(updatedData.watchlists || []);
+            const createdPersonal = updatedData.watchlists.find((w: any) => w.name === 'Personal');
+            if (createdPersonal) {
+              await loadActiveWatchlist(createdPersonal.id);
+            }
+          } catch (createErr) {
+            console.error('Error creating Personal watchlist:', createErr);
+          }
+        }
+      }
     } catch (err) {
       console.error('Error loading watchlists:', err);
     }
@@ -332,14 +355,30 @@ const Dashboard: React.FC = () => {
 
   const handleToggleWatchlist = async (ticker: string) => {
     try {
-      if (!activeWatchlistId) {
-        console.warn('No active watchlist selected');
-        return;
+      // Always use "Personal" watchlist by name for eye icon operations
+      const personalWatchlist = watchlists.find((w: any) => w.name === 'Personal');
+      let targetWatchlistId = personalWatchlist?.id;
+      
+      // If Personal watchlist doesn't exist, create it
+      if (!targetWatchlistId) {
+        try {
+          const newWatchlist = await api.createWatchlist('Personal');
+          console.log('Created Personal watchlist:', newWatchlist);
+          targetWatchlistId = newWatchlist.watchlist.id;
+          // Reload watchlists
+          const updatedData = await api.getWatchlists();
+          setWatchlists(updatedData.watchlists || []);
+        } catch (createErr) {
+          console.error('Error creating Personal watchlist:', createErr);
+          return;
+        }
       }
 
-      const isInWatchlist = watchlistStocks.has(ticker);
-      if (isInWatchlist) {
-        const result = await api.removeFromWatchlist(activeWatchlistId, [ticker]);
+      // Check if ticker is in Personal watchlist
+      const isInPersonal = watchlistStocks.has(ticker);
+
+      if (isInPersonal) {
+        const result = await api.removeFromWatchlist(targetWatchlistId, [ticker]);
         if (result.success) {
           setWatchlistStocks(prev => {
             const newSet = new Set(prev);
@@ -348,7 +387,7 @@ const Dashboard: React.FC = () => {
           });
         }
       } else {
-        const result = await api.addToWatchlist(activeWatchlistId, [ticker]);
+        const result = await api.addToWatchlist(targetWatchlistId, [ticker]);
         if (result.success) {
           setWatchlistStocks(prev => new Set(prev).add(ticker));
         }

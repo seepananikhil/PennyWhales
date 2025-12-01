@@ -220,7 +220,8 @@ class StockScanner {
       if (!isDailyScan) {
         // Full scan: only save stocks with fire_level > 0 (qualifying stocks)
         const qualifyingStocks = stocks.filter(s => s.fire_level > 0);
-        const nonQualifyingTickers = stocks.filter(s => s.fire_level <= 0).map(s => s.ticker); // Remove fire_level -1, 0
+        // Only remove tickers with fire_level 0 (not -1 which indicates missing data issues)
+        const nonQualifyingTickers = stocks.filter(s => s.fire_level === 0).map(s => s.ticker);
         
         const results = {
           stocks: qualifyingStocks,
@@ -238,12 +239,13 @@ class StockScanner {
 
         await dbService.saveScanResults(results);
         
-        // Remove non-qualifying tickers from the tickers list (fire_level -1 or 0)
+        // Remove only tickers with fire_level 0 (insufficient holdings, but data was fetchable)
+        // Keep tickers with fire_level -1 or missing data (temporary issues)
         if (nonQualifyingTickers.length > 0) {
           for (const ticker of nonQualifyingTickers) {
             await dbService.removeTicker(ticker);
           }
-          console.log(`🗑️ Removed ${nonQualifyingTickers.length} non-qualifying tickers (fire_level <= 0) from ticker list`);
+          console.log(`🗑️ Removed ${nonQualifyingTickers.length} non-qualifying tickers (fire_level 0) from ticker list`);
         }
         
         console.log(`✅ Full scan saved: ${qualifyingStocks.length} qualifying stocks (filtered from ${stocks.length} scanned)`);
