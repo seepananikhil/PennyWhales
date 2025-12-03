@@ -266,7 +266,6 @@ app.post("/api/scan/start", async (req, res) => {
 
             if (result.success) {
               const stock = result.data;
-              stock.fire_level = calculateFireLevel(stock);
 
               if (stock.fire_level > 0) {
                 qualifyingStocks.push(stock);
@@ -324,18 +323,14 @@ app.post("/api/scan/start", async (req, res) => {
               
               const result = await scanner.analyzeTicker(ticker);
 
-              if (result) {
-                result.fire_level = calculateFireLevel(result);
+              if (result.success && result.data) {
+                const stock = result.data;
+                // fire_level already calculated in analyzeTicker
 
-                if (result.fire_level > 0) {
-                  qualifyingStocks.push(result);
+                if (stock.fire_level > 0) {
+                  qualifyingStocks.push(stock);
                   
-                  // Track if this stock is from 200 SMA crossover screener and has fire
-                  if (sma200Tickers.includes(ticker)) {
-                    sma200FireStocks.push(result);
-                  }
-                  
-                  console.log(`✅ ${ticker} (retry): fire_level=${result.fire_level}`);
+                  console.log(`✅ ${ticker} (retry): fire_level=${stock.fire_level}`);
                 } else {
                   rejectedTickersToAdd.push(ticker);
                   console.log(`🚫 ${ticker} (retry): fire_level=0 (rejected)`);
@@ -498,7 +493,6 @@ app.post("/api/scan", async (req, res) => {
     );
 
     const scanner = new StockScanner();
-    const { calculateFireLevel } = require("./fireUtils");
 
     const results = [];
     const errors = [];
@@ -510,7 +504,7 @@ app.post("/api/scan", async (req, res) => {
         if (result && result.success && result.data) {
           // Extract the actual stock data from the wrapper
           const stockData = result.data;
-          stockData.fire_level = calculateFireLevel(stockData);
+          // fire_level already calculated in analyzeTicker
           results.push(stockData);
         } else {
           errors.push({

@@ -10,11 +10,12 @@ interface FilterPanelProps {
     fireLevels: Set<number>;
     priceFilters: Set<string>;
     marketValueFilters: Set<string>;
+    dailyChangeFilters: Set<string>;
     sectors: Set<string>;
     employeeCount: Set<string>;
     ipoDate: Set<string>;
   };
-  onToggleFilter: (type: 'fire' | 'price' | 'marketValue' | 'sector' | 'employee' | 'ipo', value: any) => void;
+  onToggleFilter: (type: 'fire' | 'price' | 'marketValue' | 'dailyChange' | 'sector' | 'employee' | 'ipo', value: any) => void;
   onClearFilters: () => void;
   sortBy: string;
   sortOrder?: string[];
@@ -169,15 +170,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 { key: 'combined', label: '🔥 Big 3 %', icon: '🔥' },
                 { key: 'fire', label: '🔥 Fire Level', icon: '🔥' },
                 { key: 'price', label: '💰 Price', icon: '💰' },
-                { key: 'price-change', label: '📈 Price change', icon: '📊' },
+                { key: 'daily-change', label: '📈 Daily %', icon: '📈' },
+                { key: 'weekly-change', label: '📅 Weekly %', icon: '📅' },
+                { key: 'monthly-change', label: '📆 Monthly %', icon: '📆' },
                 { key: 'market-value', label: '💎 Market Cap', icon: '💎' },
                 { key: 'employees', label: '👥 Employees', icon: '👥' },
                 { key: 'inst-trans', label: '🟢 Inst. Activity', icon: '📊' },
                 { key: 'inst-own', label: '🏢 Inst. Own', icon: '🏢' },
                 { key: 'ipo-date', label: '📅 IPO Date', icon: '📅' },
-                { key: 'daily-change', label: '📈 Daily %', icon: '📈' },
-                { key: 'weekly-change', label: '📅 Weekly %', icon: '📅' },
-                { key: 'monthly-change', label: '📆 Monthly %', icon: '📆' },
                 { key: 'sma200', label: '📊 SMA200', icon: '📊' },
               ].map(sort => {
                 const descKey = `${sort.key}-desc`;
@@ -285,6 +285,26 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 active={filters.priceFilters.has(opt.id)}
                 onClick={() => onToggleFilter('price', opt.id)}
                 color="#28a745"
+              />
+            ))}
+          </FilterSection>
+
+          {/* Daily Change */}
+          <FilterSection title="Daily Performance" icon={<span style={{ fontSize: '1.2rem' }}>📈</span>}>
+            {[
+              { id: 'gain-15+', label: '🚀 +15% or more' },
+              { id: 'gain-10-15', label: '📈 +10% to +15%' },
+              { id: 'gain-0-10', label: '📊 +0% to +10%' },
+              { id: 'loss-0-10', label: '🔴 -0% to -10%' },
+              { id: 'loss-10-15', label: '📉 -10% to -15%' },
+              { id: 'loss-15+', label: '💥 -15% or worse' }
+            ].map(opt => (
+              <FilterChip
+                key={opt.id}
+                label={opt.label}
+                active={filters.dailyChangeFilters.has(opt.id)}
+                onClick={() => onToggleFilter('dailyChange', opt.id)}
+                color="#007bff"
               />
             ))}
           </FilterSection>

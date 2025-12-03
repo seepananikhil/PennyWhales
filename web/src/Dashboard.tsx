@@ -32,6 +32,7 @@ const Dashboard: React.FC = () => {
     fireLevels: Set<number>;
     priceFilters: Set<string>;
     marketValueFilters: Set<string>;
+    dailyChangeFilters: Set<string>;
     sectors: Set<string>;
     employeeCount: Set<string>;
     ipoDate: Set<string>;
@@ -39,6 +40,7 @@ const Dashboard: React.FC = () => {
     fireLevels: new Set([5, 4, 3]),
     priceFilters: new Set(),
     marketValueFilters: new Set(),
+    dailyChangeFilters: new Set(),
     sectors: new Set(),
     employeeCount: new Set(),
     ipoDate: new Set()
@@ -410,7 +412,7 @@ const Dashboard: React.FC = () => {
   };
 
   // Single unified filter toggle function
-  const toggleFilter = (type: 'fire' | 'price' | 'marketValue' | 'sector' | 'employee' | 'ipo', value: number | string) => {
+  const toggleFilter = (type: 'fire' | 'price' | 'marketValue' | 'dailyChange' | 'sector' | 'employee' | 'ipo', value: number | string) => {
     setMultiFilters(prev => {
       const newFilters = { ...prev };
       
@@ -438,6 +440,14 @@ const Dashboard: React.FC = () => {
           newMarketValueFilters.add(value as string);
         }
         newFilters.marketValueFilters = newMarketValueFilters;
+      } else if (type === 'dailyChange') {
+        const newDailyChangeFilters = new Set(prev.dailyChangeFilters);
+        if (newDailyChangeFilters.has(value as string)) {
+          newDailyChangeFilters.delete(value as string);
+        } else {
+          newDailyChangeFilters.add(value as string);
+        }
+        newFilters.dailyChangeFilters = newDailyChangeFilters;
       } else if (type === 'sector') {
         const newSectors = new Set(prev.sectors);
         if (newSectors.has(value as string)) {
@@ -474,6 +484,7 @@ const Dashboard: React.FC = () => {
         (type === 'fire' ? (multiFilters.fireLevels.has(value as number) ? multiFilters.fireLevels.size - 1 : multiFilters.fireLevels.size + 1) : multiFilters.fireLevels.size) +
         (type === 'price' ? (multiFilters.priceFilters.has(value as string) ? multiFilters.priceFilters.size - 1 : multiFilters.priceFilters.size + 1) : multiFilters.priceFilters.size) +
         (type === 'marketValue' ? (multiFilters.marketValueFilters.has(value as string) ? multiFilters.marketValueFilters.size - 1 : multiFilters.marketValueFilters.size + 1) : multiFilters.marketValueFilters.size) +
+        (type === 'dailyChange' ? (multiFilters.dailyChangeFilters.has(value as string) ? multiFilters.dailyChangeFilters.size - 1 : multiFilters.dailyChangeFilters.size + 1) : multiFilters.dailyChangeFilters.size) +
         (type === 'sector' ? (multiFilters.sectors.has(value as string) ? multiFilters.sectors.size - 1 : multiFilters.sectors.size + 1) : multiFilters.sectors.size) +
         (type === 'employee' ? (multiFilters.employeeCount.has(value as string) ? multiFilters.employeeCount.size - 1 : multiFilters.employeeCount.size + 1) : multiFilters.employeeCount.size) +
         (type === 'ipo' ? (multiFilters.ipoDate.has(value as string) ? multiFilters.ipoDate.size - 1 : multiFilters.ipoDate.size + 1) : multiFilters.ipoDate.size);
@@ -492,6 +503,7 @@ const Dashboard: React.FC = () => {
       fireLevels: new Set(),
       priceFilters: new Set(),
       marketValueFilters: new Set(),
+      dailyChangeFilters: new Set(),
       sectors: new Set(),
       employeeCount: new Set(),
       ipoDate: new Set()
@@ -499,6 +511,7 @@ const Dashboard: React.FC = () => {
     
     // Clear URL parameters
     window.history.pushState({}, '', window.location.pathname);
+    setUrlTicker(null);
     
     // Don't clear watchlist selection - keep activeFilter as is if it's a watchlist
   };
@@ -625,6 +638,36 @@ const Dashboard: React.FC = () => {
               return stock.price >= 5.0 && stock.price < 10.0;
             case 'over10':
               return stock.price >= 10.0;
+            default:
+              return true;
+          }
+        });
+      });
+    }
+    
+    // Apply daily change filter if selected
+    if (multiFilters.dailyChangeFilters.size > 0) {
+      stocks = stocks.filter(ticker => {
+        const stock = stockData.get(ticker);
+        if (!stock || !stock.performance) return false;
+        
+        const dailyChange = stock.performance.day;
+        if (dailyChange === null || dailyChange === undefined) return false;
+        
+        return Array.from(multiFilters.dailyChangeFilters).some(changeFilter => {
+          switch (changeFilter) {
+            case 'gain-15+':
+              return dailyChange >= 15;
+            case 'gain-10-15':
+              return dailyChange >= 10 && dailyChange < 15;
+            case 'gain-0-10':
+              return dailyChange >= 0 && dailyChange < 10;
+            case 'loss-0-10':
+              return dailyChange < 0 && dailyChange >= -10;
+            case 'loss-10-15':
+              return dailyChange < -10 && dailyChange >= -15;
+            case 'loss-15+':
+              return dailyChange < -15;
             default:
               return true;
           }
@@ -806,16 +849,6 @@ const Dashboard: React.FC = () => {
             case 'price-asc':
               comparison = stockA.price - stockB.price;
               break;
-            case 'price-change-desc':
-              const priceChangeA = livePriceData.get(a)?.priceChange || 0;
-              const priceChangeB = livePriceData.get(b)?.priceChange || 0;
-              comparison = priceChangeB - priceChangeA;
-              break;
-            case 'price-change-asc':
-              const priceChangeAscA = livePriceData.get(a)?.priceChange || 0;
-              const priceChangeAscB = livePriceData.get(b)?.priceChange || 0;
-              comparison = priceChangeAscA - priceChangeAscB;
-              break;
             case 'market-value-desc':
               const marketCapA = stockA.market_cap || 0;
               const marketCapB = stockB.market_cap || 0;
@@ -983,14 +1016,6 @@ const Dashboard: React.FC = () => {
           return stockB.price - stockA.price;
         case 'price-asc':
           return stockA.price - stockB.price;
-        case 'price-change-desc':
-          // Sort by price change percentage from performance.day (highest first)
-          if (!stockA?.performance || !stockB?.performance) return 0;
-          return (stockB.performance.day || 0) - (stockA.performance.day || 0);
-        case 'price-change-asc':
-          // Sort by price change percentage from performance.day (lowest first)
-          if (!stockA?.performance || !stockB?.performance) return 0;
-          return (stockA.performance.day || 0) - (stockB.performance.day || 0);
         case 'market-value-desc':
           // Sort by market cap (highest first)
           const marketCapA = stockA.market_cap || 0;
@@ -1150,7 +1175,7 @@ const Dashboard: React.FC = () => {
               {filteredStocks.length} {filteredStocks.length === 1 ? 'Stock' : 'Stocks'}
             </span>
             
-            {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0 || multiFilters.sectors.size > 0 || multiFilters.employeeCount.size > 0 || multiFilters.ipoDate.size > 0) && (
+            {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0 || multiFilters.dailyChangeFilters.size > 0 || multiFilters.sectors.size > 0 || multiFilters.employeeCount.size > 0 || multiFilters.ipoDate.size > 0) && (
               <span style={{
                 fontSize: theme.typography.fontSize.sm,
                 backgroundColor: theme.status.info,
@@ -1164,7 +1189,7 @@ const Dashboard: React.FC = () => {
                 whiteSpace: 'nowrap'
               }}>
                 <span>🔍</span>
-                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size + multiFilters.sectors.size + multiFilters.employeeCount.size + multiFilters.ipoDate.size} active
+                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size + multiFilters.dailyChangeFilters.size + multiFilters.sectors.size + multiFilters.employeeCount.size + multiFilters.ipoDate.size} active
               </span>
             )}
             
@@ -1276,9 +1301,19 @@ const Dashboard: React.FC = () => {
                     setActiveWatchlistId(watchlistId);
                     setActiveFilter(`watchlist-${watchlistId}`);
                     loadActiveWatchlist(watchlistId);
+                    // Remove ticker from URL when switching watchlist
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('ticker');
+                    window.history.pushState({}, '', url);
+                    setUrlTicker(null);
                   } else {
                     setActiveWatchlistId('');
                     setActiveFilter('multifilter');
+                    // Remove ticker from URL when clearing watchlist
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('ticker');
+                    window.history.pushState({}, '', url);
+                    setUrlTicker(null);
                   }
                 }}
                 style={{

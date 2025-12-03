@@ -159,19 +159,6 @@ class StockScanner {
       const instOwn = finvizData?.ownership?.instOwn || null;
       const instTrans = finvizData?.ownership?.instTrans || null;
       const sma200 = finvizData?.technical?.sma200 || null;
-      
-      // Get company description (one-time fetch, only if not already in database)
-      let description = null;
-      const existingStock = await dbService.getStockByTicker(ticker);
-      if (!existingStock || !existingStock.description) {
-        // Only fetch description if it's not already stored
-        description = await getCompanyDescription(ticker, sector, industry, companyName);
-        if (description) {
-          console.log(`📝 Fetched description for ${ticker}`);
-        }
-      } else {
-        description = existingStock.description;
-      }
 
       // Parse holdings and filter by market cap
       const holdings = this.parseHoldings(holdingsData, marketCap);
@@ -181,8 +168,27 @@ class StockScanner {
 
       const { blackrockMarketValue, vanguardMarketValue, statestreetMarketValue, blackrockPct, vanguardPct, statestreetPct } = holdings;
 
+      // Get company description only for stocks with fire level > 0
+      let description = null;
+      const existingStock = await dbService.getStockByTicker(ticker);
+      
+      // Calculate fire level to determine if we should fetch description
+      const fireLevel = calculateFireLevel({ blackrock_pct: blackrockPct, vanguard_pct: vanguardPct });
+      
+      if (fireLevel > 0) {
+        if (!existingStock || !existingStock.description) {
+          // Only fetch description if it's not already stored and stock has fire
+          description = await getCompanyDescription(ticker, sector, industry, companyName);
+          if (description) {
+            console.log(`📝 Fetched description for ${ticker} (fire level ${fireLevel})`);
+          }
+        } else {
+          description = existingStock.description;
+        }
+      }
+
       // Always return the stock data regardless of holding percentages
-      // The fire level calculation will handle the rating (including 0 for no fire)
+      // The fire level will be included in the data
       return {
         success: true,
         data: {
@@ -205,7 +211,8 @@ class StockScanner {
           inst_own: instOwn, // Institutional ownership % from Finviz
           inst_trans: instTrans, // Institutional transaction % from Finviz (positive = buying)
           sma200: sma200, // SMA200 percentage from Finviz (distance from 200-day moving average)
-          performance: performance || { day: null, week: null, month: null, year: null }
+          performance: performance || { day: null, week: null, month: null, year: null },
+          fire_level: fireLevel // Include fire level in the data
         }
       };
     } catch (error) {
