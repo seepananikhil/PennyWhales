@@ -407,9 +407,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleOpenChart = (ticker: string) => {
-    window.open(`https://www.tradingview.com/chart/?symbol=${ticker}`, '_blank');
-  };
 
   // Single unified filter toggle function
   const toggleFilter = (type: 'fire' | 'price' | 'marketValue' | 'dailyChange' | 'sector' | 'employee' | 'ipo', value: number | string) => {

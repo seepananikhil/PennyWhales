@@ -33,12 +33,17 @@ const ChartView: React.FC<ChartViewProps> = ({
   onDeleteTicker,
   showWatchButton = true,
   showDeleteButton = false,
-  tradingViewChartUrl = 'https://www.tradingview.com/chart/StTMbjgz/?symbol=',
   initialSelectedTicker = null
 }) => {
   const [selectedTicker, setSelectedTicker] = useState<string | null>(
     stocks.length > 0 ? stocks[0] : null
   );
+  const [exchange, setExchange] = useState<'default' | 'NASDAQ' | 'NYSE'>('default');
+
+  // Reset exchange when ticker changes
+  useEffect(() => {
+    setExchange('default');
+  }, [selectedTicker]);
 
   // Handle URL ticker selection and scroll
   useEffect(() => {
@@ -161,15 +166,78 @@ const ChartView: React.FC<ChartViewProps> = ({
               width: '100%',
               height: '100%',
               display: 'flex',
-              flexDirection: 'column'
+              flexDirection: 'column',
+              gap: theme.spacing.xs
             }}>
+              <div style={{
+                display: 'flex',
+                gap: theme.spacing.xs,
+                padding: theme.spacing.xs,
+                alignItems: 'center'
+              }}>
+                <span style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.ui.text.secondary,
+                  marginRight: theme.spacing.xs
+                }}>
+                  Exchange:
+                </span>
+                <button
+                  onClick={() => setExchange('default')}
+                  style={{
+                    padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                    backgroundColor: exchange === 'default' ? '#007bff' : theme.ui.surface,
+                    color: exchange === 'default' ? 'white' : theme.ui.text.primary,
+                    border: `1px solid ${theme.ui.border}`,
+                    borderRadius: theme.borderRadius.sm,
+                    fontSize: theme.typography.fontSize.sm,
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: `all ${theme.transition.normal}`
+                  }}
+                >
+                  Auto
+                </button>
+                <button
+                    onClick={() => setExchange('NASDAQ')}
+                    style={{
+                      padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                      backgroundColor: exchange === 'NASDAQ' ? '#007bff' : theme.ui.surface,
+                      color: exchange === 'NASDAQ' ? 'white' : theme.ui.text.primary,
+                      border: `1px solid ${theme.ui.border}`,
+                      borderRadius: theme.borderRadius.sm,
+                      fontSize: theme.typography.fontSize.sm,
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      transition: `all ${theme.transition.normal}`
+                    }}
+                  >
+                    NASDAQ
+                  </button>
+                  <button
+                    onClick={() => setExchange('NYSE')}
+                    style={{
+                      padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                      backgroundColor: exchange === 'NYSE' ? '#007bff' : theme.ui.surface,
+                      color: exchange === 'NYSE' ? 'white' : theme.ui.text.primary,
+                      border: `1px solid ${theme.ui.border}`,
+                      borderRadius: theme.borderRadius.sm,
+                      fontSize: theme.typography.fontSize.sm,
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      transition: `all ${theme.transition.normal}`
+                    }}
+                  >
+                  NYSE
+                </button>
+              </div>
               <div style={{
                 flex: 1,
                 position: 'relative'
               }}>
                 <iframe
-                  key={selectedTicker}
-                  src={`https://www.tradingview.com/widgetembed/?frameElementId=tradingview_${selectedTicker}&symbol=${selectedTicker}&interval=D&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=MASimple@tv-basicstudies&studies_overrides={"moving average.length":200}&theme=light&style=1&timezone=Etc%2FUTC&locale=en`}
+                  key={`${selectedTicker}-${exchange}`}
+                  src={`https://www.tradingview.com/widgetembed/?frameElementId=tradingview_${selectedTicker}&symbol=${exchange === 'default' ? selectedTicker : `${exchange}:${selectedTicker}`}&interval=D&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=MASimple@tv-basicstudies&studies_overrides={"moving average.length":200}&theme=light&style=1&timezone=Etc%2FUTC&locale=en`}
                   style={{
                     width: '100%',
                     height: '100%',

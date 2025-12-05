@@ -4,31 +4,38 @@
  */
 
 /**
- * Calculate fire level for a stock based solely on percentage holdings
- * Uses only percentage (pct) - ignoring market values
- * @param {Object} stock - Stock object with blackrock_pct, vanguard_pct
+ * Calculate fire level for a stock based on percentage holdings and market values
+ * Considers both percentage ownership and absolute dollar values
+ * @param {Object} stock - Stock object with blackrock_pct, vanguard_pct, blackrock_market_value, vanguard_market_value
  * @returns {number} Fire level (0, 3-5)
  */
 function calculateFireLevel(stock) {
   const blackrockPct = stock.blackrock_pct || 0;
   const vanguardPct = stock.vanguard_pct || 0;
+  const blackrockValue = stock.blackrock_market_value || 0;
+  const vanguardValue = stock.vanguard_market_value || 0;
+  
   const combinedPct = blackrockPct + vanguardPct;
+  const combinedValue = blackrockValue + vanguardValue;
   
   // FIRE LEVEL 5 - Elite institutional confidence
-  if (combinedPct >= 15 ||                      // Elite combined percentage (15%+)
-      (blackrockPct >= 10 || vanguardPct >= 10)) { // Major fund strong conviction (10%+)
+  if (combinedValue >= 50 ||                    // Massive investment ($50M+)
+      combinedPct >= 15 ||                      // Elite percentage (15%+)
+      (blackrockPct >= 10 || vanguardPct >= 10)) { // Major fund strong conviction
     return 5;
   }
   
   // FIRE LEVEL 4 - Very high institutional confidence  
-  if (combinedPct >= 10 ||                      // High combined percentage (10%+)
-      (blackrockPct >= 7 || vanguardPct >= 7)) { // Single fund strong commitment (7%+)
+  if (combinedValue >= 30 ||                    // Large investment ($30M+)
+      combinedPct >= 10 ||                      // High percentage (10%+)
+      (blackrockPct >= 7 || vanguardPct >= 7)) { // Single fund strong commitment
     return 4;
   }
   
   // FIRE LEVEL 3 - High institutional confidence
-  if (combinedPct >= 7 ||                       // Good combined percentage (7%+)
-      (blackrockPct >= 4 || vanguardPct >= 4)) { // Single fund good commitment (4%+)
+  if (combinedValue >= 15 ||                    // Substantial investment ($15M+)
+      combinedPct >= 7 ||                       // Good percentage (7%+)
+      (blackrockPct >= 5 || vanguardPct >= 5)) { // Single fund good commitment
     return 3;
   }
   

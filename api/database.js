@@ -119,6 +119,13 @@ class DatabaseService {
     
     if (index > -1) {
       this.db.data.tickers.splice(index, 1);
+      
+      // Add to rejected tickers list
+      if (!this.db.data.rejectedTickers.includes(normalizedTicker)) {
+        this.db.data.rejectedTickers.push(normalizedTicker);
+        console.log(`🚫 Added ${normalizedTicker} to rejected tickers`);
+      }
+      
       await this.db.write();
       console.log(`🗑️ Removed ticker: ${normalizedTicker}`);
       return true;
