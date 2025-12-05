@@ -13,8 +13,9 @@ interface FilterPanelProps {
     sectors: Set<string>;
     employeeCount: Set<string>;
     ipoDate: Set<string>;
+    recommendations: Set<string>;
   };
-  onToggleFilter: (type: 'fire' | 'price' | 'marketValue' | 'sector' | 'employee' | 'ipo', value: any) => void;
+  onToggleFilter: (type: 'fire' | 'price' | 'marketValue' | 'sector' | 'employee' | 'ipo' | 'recommendation', value: any) => void;
   onClearFilters: () => void;
   sortBy: string;
   sortOrder?: string[];
@@ -357,6 +358,24 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 active={filters.ipoDate.has(opt.id)}
                 onClick={() => onToggleFilter('ipo', opt.id)}
                 color="#e83e8c"
+              />
+            ))}
+          </FilterSection>
+
+          {/* Recommendation */}
+          <FilterSection title="Recommendation" icon={<span style={{ fontSize: '1.2rem' }}>⭐</span>}>
+            {[
+              { id: 'STRONG_BUY', label: '🔥🔥🔥 Strong Buy', color: '#dc3545' },
+              { id: 'BUY', label: '🔥🔥 Buy', color: '#fd7e14' },
+              { id: 'WATCH', label: '🔥 Watch', color: '#ffc107' },
+              { id: 'NONE', label: '❄️ No Recommendation', color: '#6c757d' }
+            ].map(opt => (
+              <FilterChip
+                key={opt.id}
+                label={opt.label}
+                active={filters.recommendations.has(opt.id)}
+                onClick={() => onToggleFilter('recommendation', opt.id)}
+                color={opt.color}
               />
             ))}
           </FilterSection>

@@ -31,6 +31,7 @@ export interface Stock {
   fire_level?: number; // 0-3, calculated by API
   previous_fire_level?: number; // Previous fire level from last scan
   is_new?: boolean; // True if this is a new fire stock
+  recommendation?: string | null; // STRONG_BUY, BUY, WATCH, or null
   performance?: {
     day?: number;
     week: number;

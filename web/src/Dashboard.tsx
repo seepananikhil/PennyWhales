@@ -35,13 +35,15 @@ const Dashboard: React.FC = () => {
     sectors: Set<string>;
     employeeCount: Set<string>;
     ipoDate: Set<string>;
+    recommendations: Set<string>;
   }>({
     fireLevels: new Set([5, 4, 3]),
     priceFilters: new Set(),
     marketValueFilters: new Set(),
     sectors: new Set(),
     employeeCount: new Set(),
-    ipoDate: new Set()
+    ipoDate: new Set(),
+    recommendations: new Set()
   });
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string[]>([]); // Multi-sort: order of sort criteria
@@ -407,7 +409,7 @@ const Dashboard: React.FC = () => {
 
 
   // Single unified filter toggle function
-  const toggleFilter = (type: 'fire' | 'price' | 'marketValue' | 'sector' | 'employee' | 'ipo', value: number | string) => {
+  const toggleFilter = (type: 'fire' | 'price' | 'marketValue' | 'sector' | 'employee' | 'ipo' | 'recommendation', value: number | string) => {
     setMultiFilters(prev => {
       const newFilters = { ...prev };
       
@@ -459,6 +461,14 @@ const Dashboard: React.FC = () => {
           newIpoDate.add(value as string);
         }
         newFilters.ipoDate = newIpoDate;
+      } else if (type === 'recommendation') {
+        const newRecommendations = new Set(prev.recommendations);
+        if (newRecommendations.has(value as string)) {
+          newRecommendations.delete(value as string);
+        } else {
+          newRecommendations.add(value as string);
+        }
+        newFilters.recommendations = newRecommendations;
       }
       
       return newFilters;
@@ -473,7 +483,8 @@ const Dashboard: React.FC = () => {
         (type === 'marketValue' ? (multiFilters.marketValueFilters.has(value as string) ? multiFilters.marketValueFilters.size - 1 : multiFilters.marketValueFilters.size + 1) : multiFilters.marketValueFilters.size) +
         (type === 'sector' ? (multiFilters.sectors.has(value as string) ? multiFilters.sectors.size - 1 : multiFilters.sectors.size + 1) : multiFilters.sectors.size) +
         (type === 'employee' ? (multiFilters.employeeCount.has(value as string) ? multiFilters.employeeCount.size - 1 : multiFilters.employeeCount.size + 1) : multiFilters.employeeCount.size) +
-        (type === 'ipo' ? (multiFilters.ipoDate.has(value as string) ? multiFilters.ipoDate.size - 1 : multiFilters.ipoDate.size + 1) : multiFilters.ipoDate.size);
+        (type === 'ipo' ? (multiFilters.ipoDate.has(value as string) ? multiFilters.ipoDate.size - 1 : multiFilters.ipoDate.size + 1) : multiFilters.ipoDate.size) +
+        (type === 'recommendation' ? (multiFilters.recommendations.has(value as string) ? multiFilters.recommendations.size - 1 : multiFilters.recommendations.size + 1) : multiFilters.recommendations.size);
       
       // If we're currently on a watchlist, keep the watchlist active
       if (prev.startsWith('watchlist-')) {
@@ -491,7 +502,8 @@ const Dashboard: React.FC = () => {
       marketValueFilters: new Set(),
       sectors: new Set(),
       employeeCount: new Set(),
-      ipoDate: new Set()
+      ipoDate: new Set(),
+      recommendations: new Set()
     });
     
     // Clear URL parameters
@@ -727,6 +739,21 @@ const Dashboard: React.FC = () => {
             default:
               return true;
           }
+        });
+      });
+    }
+
+    // Apply recommendation filter if selected
+    if (multiFilters.recommendations.size > 0) {
+      stocks = stocks.filter(ticker => {
+        const stock = stockData.get(ticker);
+        if (!stock) return false;
+        
+        return Array.from(multiFilters.recommendations).some(rec => {
+          if (rec === 'NONE') {
+            return !stock.recommendation || stock.recommendation === null;
+          }
+          return stock.recommendation === rec;
         });
       });
     }
@@ -1144,7 +1171,7 @@ const Dashboard: React.FC = () => {
                 whiteSpace: 'nowrap'
               }}>
                 <span>🔍</span>
-                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size + multiFilters.sectors.size + multiFilters.employeeCount.size + multiFilters.ipoDate.size} active
+                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size + multiFilters.sectors.size + multiFilters.employeeCount.size + multiFilters.ipoDate.size + multiFilters.recommendations.size} active
               </span>
             )}
             

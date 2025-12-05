@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const dbService = require('./database');
 const { getStockPriceData } = require('./priceUtils');
-const { calculateFireLevel } = require('./fireUtils');
+const { calculateFireLevel, calculateRecommendation } = require('./fireUtils');
 const { getComprehensiveFinvizData } = require('./finvizScraper');
 const { getCompanyDescription } = require('./llmAnalyzer');
 
@@ -212,7 +212,15 @@ class StockScanner {
           inst_trans: instTrans, // Institutional transaction % from Finviz (positive = buying)
           sma200: sma200, // SMA200 percentage from Finviz (distance from 200-day moving average)
           performance: performance || { day: null, week: null, month: null, year: null },
-          fire_level: fireLevel // Include fire level in the data
+          fire_level: fireLevel, // Include fire level in the data
+          recommendation: calculateRecommendation({
+            fire_level: fireLevel,
+            price: priceData.price,
+            blackrock_pct: blackrockPct,
+            vanguard_pct: vanguardPct,
+            market_cap: marketCap,
+            ipo_date: ipoDate
+          })
         }
       };
     } catch (error) {

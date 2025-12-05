@@ -877,6 +877,7 @@ const StockCard: React.FC<StockCardProps> = ({
                 })()}
               </span>
             )}
+            
             {stock.sma200 !== null && stock.sma200 !== undefined && (
               <span
                 style={{
@@ -891,6 +892,31 @@ const StockCard: React.FC<StockCardProps> = ({
                 title={`${stock.sma200 > 0 ? "Above" : "Below"} 200-day moving average by ${Math.abs(stock.sma200).toFixed(1)}%`}
               >
                 📈 {stock.sma200 > 0 ? "+" : ""}{stock.sma200.toFixed(1)}%
+              </span>
+            )}
+            {stock.recommendation && (
+              <span
+                style={{
+                  fontSize: "0.7rem",
+                  color: "white",
+                  fontWeight: "700",
+                  backgroundColor: stock.recommendation === 'STRONG_BUY' 
+                    ? '#dc3545' 
+                    : stock.recommendation === 'BUY' 
+                    ? '#fd7e14' 
+                    : '#ffc107',
+                  padding: "3px 8px",
+                  borderRadius: "6px",
+                  border: "1px solid rgba(0,0,0,0.1)",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                }}
+                title={`Recommendation: ${stock.recommendation.replace('_', ' ')}`}
+              >
+                {stock.recommendation === 'STRONG_BUY' 
+                  ? 'STRONG BUY' 
+                  : stock.recommendation === 'BUY' 
+                  ? 'BUY' 
+                  : 'WATCH'}
               </span>
             )}
           </div>

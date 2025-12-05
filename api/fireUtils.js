@@ -40,7 +40,39 @@ function calculateFireLevel(stock) {
   }
   
   return 0; // Below meaningful thresholds
-}/**
+}
+
+/**
+ * Calculate recommendation level for a stock
+ * @param {Object} stock - Stock object with fire_level, price, blackrock_pct, vanguard_pct, market_cap, ipo_date
+ * @returns {string|null} Recommendation level or null
+ */
+function calculateRecommendation(stock) {
+  const fireLevel = stock.fire_level || 0;
+  const price = stock.price || 0;
+  const marketCap = stock.market_cap || 0;
+  
+  // Must have fire level 4 or 5
+  if (fireLevel < 4) return null;
+  
+  // Must have decent market cap (min 300M)
+  if (marketCap < 300) return null;
+  
+  // Categorize by price and fire level
+  if (fireLevel === 5) {
+    if (price < 3) return 'STRONG_BUY';
+    if (price < 5) return 'BUY';
+    if (price < 10) return 'WATCH';
+  } else if (fireLevel === 4) {
+    if (price < 2) return 'STRONG_BUY';
+    if (price < 4) return 'BUY';
+    if (price < 8) return 'WATCH';
+  }
+  
+  return null;
+}
+
+/**
  * Get fire level description
  * @param {number} fireLevel - Fire level (-1, 1-5)
  * @returns {string} Human readable description
@@ -101,5 +133,6 @@ module.exports = {
   calculateFireLevel,
   getFireLevelDescription,
   getFireLevelEmoji,
-  hasZeroPresence
+  hasZeroPresence,
+  calculateRecommendation
 };
