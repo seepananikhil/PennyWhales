@@ -216,10 +216,11 @@ class StockScanner {
           recommendation: calculateRecommendation({
             fire_level: fireLevel,
             price: priceData.price,
-            blackrock_pct: blackrockPct,
-            vanguard_pct: vanguardPct,
             market_cap: marketCap,
-            ipo_date: ipoDate
+            inst_own: instOwn,
+            inst_trans: instTrans,
+            sma200: sma200,
+            performance: performance || {}
           })
         }
       };

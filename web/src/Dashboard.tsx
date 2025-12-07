@@ -36,6 +36,7 @@ const Dashboard: React.FC = () => {
     employeeCount: Set<string>;
     ipoDate: Set<string>;
     recommendations: Set<string>;
+    industries: Set<string>;
   }>({
     fireLevels: new Set([5, 4, 3]),
     priceFilters: new Set(),
@@ -43,7 +44,8 @@ const Dashboard: React.FC = () => {
     sectors: new Set(),
     employeeCount: new Set(),
     ipoDate: new Set(),
-    recommendations: new Set()
+    recommendations: new Set(),
+    industries: new Set()
   });
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string[]>([]); // Multi-sort: order of sort criteria
@@ -409,7 +411,7 @@ const Dashboard: React.FC = () => {
 
 
   // Single unified filter toggle function
-  const toggleFilter = (type: 'fire' | 'price' | 'marketValue' | 'sector' | 'employee' | 'ipo' | 'recommendation', value: number | string) => {
+  const toggleFilter = (type: 'fire' | 'price' | 'marketValue' | 'sector' | 'employee' | 'ipo' | 'recommendation' | 'industry', value: number | string) => {
     setMultiFilters(prev => {
       const newFilters = { ...prev };
       
@@ -469,6 +471,14 @@ const Dashboard: React.FC = () => {
           newRecommendations.add(value as string);
         }
         newFilters.recommendations = newRecommendations;
+      } else if (type === 'industry') {
+        const newIndustries = new Set(prev.industries);
+        if (newIndustries.has(value as string)) {
+          newIndustries.delete(value as string);
+        } else {
+          newIndustries.add(value as string);
+        }
+        newFilters.industries = newIndustries;
       }
       
       return newFilters;
@@ -484,7 +494,8 @@ const Dashboard: React.FC = () => {
         (type === 'sector' ? (multiFilters.sectors.has(value as string) ? multiFilters.sectors.size - 1 : multiFilters.sectors.size + 1) : multiFilters.sectors.size) +
         (type === 'employee' ? (multiFilters.employeeCount.has(value as string) ? multiFilters.employeeCount.size - 1 : multiFilters.employeeCount.size + 1) : multiFilters.employeeCount.size) +
         (type === 'ipo' ? (multiFilters.ipoDate.has(value as string) ? multiFilters.ipoDate.size - 1 : multiFilters.ipoDate.size + 1) : multiFilters.ipoDate.size) +
-        (type === 'recommendation' ? (multiFilters.recommendations.has(value as string) ? multiFilters.recommendations.size - 1 : multiFilters.recommendations.size + 1) : multiFilters.recommendations.size);
+        (type === 'recommendation' ? (multiFilters.recommendations.has(value as string) ? multiFilters.recommendations.size - 1 : multiFilters.recommendations.size + 1) : multiFilters.recommendations.size) +
+        (type === 'industry' ? (multiFilters.industries.has(value as string) ? multiFilters.industries.size - 1 : multiFilters.industries.size + 1) : multiFilters.industries.size);
       
       // If we're currently on a watchlist, keep the watchlist active
       if (prev.startsWith('watchlist-')) {
@@ -503,7 +514,8 @@ const Dashboard: React.FC = () => {
       sectors: new Set(),
       employeeCount: new Set(),
       ipoDate: new Set(),
-      recommendations: new Set()
+      recommendations: new Set(),
+      industries: new Set()
     });
     
     // Clear URL parameters
@@ -683,6 +695,15 @@ const Dashboard: React.FC = () => {
         const stock = stockData.get(ticker);
         if (!stock || !stock.sector) return false;
         return multiFilters.sectors.has(stock.sector);
+      });
+    }
+
+    // Apply industry filter if selected
+    if (multiFilters.industries.size > 0) {
+      stocks = stocks.filter(ticker => {
+        const stock = stockData.get(ticker);
+        if (!stock || !stock.industry) return false;
+        return multiFilters.industries.has(stock.industry);
       });
     }
 
@@ -1094,6 +1115,26 @@ const Dashboard: React.FC = () => {
     return Array.from(sectors).sort();
   }, [tickersWithData, stockData]);
 
+  // Calculate available industries - if sectors are selected, only show industries from those sectors
+  const availableIndustries = React.useMemo(() => {
+    const industries = new Set<string>();
+    tickersWithData.forEach(ticker => {
+      const stock = stockData.get(ticker);
+      if (stock?.industry) {
+        // If sectors are filtered, only include industries from selected sectors
+        if (multiFilters.sectors.size > 0) {
+          if (stock.sector && multiFilters.sectors.has(stock.sector)) {
+            industries.add(stock.industry);
+          }
+        } else {
+          // No sector filter, show all industries
+          industries.add(stock.industry);
+        }
+      }
+    });
+    return Array.from(industries).sort();
+  }, [tickersWithData, stockData, multiFilters.sectors]);
+
   if (loading) {
     return (
       <div style={{
@@ -1171,7 +1212,7 @@ const Dashboard: React.FC = () => {
                 whiteSpace: 'nowrap'
               }}>
                 <span>🔍</span>
-                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size + multiFilters.sectors.size + multiFilters.employeeCount.size + multiFilters.ipoDate.size + multiFilters.recommendations.size} active
+                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size + multiFilters.sectors.size + multiFilters.employeeCount.size + multiFilters.ipoDate.size + multiFilters.recommendations.size + multiFilters.industries.size} active
               </span>
             )}
             
@@ -1545,6 +1586,7 @@ const Dashboard: React.FC = () => {
           }
         }}
         availableSectors={availableSectors}
+        availableIndustries={availableIndustries}
       />
 
       {/* Add CSS for spinning animation */}

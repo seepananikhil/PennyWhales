@@ -670,6 +670,26 @@ const StockCard: React.FC<StockCardProps> = ({
                   <span>{stock.sector}</span>
                 </span>
               )}
+              {stock.industry && (
+                <span
+                  style={{
+                    fontSize: "0.7rem",
+                    color: "#495057",
+                    fontWeight: "600",
+                    backgroundColor: "#e9ecef",
+                    padding: "3px 8px",
+                    borderRadius: "5px",
+                    border: "1px solid #ced4da",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                  }}
+                  title={`Industry: ${stock.industry}`}
+                >
+                  <span>🏭</span>
+                  <span>{stock.industry}</span>
+                </span>
+              )}
             </div>
           )}
           {stock.description && (
