@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
     recommendations: Set<string>;
     industries: Set<string>;
   }>({
-    fireLevels: new Set([5, 4, 3]),
+    fireLevels: new Set([5, 4]),
     priceFilters: new Set(),
     marketValueFilters: new Set(),
     sectors: new Set(),

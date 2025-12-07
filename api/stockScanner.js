@@ -5,9 +5,9 @@ const { getStockPriceData } = require('./priceUtils');
 const { calculateFireLevel, calculateRecommendation } = require('./fireUtils');
 const { getComprehensiveFinvizData } = require('./finvizScraper');
 const { getCompanyDescription } = require('./llmAnalyzer');
+const { shouldExcludeStock } = require('./exclusionUtils');
 
 // HOLDING_THRESHOLD = 3.0; // 3% minimum holding
-const DELAY_BETWEEN_REQUESTS = 500; // ms
 const REQUIRE_BOTH_HOLDERS = false;
 
 class StockScanner {
@@ -168,6 +168,12 @@ class StockScanner {
 
       const { blackrockMarketValue, vanguardMarketValue, statestreetMarketValue, blackrockPct, vanguardPct, statestreetPct } = holdings;
 
+      // Check if stock should be excluded (therapeutics, lending, etc.)
+      const tempStock = { industry, company_name: companyName, description: null };
+      if (shouldExcludeStock(tempStock)) {
+        return { success: false, reason: 'excluded', industry, company_name: companyName };
+      }
+
       // Get company description only for stocks with fire level > 0
       let description = null;
       const existingStock = await dbService.getStockByTicker(ticker);
@@ -185,6 +191,12 @@ class StockScanner {
         } else {
           description = existingStock.description;
         }
+      }
+      
+      // Re-check exclusion with description now available
+      const stockWithDesc = { industry, company_name: companyName, description };
+      if (shouldExcludeStock(stockWithDesc)) {
+        return { success: false, reason: 'excluded', industry, company_name: companyName };
       }
 
       // Always return the stock data regardless of holding percentages
@@ -234,8 +246,9 @@ class StockScanner {
   async saveResults(stocks, totalProcessed, isDailyScan = false) {
     try {
       if (!isDailyScan) {
-        // Full scan: only save stocks with fire_level > 0 (qualifying stocks)
-        const qualifyingStocks = stocks.filter(s => s.fire_level > 0);
+        // Full scan: only save stocks with fire_level > 0
+        let qualifyingStocks = stocks.filter(s => s.fire_level > 0);
+        
         // Only remove tickers with fire_level 0 (not -1 which indicates missing data issues)
         const nonQualifyingTickers = stocks.filter(s => s.fire_level === 0).map(s => s.ticker);
         
@@ -273,8 +286,8 @@ class StockScanner {
       
       if (!currentResults || !currentResults.stocks) {
         console.log('⚠️ No existing scan results found. Saving daily scan as new results.');
-        // Only save stocks with fire_level > 0
-        const qualifyingStocks = stocks.filter(s => s.fire_level > 0);
+        let qualifyingStocks = stocks.filter(s => s.fire_level > 0);
+        
         await dbService.saveScanResults({
           stocks: qualifyingStocks,
           summary: { total_processed: totalProcessed, qualifying_count: qualifyingStocks.length },
@@ -289,17 +302,17 @@ class StockScanner {
         updatedStocksMap.set(stock.ticker, stock);
       });
 
-      // Merge: Update scanned stocks, keep unscanned stocks, remove stocks that lost fire (fire_level <= 0)
-      const mergedStocks = currentResults.stocks
+      // Merge: Update scanned stocks, keep unscanned stocks
+      let mergedStocks = currentResults.stocks
         .map(existingStock => {
           if (updatedStocksMap.has(existingStock.ticker)) {
-            return updatedStocksMap.get(existingStock.ticker); // Replace with updated data
+            return updatedStocksMap.get(existingStock.ticker);
           }
-          return existingStock; // Keep unchanged (wasn't scanned today)
+          return existingStock;
         })
-        .filter(stock => stock.fire_level > 0); // Remove stocks with fire_level -1 or 0
+        .filter(stock => stock.fire_level > 0);
 
-      // Add NEW stocks that aren't in the existing results but have fire_level > 0
+      // Add NEW stocks
       stocks.forEach(newStock => {
         const existsInCurrent = currentResults.stocks.some(s => s.ticker === newStock.ticker);
         if (!existsInCurrent && newStock.fire_level > 0) {
@@ -377,6 +390,8 @@ class StockScanner {
         
         this.results.push(stock);
         console.log(`✅ ${ticker} - $${stock.price.toFixed(2)} | BR:${stock.blackrock_pct.toFixed(1)}% VG:${stock.vanguard_pct.toFixed(1)}% | Fire:${stock.fire_level}🔥`);
+      } else if (result.reason === 'excluded') {
+        console.log(`⏭️  ${ticker} - Excluded (${result.industry || result.company_name})`);
       }
       // Silently skip failed stocks (most common: market cap too low)
 
@@ -429,6 +444,8 @@ class StockScanner {
         
         this.results.push(stock);
         console.log(`✅ NEW ${ticker} - $${stock.price.toFixed(2)} | BR:${stock.blackrock_pct.toFixed(1)}% VG:${stock.vanguard_pct.toFixed(1)}% | Fire:${stock.fire_level}🔥`);
+      } else if (result.reason === 'excluded') {
+        console.log(`⏭️  NEW ${ticker} - Excluded (${result.industry || result.company_name})`);
       }
       // Silently skip failed stocks
 

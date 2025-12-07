@@ -280,6 +280,9 @@ app.post("/api/scan/start", async (req, res) => {
               if (reason === 'market_cap_too_low') {
                 // Silent skip - don't retry, this is intentional filtering
                 // Don't add to failedTickers - these stocks don't qualify
+              } else if (reason === 'excluded') {
+                rejectedTickersToAdd.push(ticker);
+                console.log(`🚫 ${ticker}: Excluded (${result.industry || result.company_name})`);
               } else if (reason === 'no_price_data' || reason === 'no_holdings_data') {
                 console.log(`⚠️ ${ticker}: Missing data (${reason})`);
                 failedTickers.push(ticker); // Retry these - might be temporary API issues
