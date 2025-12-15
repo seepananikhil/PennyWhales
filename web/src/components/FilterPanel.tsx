@@ -373,11 +373,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           {/* Market Cap */}
           <FilterSection title="Market Cap" icon={FaBriefcase({})}>
             {[
-              { id: "nano", label: "🔬 Nano (< $50M)" },
-              { id: "micro", label: "💎 Micro ($50M - $300M)" },
-              { id: "small", label: "📊 Small ($300M - $2B)" },
-              { id: "mid", label: "🏢 Mid ($2B - $10B)" },
-              { id: "large", label: "🏛️ Large ($10B+)" },
+              { id: "under100", label: "🔬 < $100M" },
+              { id: "100to300", label: "💎 $100M - $300M" },
+              { id: "300to1b", label: "📊 $300M - $1B" },
+              { id: "over1b", label: "🏛️ $1B+" },
             ].map((opt) => (
               <FilterChip
                 key={opt.id}

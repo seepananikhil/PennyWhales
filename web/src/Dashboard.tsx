@@ -484,6 +484,10 @@ const Dashboard: React.FC = () => {
       return newFilters;
     });
     
+    // Clear URL ticker parameter when any filter is applied
+    window.history.pushState({}, '', window.location.pathname);
+    setUrlTicker(null);
+    
     // Auto-set activeFilter based on whether we have any filters
     // Check the updated state by calculating hasFilters separately
     setActiveFilter(prev => {
@@ -667,21 +671,18 @@ const Dashboard: React.FC = () => {
         
         return Array.from(multiFilters.marketValueFilters).some(marketValueFilter => {
           switch (marketValueFilter) {
-            case 'nano':
-              // Nano cap: < $50M
-              return marketCap < 50;
-            case 'micro':
-              // Micro cap: $50M - $300M
-              return marketCap >= 50 && marketCap < 300;
-            case 'small':
-              // Small cap: $300M - $2B
-              return marketCap >= 300 && marketCap < 2000;
-            case 'mid':
-              // Mid cap: $2B - $10B
-              return marketCap >= 2000 && marketCap < 10000;
-            case 'large':
-              // Large cap: $10B+
-              return marketCap >= 10000;
+            case 'under100':
+              // < $100M
+              return marketCap < 100;
+            case '100to300':
+              // $100M - $300M
+              return marketCap >= 100 && marketCap < 300;
+            case '300to1b':
+              // $300M - $1B
+              return marketCap >= 300 && marketCap < 1000;
+            case 'over1b':
+              // $1B+
+              return marketCap >= 1000;
             default:
               return true;
           }

@@ -450,7 +450,7 @@ class StockScanner {
       // Silently skip failed stocks
 
       // Rate limiting
-      await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_REQUESTS));
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     // Save results using daily scan logic (merge with existing results)

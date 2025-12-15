@@ -254,6 +254,7 @@ app.post("/api/scan/start", async (req, res) => {
 
         const qualifyingStocks = [];
         const rejectedTickersToAdd = [];
+        const rejectedReasons = {}; // Track rejection reasons
         const failedTickers = [];
 
         console.log(`📍 Starting ticker analysis loop...`);
@@ -272,6 +273,7 @@ app.post("/api/scan/start", async (req, res) => {
                 console.log(`✅ ${ticker}: fire_level=${stock.fire_level}`);
               } else {
                 rejectedTickersToAdd.push(ticker);
+                rejectedReasons[ticker] = 'fire_level=0';
                 console.log(`🚫 ${ticker}: fire_level=0 (rejected)`);
               }
             } else {
@@ -282,6 +284,7 @@ app.post("/api/scan/start", async (req, res) => {
                 // Don't add to failedTickers - these stocks don't qualify
               } else if (reason === 'excluded') {
                 rejectedTickersToAdd.push(ticker);
+                rejectedReasons[ticker] = `excluded: ${result.industry || result.company_name}`;
                 console.log(`🚫 ${ticker}: Excluded (${result.industry || result.company_name})`);
               } else if (reason === 'no_price_data' || reason === 'no_holdings_data') {
                 console.log(`⚠️ ${ticker}: Missing data (${reason})`);
@@ -336,6 +339,7 @@ app.post("/api/scan/start", async (req, res) => {
                   console.log(`✅ ${ticker} (retry): fire_level=${stock.fire_level}`);
                 } else {
                   rejectedTickersToAdd.push(ticker);
+                  rejectedReasons[ticker] = 'fire_level=0 (retry)';
                   console.log(`🚫 ${ticker} (retry): fire_level=0 (rejected)`);
                 }
               } else {
@@ -365,8 +369,12 @@ app.post("/api/scan/start", async (req, res) => {
         if (rejectedTickersToAdd.length > 0) {
           await dbService.addRejectedTickers(rejectedTickersToAdd);
           console.log(
-            `🚫 Added ${rejectedTickersToAdd.length} tickers to rejected list`
+            `🚫 Added ${rejectedTickersToAdd.length} tickers to rejected list:`
           );
+          // Log each rejected ticker with its reason
+          rejectedTickersToAdd.forEach(ticker => {
+            console.log(`   • ${ticker}: ${rejectedReasons[ticker] || 'unknown reason'}`);
+          });
         }
 
         // Step 5: Save scan results
