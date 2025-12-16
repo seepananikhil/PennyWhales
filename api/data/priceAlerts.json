@@ -1,0 +1,12 @@
+[
+  {
+    "id": "alert_1764959716659",
+    "ticker": "BDN",
+    "targetPrice": 2,
+    "condition": "below",
+    "active": true,
+    "triggered": false,
+    "created": "2025-12-05T18:35:16.659Z",
+    "triggeredAt": null
+  }
+]

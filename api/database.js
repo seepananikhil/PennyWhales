@@ -2,90 +2,115 @@ const { Low } = require('lowdb');
 const { JSONFile } = require('lowdb/node');
 const path = require('path');
 
-const DB_FILE = path.join(__dirname, 'database.json');
+// Separate JSON files for different data domains
+const DB_FILES = {
+  tickers: path.join(__dirname, 'data', 'tickers.json'),
+  scanResults: path.join(__dirname, 'data', 'scanResults.json'),
+  watchlists: path.join(__dirname, 'data', 'watchlists.json'),
+  holdings: path.join(__dirname, 'data', 'holdings.json'),
+  priceAlerts: path.join(__dirname, 'data', 'priceAlerts.json'),
+  settings: path.join(__dirname, 'data', 'settings.json')
+};
 
 class DatabaseService {
   constructor() {
-    this.db = null;
+    this.dbs = {};
     this.initialized = false;
   }
 
   async init() {
     if (this.initialized) return;
 
-    const adapter = new JSONFile(DB_FILE);
-    this.db = new Low(adapter, {});
+    // Create data directory if it doesn't exist
+    const fs = require('fs');
+    const dataDir = path.join(__dirname, 'data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
 
-    await this.db.read();
-
-    // Initialize default data structure
-    this.db.data = this.db.data || {
+    // Initialize tickers database
+    const tickersAdapter = new JSONFile(DB_FILES.tickers);
+    this.dbs.tickers = new Low(tickersAdapter, {});
+    await this.dbs.tickers.read();
+    this.dbs.tickers.data = this.dbs.tickers.data || {
       tickers: [],
-      rejectedTickers: [],
-      scanResults: {
-        stocks: [],
-        summary: {
-          total_processed: 0,
-          qualifying_count: 0,
-          high_tier: 0,
-          medium_tier: 0,
-          low_tier: 0,
-          under_dollar: 0,
-          premium_count: 0
-        },
-        timestamp: null,
-        new_stocks_only: false
-      },
-      watchlists: [],
-      holdings: {
-        stocks: [], // Array of ticker symbols user is holding
-        last_updated: null
-      },
-      priceAlerts: [], // Price alerts for stocks
-      settings: {
-        created: new Date().toISOString(),
-        version: '1.0.0',
-        telegramChatId: null, // User's Telegram chat ID for alerts
-        telegramBotToken: null // Optional: Store bot token (or use env var)
-      }
+      rejectedTickers: []
     };
+    await this.dbs.tickers.write();
 
-    // Ensure holdings section exists for existing databases
-    if (!this.db.data.holdings) {
-      this.db.data.holdings = {
-        stocks: [], // Array of ticker symbols user is holding
-        last_updated: null
-      };
-    }
+    // Initialize scan results database
+    const scanResultsAdapter = new JSONFile(DB_FILES.scanResults);
+    this.dbs.scanResults = new Low(scanResultsAdapter, {});
+    await this.dbs.scanResults.read();
+    this.dbs.scanResults.data = this.dbs.scanResults.data || {
+      stocks: [],
+      summary: {
+        total_processed: 0,
+        qualifying_count: 0,
+        high_tier: 0,
+        medium_tier: 0,
+        low_tier: 0,
+        under_dollar: 0,
+        premium_count: 0
+      },
+      timestamp: null,
+      new_stocks_only: false
+    };
+    await this.dbs.scanResults.write();
 
-    // Ensure rejectedTickers section exists for existing databases
-    if (!this.db.data.rejectedTickers) {
-      this.db.data.rejectedTickers = [];
-    }
+    // Initialize watchlists database
+    const watchlistsAdapter = new JSONFile(DB_FILES.watchlists);
+    this.dbs.watchlists = new Low(watchlistsAdapter, {});
+    await this.dbs.watchlists.read();
+    this.dbs.watchlists.data = this.dbs.watchlists.data || [];
+    await this.dbs.watchlists.write();
 
-    // Ensure priceAlerts section exists for existing databases
-    if (!this.db.data.priceAlerts) {
-      this.db.data.priceAlerts = [];
-    }
+    // Initialize holdings database
+    const holdingsAdapter = new JSONFile(DB_FILES.holdings);
+    this.dbs.holdings = new Low(holdingsAdapter, {});
+    await this.dbs.holdings.read();
+    this.dbs.holdings.data = this.dbs.holdings.data || {
+      stocks: [],
+      last_updated: null
+    };
+    await this.dbs.holdings.write();
 
-    await this.db.write();
+    // Initialize price alerts database
+    const priceAlertsAdapter = new JSONFile(DB_FILES.priceAlerts);
+    this.dbs.priceAlerts = new Low(priceAlertsAdapter, {});
+    await this.dbs.priceAlerts.read();
+    this.dbs.priceAlerts.data = this.dbs.priceAlerts.data || [];
+    await this.dbs.priceAlerts.write();
+
+    // Initialize settings database
+    const settingsAdapter = new JSONFile(DB_FILES.settings);
+    this.dbs.settings = new Low(settingsAdapter, {});
+    await this.dbs.settings.read();
+    this.dbs.settings.data = this.dbs.settings.data || {
+      created: new Date().toISOString(),
+      version: '1.0.0',
+      telegramChatId: null,
+      telegramBotToken: null
+    };
+    await this.dbs.settings.write();
+
     this.initialized = true;
-    console.log('📊 Database initialized');
+    console.log('📊 Database initialized (multi-file mode)');
   }
 
   // Ticker Management
   async getTickers() {
     await this.init();
-    return this.db.data.tickers;
+    return this.dbs.tickers.data.tickers;
   }
 
   async addTicker(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
     
-    if (!this.db.data.tickers.includes(normalizedTicker)) {
-      this.db.data.tickers.push(normalizedTicker);
-      await this.db.write();
+    if (!this.dbs.tickers.data.tickers.includes(normalizedTicker)) {
+      this.dbs.tickers.data.tickers.push(normalizedTicker);
+      await this.dbs.tickers.write();
       console.log(`✅ Added ticker: ${normalizedTicker}`);
       return true;
     }
@@ -98,14 +123,14 @@ class DatabaseService {
     
     for (const ticker of tickers) {
       const normalizedTicker = ticker.toUpperCase().trim();
-      if (!this.db.data.tickers.includes(normalizedTicker)) {
-        this.db.data.tickers.push(normalizedTicker);
+      if (!this.dbs.tickers.data.tickers.includes(normalizedTicker)) {
+        this.dbs.tickers.data.tickers.push(normalizedTicker);
         added.push(normalizedTicker);
       }
     }
     
     if (added.length > 0) {
-      await this.db.write();
+      await this.dbs.tickers.write();
       console.log(`✅ Added ${added.length} new tickers`);
     }
     
@@ -115,18 +140,18 @@ class DatabaseService {
   async removeTicker(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
-    const index = this.db.data.tickers.indexOf(normalizedTicker);
+    const index = this.dbs.tickers.data.tickers.indexOf(normalizedTicker);
     
     if (index > -1) {
-      this.db.data.tickers.splice(index, 1);
+      this.dbs.tickers.data.tickers.splice(index, 1);
       
       // Add to rejected tickers list
-      if (!this.db.data.rejectedTickers.includes(normalizedTicker)) {
-        this.db.data.rejectedTickers.push(normalizedTicker);
+      if (!this.dbs.tickers.data.rejectedTickers.includes(normalizedTicker)) {
+        this.dbs.tickers.data.rejectedTickers.push(normalizedTicker);
         console.log(`🚫 Added ${normalizedTicker} to rejected tickers`);
       }
       
-      await this.db.write();
+      await this.dbs.tickers.write();
       console.log(`🗑️ Removed ticker: ${normalizedTicker}`);
       return true;
     }
@@ -135,16 +160,16 @@ class DatabaseService {
 
   async updateTickers(tickers) {
     await this.init();
-    this.db.data.tickers = tickers.map(t => t.toUpperCase().trim());
-    await this.db.write();
-    console.log(`📝 Updated ticker list (${this.db.data.tickers.length} tickers)`);
-    return this.db.data.tickers;
+    this.dbs.tickers.data.tickers = tickers.map(t => t.toUpperCase().trim());
+    await this.dbs.tickers.write();
+    console.log(`📝 Updated ticker list (${this.dbs.tickers.data.tickers.length} tickers)`);
+    return this.dbs.tickers.data.tickers;
   }
 
   // Rejected Tickers Management (for stocks with fire_level <= 0)
   async getRejectedTickers() {
     await this.init();
-    return this.db.data.rejectedTickers || [];
+    return this.dbs.tickers.data.rejectedTickers || [];
   }
 
   async addRejectedTickers(tickers) {
@@ -153,14 +178,14 @@ class DatabaseService {
     
     for (const ticker of tickers) {
       const normalizedTicker = ticker.toUpperCase().trim();
-      if (!this.db.data.rejectedTickers.includes(normalizedTicker)) {
-        this.db.data.rejectedTickers.push(normalizedTicker);
+      if (!this.dbs.tickers.data.rejectedTickers.includes(normalizedTicker)) {
+        this.dbs.tickers.data.rejectedTickers.push(normalizedTicker);
         added.push(normalizedTicker);
       }
     }
     
     if (added.length > 0) {
-      await this.db.write();
+      await this.dbs.tickers.write();
       console.log(`🚫 Added ${added.length} rejected tickers`);
     }
     
@@ -169,25 +194,25 @@ class DatabaseService {
 
   async clearRejectedTickers() {
     await this.init();
-    this.db.data.rejectedTickers = [];
-    await this.db.write();
+    this.dbs.tickers.data.rejectedTickers = [];
+    await this.dbs.tickers.write();
     console.log('🗑️ Cleared rejected tickers');
   }
 
   // Holdings Management
   async getHoldings() {
     await this.init();
-    return this.db.data.holdings.stocks || [];
+    return this.dbs.holdings.data.stocks || [];
   }
 
   async addHolding(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
     
-    if (!this.db.data.holdings.stocks.includes(normalizedTicker)) {
-      this.db.data.holdings.stocks.push(normalizedTicker);
-      this.db.data.holdings.last_updated = new Date().toISOString();
-      await this.db.write();
+    if (!this.dbs.holdings.data.stocks.includes(normalizedTicker)) {
+      this.dbs.holdings.data.stocks.push(normalizedTicker);
+      this.dbs.holdings.data.last_updated = new Date().toISOString();
+      await this.dbs.holdings.write();
       console.log(`⭐ Added to holdings: ${normalizedTicker}`);
       return true;
     }
@@ -197,12 +222,12 @@ class DatabaseService {
   async removeHolding(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
-    const index = this.db.data.holdings.stocks.indexOf(normalizedTicker);
+    const index = this.dbs.holdings.data.stocks.indexOf(normalizedTicker);
     
     if (index > -1) {
-      this.db.data.holdings.stocks.splice(index, 1);
-      this.db.data.holdings.last_updated = new Date().toISOString();
-      await this.db.write();
+      this.dbs.holdings.data.stocks.splice(index, 1);
+      this.dbs.holdings.data.last_updated = new Date().toISOString();
+      await this.dbs.holdings.write();
       console.log(`🗑️ Removed from holdings: ${normalizedTicker}`);
       return true;
     }
@@ -212,7 +237,7 @@ class DatabaseService {
   async isHolding(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
-    return this.db.data.holdings.stocks.includes(normalizedTicker);
+    return this.dbs.holdings.data.stocks.includes(normalizedTicker);
   }
 
   // Scan Results Management
@@ -223,14 +248,14 @@ class DatabaseService {
     let retries = 3;
     while (retries > 0) {
       try {
-        await this.db.read();
-        return this.db.data.scanResults;
+        await this.dbs.scanResults.read();
+        return this.dbs.scanResults.data;
       } catch (error) {
         retries--;
         if (retries === 0) {
           console.error('Failed to read scan results after retries:', error.message);
           // Return cached data if available
-          return this.db.data.scanResults || { stocks: [], summary: {}, timestamp: null };
+          return this.dbs.scanResults.data || { stocks: [], summary: {}, timestamp: null };
         }
         // Wait a bit before retrying
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -249,7 +274,7 @@ class DatabaseService {
     await this.init();
     
     // Get previous scan results to calculate changes
-    const previousResults = this.db.data.scanResults?.stocks || [];
+    const previousResults = this.dbs.scanResults.data?.stocks || [];
     const previousStocksMap = new Map(previousResults.map(s => [s.ticker, s]));
     
     // Use the stocks and summary as they come from the scanner
@@ -300,7 +325,7 @@ class DatabaseService {
     });
     
     // Save results with minimal processing
-    this.db.data.scanResults = {
+    this.dbs.scanResults.data = {
       ...results,
       stocks: stocksWithChanges,
       summary: {
@@ -314,9 +339,9 @@ class DatabaseService {
     let retries = 3;
     while (retries > 0) {
       try {
-        await this.db.write();
+        await this.dbs.scanResults.write();
         console.log(`💾 Saved scan results (${stocksWithChanges.length} stocks)`);
-        return this.db.data.scanResults;
+        return this.dbs.scanResults.data;
       } catch (error) {
         retries--;
         if (retries === 0) {
@@ -333,7 +358,7 @@ class DatabaseService {
     await this.init();
     
     // Clear scan results with minimal structure
-    this.db.data.scanResults = {
+    this.dbs.scanResults.data = {
       stocks: [],
       summary: {
         total_processed: 0,
@@ -343,19 +368,19 @@ class DatabaseService {
       timestamp: null
     };
     
-    await this.db.write();
+    await this.dbs.scanResults.write();
     console.log('🗑️ Cleared scan results');
   }
 
   // Watchlist functions
   async getWatchlists() {
     await this.init();
-    return this.db.data.watchlists || [];
+    return this.dbs.watchlists.data || [];
   }
 
   async getWatchlist(id) {
     await this.init();
-    return this.db.data.watchlists?.find(watchlist => watchlist.id === id) || null;
+    return this.dbs.watchlists.data?.find(watchlist => watchlist.id === id) || null;
   }
 
   async createWatchlist(name, stocks = []) {
@@ -369,19 +394,19 @@ class DatabaseService {
       updated: new Date().toISOString()
     };
 
-    if (!this.db.data.watchlists) {
-      this.db.data.watchlists = [];
+    if (!Array.isArray(this.dbs.watchlists.data)) {
+      this.dbs.watchlists.data = [];
     }
 
-    this.db.data.watchlists.push(watchlist);
-    await this.db.write();
+    this.dbs.watchlists.data.push(watchlist);
+    await this.dbs.watchlists.write();
     console.log(`📋 Created watchlist: ${name}`);
     return watchlist;
   }
 
   async updateWatchlist(id, updates) {
     await this.init();
-    const watchlistIndex = this.db.data.watchlists?.findIndex(w => w.id === id);
+    const watchlistIndex = this.dbs.watchlists.data?.findIndex(w => w.id === id);
     
     if (watchlistIndex === -1) {
       throw new Error('Watchlist not found');
@@ -390,7 +415,7 @@ class DatabaseService {
     // Handle stocks merging BEFORE spreading updates
     let mergedStocks = null;
     if (updates.stocks) {
-      const existingStocks = this.db.data.watchlists[watchlistIndex].stocks || [];
+      const existingStocks = this.dbs.watchlists.data[watchlistIndex].stocks || [];
       const newStocks = updates.stocks.map(s => s.toUpperCase().trim());
       mergedStocks = [...new Set([...existingStocks, ...newStocks])];
     }
@@ -398,32 +423,32 @@ class DatabaseService {
     // Create a copy of updates without stocks
     const { stocks, ...otherUpdates } = updates;
 
-    this.db.data.watchlists[watchlistIndex] = {
-      ...this.db.data.watchlists[watchlistIndex],
+    this.dbs.watchlists.data[watchlistIndex] = {
+      ...this.dbs.watchlists.data[watchlistIndex],
       ...otherUpdates,
       updated: new Date().toISOString()
     };
 
     // Apply merged stocks if we have them
     if (mergedStocks) {
-      this.db.data.watchlists[watchlistIndex].stocks = mergedStocks;
+      this.dbs.watchlists.data[watchlistIndex].stocks = mergedStocks;
     }
 
-    await this.db.write();
+    await this.dbs.watchlists.write();
     console.log(`📋 Updated watchlist: ${id}`);
-    return this.db.data.watchlists[watchlistIndex];
+    return this.dbs.watchlists.data[watchlistIndex];
   }
 
   async deleteWatchlist(id) {
     await this.init();
-    const watchlistIndex = this.db.data.watchlists?.findIndex(w => w.id === id);
+    const watchlistIndex = this.dbs.watchlists.data?.findIndex(w => w.id === id);
     
     if (watchlistIndex === -1) {
       throw new Error('Watchlist not found');
     }
 
-    const deleted = this.db.data.watchlists.splice(watchlistIndex, 1)[0];
-    await this.db.write();
+    const deleted = this.dbs.watchlists.data.splice(watchlistIndex, 1)[0];
+    await this.dbs.watchlists.write();
     console.log(`📋 Deleted watchlist: ${deleted.name}`);
     return deleted;
   }
@@ -466,7 +491,7 @@ class DatabaseService {
   async migrateAddFireLevels() {
     await this.init();
     
-    if (!this.db.data.scanResults || !this.db.data.scanResults.stocks) {
+    if (!this.dbs.scanResults.data || !this.dbs.scanResults.data.stocks) {
       console.log('No scan results to migrate');
       return { migrated: 0 };
     }
@@ -475,7 +500,7 @@ class DatabaseService {
     const { calculateFireLevel } = require('./fireUtils');
     
     let migrated = 0;
-    const stocks = this.db.data.scanResults.stocks;
+    const stocks = this.dbs.scanResults.data.stocks;
 
     for (let stock of stocks) {
       if (stock.fire_level === undefined) {
@@ -490,15 +515,15 @@ class DatabaseService {
       const fireLevel2 = stocks.filter(s => s.fire_level === 2).length;
       const fireLevel1 = stocks.filter(s => s.fire_level === 1).length;
       
-      this.db.data.scanResults.summary = {
-        ...this.db.data.scanResults.summary,
+      this.dbs.scanResults.data.summary = {
+        ...this.dbs.scanResults.data.summary,
         fire_level_3: fireLevel3,
         fire_level_2: fireLevel2,
         fire_level_1: fireLevel1,
         total_fire_stocks: fireLevel3 + fireLevel2 + fireLevel1
       };
 
-      await this.db.write();
+      await this.dbs.scanResults.write();
       console.log(`🔥 Migrated ${migrated} stocks with fire levels`);
     }
 
@@ -509,28 +534,58 @@ class DatabaseService {
   async getStats() {
     await this.init();
     return {
-      totalTickers: this.db.data.tickers?.length || 0,
-      lastScan: this.db.data.scanResults?.timestamp || null,
-      qualifyingStocks: this.db.data.scanResults?.stocks?.length || 0
+      totalTickers: this.dbs.tickers.data.tickers?.length || 0,
+      lastScan: this.dbs.scanResults.data?.timestamp || null,
+      qualifyingStocks: this.dbs.scanResults.data?.stocks?.length || 0
     };
   }
 
   async exportData() {
     await this.init();
-    return JSON.stringify(this.db.data, null, 2);
+    const allData = {
+      tickers: this.dbs.tickers.data,
+      scanResults: this.dbs.scanResults.data,
+      watchlists: this.dbs.watchlists.data,
+      holdings: this.dbs.holdings.data,
+      priceAlerts: this.dbs.priceAlerts.data,
+      settings: this.dbs.settings.data
+    };
+    return JSON.stringify(allData, null, 2);
   }
 
   async importData(data) {
     await this.init();
-    this.db.data = data;
-    await this.db.write();
+    if (data.tickers) {
+      this.dbs.tickers.data = data.tickers;
+      await this.dbs.tickers.write();
+    }
+    if (data.scanResults) {
+      this.dbs.scanResults.data = data.scanResults;
+      await this.dbs.scanResults.write();
+    }
+    if (data.watchlists) {
+      this.dbs.watchlists.data = data.watchlists;
+      await this.dbs.watchlists.write();
+    }
+    if (data.holdings) {
+      this.dbs.holdings.data = data.holdings;
+      await this.dbs.holdings.write();
+    }
+    if (data.priceAlerts) {
+      this.dbs.priceAlerts.data = data.priceAlerts;
+      await this.dbs.priceAlerts.write();
+    }
+    if (data.settings) {
+      this.dbs.settings.data = data.settings;
+      await this.dbs.settings.write();
+    }
     console.log('📥 Imported data to database');
   }
 
   // Price Alerts Management
   async getPriceAlerts() {
     await this.init();
-    return this.db.data.priceAlerts || [];
+    return this.dbs.priceAlerts.data || [];
   }
 
   async addPriceAlert(alert) {
@@ -546,19 +601,23 @@ class DatabaseService {
       triggeredAt: null
     };
 
-    this.db.data.priceAlerts.push(newAlert);
-    await this.db.write();
+    if (!Array.isArray(this.dbs.priceAlerts.data)) {
+      this.dbs.priceAlerts.data = [];
+    }
+
+    this.dbs.priceAlerts.data.push(newAlert);
+    await this.dbs.priceAlerts.write();
     console.log(`🔔 Added price alert: ${newAlert.ticker} ${newAlert.condition} $${newAlert.targetPrice}`);
     return newAlert;
   }
 
   async removePriceAlert(alertId) {
     await this.init();
-    const index = this.db.data.priceAlerts.findIndex(a => a.id === alertId);
+    const index = this.dbs.priceAlerts.data.findIndex(a => a.id === alertId);
     
     if (index > -1) {
-      const removed = this.db.data.priceAlerts.splice(index, 1)[0];
-      await this.db.write();
+      const removed = this.dbs.priceAlerts.data.splice(index, 1)[0];
+      await this.dbs.priceAlerts.write();
       console.log(`🗑️ Removed price alert: ${alertId}`);
       return removed;
     }
@@ -567,49 +626,49 @@ class DatabaseService {
 
   async updatePriceAlert(alertId, updates) {
     await this.init();
-    const alertIndex = this.db.data.priceAlerts.findIndex(a => a.id === alertId);
+    const alertIndex = this.dbs.priceAlerts.data.findIndex(a => a.id === alertId);
     
     if (alertIndex === -1) {
       throw new Error('Alert not found');
     }
 
-    this.db.data.priceAlerts[alertIndex] = {
-      ...this.db.data.priceAlerts[alertIndex],
+    this.dbs.priceAlerts.data[alertIndex] = {
+      ...this.dbs.priceAlerts.data[alertIndex],
       ...updates,
       updated: new Date().toISOString()
     };
 
-    await this.db.write();
+    await this.dbs.priceAlerts.write();
     console.log(`🔔 Updated price alert: ${alertId}`);
-    return this.db.data.priceAlerts[alertIndex];
+    return this.dbs.priceAlerts.data[alertIndex];
   }
 
   async getActivePriceAlerts() {
     await this.init();
-    return this.db.data.priceAlerts.filter(a => a.active && !a.triggered);
+    return this.dbs.priceAlerts.data.filter(a => a.active && !a.triggered);
   }
 
   async getAlertsByTicker(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
-    return this.db.data.priceAlerts.filter(a => a.ticker === normalizedTicker);
+    return this.dbs.priceAlerts.data.filter(a => a.ticker === normalizedTicker);
   }
 
   // Settings Management
   async getSettings() {
     await this.init();
-    return this.db.data.settings;
+    return this.dbs.settings.data;
   }
 
   async updateSettings(updates) {
     await this.init();
-    this.db.data.settings = {
-      ...this.db.data.settings,
+    this.dbs.settings.data = {
+      ...this.dbs.settings.data,
       ...updates
     };
-    await this.db.write();
+    await this.dbs.settings.write();
     console.log('⚙️ Updated settings');
-    return this.db.data.settings;
+    return this.dbs.settings.data;
   }
 }
 
