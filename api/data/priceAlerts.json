@@ -8,5 +8,35 @@
     "triggered": false,
     "created": "2025-12-05T18:35:16.659Z",
     "triggeredAt": null
+  },
+  {
+    "id": "alert_1765943202355",
+    "ticker": "SABR",
+    "targetPrice": 1.1,
+    "condition": "below",
+    "active": true,
+    "triggered": false,
+    "created": "2025-12-17T03:46:42.355Z",
+    "triggeredAt": null
+  },
+  {
+    "id": "alert_1765992242879",
+    "ticker": "OPEN",
+    "targetPrice": 5,
+    "condition": "below",
+    "active": true,
+    "triggered": false,
+    "created": "2025-12-17T17:24:02.879Z",
+    "triggeredAt": null
+  },
+  {
+    "id": "alert_1766057737958",
+    "ticker": "AGL",
+    "targetPrice": 1,
+    "condition": "above",
+    "active": true,
+    "triggered": false,
+    "created": "2025-12-18T11:35:37.958Z",
+    "triggeredAt": null
   }
 ]

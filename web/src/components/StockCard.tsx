@@ -533,6 +533,47 @@ const StockCard: React.FC<StockCardProps> = ({
             >
               {SiTradingview({ size: 12 })}
             </span>
+            {/* Finviz Chart Button */}
+            <span
+              style={{
+                color: "#000000",
+                cursor: "pointer",
+                fontSize: "0.7rem",
+                fontWeight: "700",
+                backgroundColor: "#FFF9E6",
+                padding: "3px 5px",
+                borderRadius: "8px",
+                border: "1px solid #FFE8A1",
+                boxShadow: "0 1px 2px rgba(255,165,0,0.2)",
+                display: "inline-flex",
+                alignItems: "center",
+                transition: "all 0.2s ease",
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(
+                  `https://finviz.com/quote.ashx?t=${stock.ticker}&p=d`,
+                  "_blank"
+                );
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.1)";
+                e.currentTarget.style.backgroundColor = "#FFE8A1";
+                e.currentTarget.style.color = "#000000";
+                e.currentTarget.style.boxShadow =
+                  "0 2px 4px rgba(255,165,0,0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.backgroundColor = "#FFF9E6";
+                e.currentTarget.style.color = "#000000";
+                e.currentTarget.style.boxShadow =
+                  "0 1px 2px rgba(255,165,0,0.2)";
+              }}
+              title="View on Finviz"
+            >
+              FV
+            </span>
             {/* Price Alert Bell Button */}
             <span
               style={{
