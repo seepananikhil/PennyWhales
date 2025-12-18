@@ -159,8 +159,9 @@ class StockScanner {
       const instOwn = finvizData?.ownership?.instOwn || null;
       const instTrans = finvizData?.ownership?.instTrans || null;
       const sma200 = finvizData?.technical?.sma200 || null;
+      const avgVolume = finvizData?.trading?.avgVolume || null;
 
-      // Parse holdings and filter by market cap
+      // Parse holdings and filter by market cap (do this early so we have holdings data for rejection responses)
       const holdings = this.parseHoldings(holdingsData, marketCap);
       if (!holdings) {
         return { success: false, reason: 'market_cap_too_low', marketCap };
@@ -171,7 +172,33 @@ class StockScanner {
       // Check if stock should be excluded (therapeutics, lending, etc.)
       const tempStock = { industry, company_name: companyName, description: null };
       if (shouldExcludeStock(tempStock)) {
-        return { success: false, reason: 'excluded', industry, company_name: companyName };
+        return { 
+          success: false, 
+          reason: 'excluded',
+          data: {
+            ticker,
+            price: Math.round(priceData.price * 100) / 100,
+            previous_close: Math.round(priceData.previousClose * 100) / 100,
+            blackrock_pct: blackrockPct,
+            vanguard_pct: vanguardPct,
+            statestreet_pct: statestreetPct,
+            blackrock_market_value: blackrockMarketValue,
+            vanguard_market_value: vanguardMarketValue,
+            statestreet_market_value: statestreetMarketValue,
+            market_cap: marketCap,
+            avg_volume: avgVolume,
+            employee_count: employeeCount,
+            ipo_date: ipoDate,
+            sector: sector,
+            industry: industry,
+            company_name: companyName,
+            inst_own: instOwn,
+            inst_trans: instTrans,
+            sma200: sma200,
+            performance: performance,
+            fire_level: -1
+          }
+        };
       }
 
       // Get company description only for stocks with fire level > 0
@@ -196,7 +223,34 @@ class StockScanner {
       // Re-check exclusion with description now available
       const stockWithDesc = { industry, company_name: companyName, description };
       if (shouldExcludeStock(stockWithDesc)) {
-        return { success: false, reason: 'excluded', industry, company_name: companyName };
+        return { 
+          success: false, 
+          reason: 'excluded',
+          data: {
+            ticker,
+            price: Math.round(priceData.price * 100) / 100,
+            previous_close: Math.round(priceData.previousClose * 100) / 100,
+            blackrock_pct: blackrockPct,
+            vanguard_pct: vanguardPct,
+            statestreet_pct: statestreetPct,
+            blackrock_market_value: blackrockMarketValue,
+            vanguard_market_value: vanguardMarketValue,
+            statestreet_market_value: statestreetMarketValue,
+            market_cap: marketCap,
+            avg_volume: avgVolume,
+            employee_count: employeeCount,
+            ipo_date: ipoDate,
+            sector: sector,
+            industry: industry,
+            company_name: companyName,
+            description: description,
+            inst_own: instOwn,
+            inst_trans: instTrans,
+            sma200: sma200,
+            performance: performance,
+            fire_level: -1
+          }
+        };
       }
 
       // Always return the stock data regardless of holding percentages
@@ -214,6 +268,7 @@ class StockScanner {
           vanguard_market_value: vanguardMarketValue,     // Store as number (in millions)
           statestreet_market_value: statestreetMarketValue, // Store as number (in millions)
           market_cap: marketCap, // Market cap in millions from Finviz
+          avg_volume: avgVolume, // Average trading volume from Finviz
           employee_count: employeeCount, // Number of employees from Finviz
           ipo_date: ipoDate, // IPO date from Finviz
           sector: sector, // Sector from Finviz
@@ -396,7 +451,7 @@ class StockScanner {
       // Silently skip failed stocks (most common: market cap too low)
 
       // Rate limiting
-      await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_REQUESTS));
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     // Save results

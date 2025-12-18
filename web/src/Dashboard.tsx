@@ -37,6 +37,7 @@ const Dashboard: React.FC = () => {
     ipoDate: Set<string>;
     recommendations: Set<string>;
     industries: Set<string>;
+    volumeFilter: Set<string>;
   }>({
     fireLevels: new Set([5, 4]),
     priceFilters: new Set(),
@@ -45,7 +46,8 @@ const Dashboard: React.FC = () => {
     employeeCount: new Set(),
     ipoDate: new Set(),
     recommendations: new Set(),
-    industries: new Set()
+    industries: new Set(),
+    volumeFilter: new Set()
   });
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string[]>([]); // Multi-sort: order of sort criteria
@@ -411,7 +413,7 @@ const Dashboard: React.FC = () => {
 
 
   // Single unified filter toggle function
-  const toggleFilter = (type: 'fire' | 'price' | 'marketValue' | 'sector' | 'employee' | 'ipo' | 'recommendation' | 'industry', value: number | string) => {
+  const toggleFilter = (type: 'fire' | 'price' | 'marketValue' | 'sector' | 'employee' | 'ipo' | 'recommendation' | 'industry' | 'volume', value: number | string) => {
     setMultiFilters(prev => {
       const newFilters = { ...prev };
       
@@ -479,6 +481,14 @@ const Dashboard: React.FC = () => {
           newIndustries.add(value as string);
         }
         newFilters.industries = newIndustries;
+      } else if (type === 'volume') {
+        const newVolumeFilter = new Set(prev.volumeFilter);
+        if (newVolumeFilter.has(value as string)) {
+          newVolumeFilter.delete(value as string);
+        } else {
+          newVolumeFilter.add(value as string);
+        }
+        newFilters.volumeFilter = newVolumeFilter;
       }
       
       return newFilters;
@@ -498,6 +508,7 @@ const Dashboard: React.FC = () => {
         (type === 'sector' ? (multiFilters.sectors.has(value as string) ? multiFilters.sectors.size - 1 : multiFilters.sectors.size + 1) : multiFilters.sectors.size) +
         (type === 'employee' ? (multiFilters.employeeCount.has(value as string) ? multiFilters.employeeCount.size - 1 : multiFilters.employeeCount.size + 1) : multiFilters.employeeCount.size) +
         (type === 'ipo' ? (multiFilters.ipoDate.has(value as string) ? multiFilters.ipoDate.size - 1 : multiFilters.ipoDate.size + 1) : multiFilters.ipoDate.size) +
+        (type === 'volume' ? (multiFilters.volumeFilter.has(value as string) ? multiFilters.volumeFilter.size - 1 : multiFilters.volumeFilter.size + 1) : multiFilters.volumeFilter.size) +
         (type === 'recommendation' ? (multiFilters.recommendations.has(value as string) ? multiFilters.recommendations.size - 1 : multiFilters.recommendations.size + 1) : multiFilters.recommendations.size) +
         (type === 'industry' ? (multiFilters.industries.has(value as string) ? multiFilters.industries.size - 1 : multiFilters.industries.size + 1) : multiFilters.industries.size);
       
@@ -519,7 +530,8 @@ const Dashboard: React.FC = () => {
       employeeCount: new Set(),
       ipoDate: new Set(),
       recommendations: new Set(),
-      industries: new Set()
+      industries: new Set(),
+      volumeFilter: new Set()
     });
     
     // Clear URL parameters
@@ -696,6 +708,34 @@ const Dashboard: React.FC = () => {
         const stock = stockData.get(ticker);
         if (!stock || !stock.sector) return false;
         return multiFilters.sectors.has(stock.sector);
+      });
+    }
+
+    // Apply volume filter if selected
+    if (multiFilters.volumeFilter.size > 0) {
+      stocks = stocks.filter(ticker => {
+        const stock = stockData.get(ticker);
+        if (!stock) return false;
+        
+        const volume = stock.avg_volume;
+        
+        // Skip stocks without volume data
+        if (volume === null || volume === undefined) return false;
+        
+        return Array.from(multiFilters.volumeFilter).some(volumeFilter => {
+          switch (volumeFilter) {
+            case 'under500k':
+              return volume < 500000;
+            case '500kto1m':
+              return volume >= 500000 && volume < 1000000;
+            case '1mto2m':
+              return volume >= 1000000 && volume < 2000000;
+            case 'over2m':
+              return volume >= 2000000;
+            default:
+              return true;
+          }
+        });
       });
     }
 
@@ -1199,7 +1239,7 @@ const Dashboard: React.FC = () => {
               {filteredStocks.length} {filteredStocks.length === 1 ? 'Stock' : 'Stocks'}
             </span>
             
-            {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0 || multiFilters.sectors.size > 0 || multiFilters.employeeCount.size > 0 || multiFilters.ipoDate.size > 0) && (
+            {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0 || multiFilters.sectors.size > 0 || multiFilters.employeeCount.size > 0 || multiFilters.ipoDate.size > 0 || multiFilters.volumeFilter.size > 0) && (
               <span style={{
                 fontSize: theme.typography.fontSize.sm,
                 backgroundColor: theme.status.info,
@@ -1213,7 +1253,7 @@ const Dashboard: React.FC = () => {
                 whiteSpace: 'nowrap'
               }}>
                 <span>🔍</span>
-                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size + multiFilters.sectors.size + multiFilters.employeeCount.size + multiFilters.ipoDate.size + multiFilters.recommendations.size + multiFilters.industries.size} active
+                {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size + multiFilters.sectors.size + multiFilters.employeeCount.size + multiFilters.ipoDate.size + multiFilters.recommendations.size + multiFilters.industries.size + multiFilters.volumeFilter.size} active
               </span>
             )}
             

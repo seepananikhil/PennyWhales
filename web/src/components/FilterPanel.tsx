@@ -25,6 +25,7 @@ interface FilterPanelProps {
     ipoDate: Set<string>;
     recommendations: Set<string>;
     industries: Set<string>;
+    volumeFilter: Set<string>;
   };
   onToggleFilter: (
     type:
@@ -35,7 +36,8 @@ interface FilterPanelProps {
       | "employee"
       | "ipo"
       | "recommendation"
-      | "industry",
+      | "industry"
+      | "volume",
     value: any
   ) => void;
   onClearFilters: () => void;
@@ -384,6 +386,24 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 active={filters.marketValueFilters.has(opt.id)}
                 onClick={() => onToggleFilter("marketValue", opt.id)}
                 color="#6f42c1"
+              />
+            ))}
+          </FilterSection>
+
+          {/* Volume */}
+          <FilterSection title="Avg Volume" icon={<span style={{ fontSize: "1.2rem" }}>📊</span>}>
+            {[
+              { id: "under500k", label: "< 500K" },
+              { id: "500kto1m", label: "500K - 1M" },
+              { id: "1mto2m", label: "1M - 2M" },
+              { id: "over2m", label: "> 2M" },
+            ].map((opt) => (
+              <FilterChip
+                key={opt.id}
+                label={opt.label}
+                active={filters.volumeFilter.has(opt.id)}
+                onClick={() => onToggleFilter("volume", opt.id)}
+                color="#17a2b8"
               />
             ))}
           </FilterSection>

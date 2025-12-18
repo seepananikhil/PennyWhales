@@ -100,11 +100,11 @@ function extractPerformance(html, label) {
 
 /**
  * Helper function to extract numeric values from HTML
+ * @param {boolean} inMillions - If true, returns values in millions (for market cap), otherwise actual numbers
  */
-function extractValue(html, label, occurrence = 1) {
+function extractValue(html, label, occurrence = 1, inMillions = false) {
   try {
     const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    // Updated pattern to capture content including nested tags
     const pattern = new RegExp(`>${escapedLabel}<\\/td><td[^>]*class="snapshot-td2[^"]*"[^>]*>(?:<b>)?(.*?)(?:<\\/b>)?<\\/td>`, 'g');
     
     let match;
@@ -115,23 +115,24 @@ function extractValue(html, label, occurrence = 1) {
         let value = match[1].trim();
         if (value === '-' || value === '') return null;
         
-        // Remove HTML tags to get clean value
+        // Remove HTML tags
         value = value.replace(/<[^>]*>/g, '');
         
-        // Parse numeric values with suffixes (M, B, T)
-        const numMatch = value.match(/([\-+]?\d+\.?\d*)\s*([MBT])?/);
-        if (numMatch) {
-          let num = parseFloat(numMatch[1]);
-          const suffix = numMatch[2];
-          
-          if (suffix === 'M') return num;
-          if (suffix === 'B') return num * 1000;
-          if (suffix === 'T') return num * 1000000;
-          
-          return num;
-        }
+        // Parse: "612.79M" or "1.50M" or "4017.54B"
+        const numMatch = value.match(/([\-+]?\d+\.?\d*)([KMBT])?/);
+        if (!numMatch) return value; // Return text if no number found
         
-        return value;
+        const num = parseFloat(numMatch[1]);
+        const suffix = numMatch[2];
+        
+        if (!suffix) return num; // No suffix, return as-is
+        
+        // Multipliers based on whether we want millions or actual numbers
+        const multipliers = inMillions 
+          ? { K: 0.001, M: 1, B: 1000, T: 1000000 } // Store in millions
+          : { K: 1000, M: 1000000, B: 1000000000, T: 1000000000000 }; // Store actual
+        
+        return num * (multipliers[suffix] || 1);
       }
     }
     return null;
@@ -279,8 +280,8 @@ async function getComprehensiveFinvizData(ticker) {
     const data = {
       // Valuation Metrics
       valuation: {
-        marketCap: extractValue(html, 'Market Cap'),
-        enterpriseValue: extractValue(html, 'Enterprise Value'),
+        marketCap: extractValue(html, 'Market Cap', 1, true),
+        enterpriseValue: extractValue(html, 'Enterprise Value', 1, true),
         pe: extractValue(html, 'P/E'),
         forwardPE: extractValue(html, 'Forward P/E'),
         peg: extractValue(html, 'PEG'),
@@ -294,8 +295,8 @@ async function getComprehensiveFinvizData(ticker) {
       
       // Profitability Metrics
       profitability: {
-        income: extractValue(html, 'Income'),
-        sales: extractValue(html, 'Sales'),
+        income: extractValue(html, 'Income', 1, true),
+        sales: extractValue(html, 'Sales', 1, true),
         roa: extractPercent(html, 'ROA'),
         roe: extractPercent(html, 'ROE'),
         roic: extractPercent(html, 'ROIC'),
@@ -330,11 +331,11 @@ async function getComprehensiveFinvizData(ticker) {
         insiderTrans: extractPercent(html, 'Insider Trans'),
         instOwn: extractPercent(html, 'Inst Own'),
         instTrans: extractPercent(html, 'Inst Trans'),
-        sharesOutstanding: extractValue(html, 'Shs Outstand'),
-        sharesFloat: extractValue(html, 'Shs Float'),
+        sharesOutstanding: extractValue(html, 'Shs Outstand', 1, true), // in millions
+        sharesFloat: extractValue(html, 'Shs Float', 1, true), // in millions
         shortFloat: extractPercent(html, 'Short Float'),
         shortRatio: extractValue(html, 'Short Ratio'),
-        shortInterest: extractValue(html, 'Short Interest')
+        shortInterest: extractValue(html, 'Short Interest', 1, true) // in millions
       },
       
       // Technical Indicators
@@ -376,7 +377,7 @@ async function getComprehensiveFinvizData(ticker) {
       // Company Info
       company: {
         name: extractCompanyName(html, ticker),
-        employees: extractValue(html, 'Employees'),
+        employees: extractValue(html, 'Employees'), // actual number
         ipoDate: extractText(html, 'IPO'),
         sector: extractSector(html),
         industry: extractIndustry(html)
@@ -390,8 +391,8 @@ async function getComprehensiveFinvizData(ticker) {
       
       // Volume & Price
       trading: {
-        avgVolume: extractValue(html, 'Avg Volume'),
-        volume: extractValue(html, 'Volume'),
+        avgVolume: extractValue(html, 'Avg Volume'), // actual number
+        volume: extractValue(html, 'Volume'), // actual number
         relVolume: extractValue(html, 'Rel Volume'),
         price: extractValue(html, 'Price'),
         change: extractPercent(html, 'Change'),

@@ -284,8 +284,9 @@ app.post("/api/scan/start", async (req, res) => {
                 // Don't add to failedTickers - these stocks don't qualify
               } else if (reason === 'excluded') {
                 rejectedTickersToAdd.push(ticker);
-                rejectedReasons[ticker] = `excluded: ${result.industry || result.company_name}`;
-                console.log(`🚫 ${ticker}: Excluded (${result.industry || result.company_name})`);
+                const excludeInfo = result.data?.industry || result.data?.company_name || 'unknown';
+                rejectedReasons[ticker] = `excluded: ${excludeInfo}`;
+                console.log(`🚫 ${ticker}: Excluded (${excludeInfo})`);
               } else if (reason === 'no_price_data' || reason === 'no_holdings_data') {
                 console.log(`⚠️ ${ticker}: Missing data (${reason})`);
                 failedTickers.push(ticker); // Retry these - might be temporary API issues
@@ -369,11 +370,13 @@ app.post("/api/scan/start", async (req, res) => {
         if (rejectedTickersToAdd.length > 0) {
           await dbService.addRejectedTickers(rejectedTickersToAdd);
           console.log(
-            `🚫 Added ${rejectedTickersToAdd.length} tickers to rejected list:`
+            `🚫 Added ${rejectedTickersToAdd.length} rejected tickers`
           );
+          console.log(`🚫 Added ${rejectedTickersToAdd.length} tickers to rejected list:`);
           // Log each rejected ticker with its reason
           rejectedTickersToAdd.forEach(ticker => {
-            console.log(`   • ${ticker}: ${rejectedReasons[ticker] || 'unknown reason'}`);
+            const reason = rejectedReasons[ticker] || 'unknown reason';
+            console.log(`   • ${ticker}: ${reason}`);
           });
         }
 
@@ -517,33 +520,41 @@ app.post("/api/scan", async (req, res) => {
           const stockData = result.data;
           // fire_level already calculated in analyzeTicker
           results.push(stockData);
-        } else {
-          errors.push({
-            ticker: tick.toUpperCase().trim(),
-            error: result?.reason || "Could not fetch data for this ticker",
+        } else if (result && !result.success && result.data) {
+          // For rejected stocks that have data, include all the data
+          results.push({
+            ...result.data,
+            success: false,
+            reason: result.reason
           });
+        } else {
+          // For manual scans, include rejected stocks with their rejection reason
+          const rejectionInfo = {
+            ticker: tick.toUpperCase().trim(),
+            success: false,
+            reason: result?.reason || "unknown_error",
+            fire_level: -1,
+            ...result // Include any extra info (avgVolume, minRequired, etc.)
+          };
+          results.push(rejectionInfo);
         }
       } catch (error) {
-        errors.push({
+        results.push({
           ticker: tick.toUpperCase().trim(),
-          error: error.message || "Failed to scan stock",
+          success: false,
+          reason: "error",
+          fire_level: -1,
+          error: error.message || "Failed to scan stock"
         });
       }
-    }
-
-    if (results.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: "Could not fetch data for any of the tickers",
-        errors,
-      });
     }
 
     res.json({
       success: true,
       stocks: results,
       count: results.length,
-      errors: errors.length > 0 ? errors : undefined,
+      successful: results.filter(r => r.success !== false).length,
+      rejected: results.filter(r => r.success === false).length
     });
   } catch (error) {
     console.error("Error scanning stock(s):", error);

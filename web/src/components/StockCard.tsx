@@ -881,6 +881,30 @@ const StockCard: React.FC<StockCardProps> = ({
                 })()}
               </span>
             )}
+            {stock.avg_volume && stock.avg_volume > 0 && (
+              <span
+                style={{
+                  fontSize: "0.7rem",
+                  color: "#495057",
+                  fontWeight: "600",
+                  backgroundColor: "#e8f5e9",
+                  padding: "3px 8px",
+                  borderRadius: "6px",
+                  border: "1px solid #c8e6c9",
+                }}
+                title={`Avg Volume: ${stock.avg_volume.toLocaleString()}`}
+              >
+                📊 {(() => {
+                  const vol = stock.avg_volume;
+                  if (vol >= 1000000) {
+                    return `${(vol / 1000000).toFixed(1)}M`;
+                  } else if (vol >= 1000) {
+                    return `${(vol / 1000).toFixed(1)}K`;
+                  }
+                  return vol.toString();
+                })()}
+              </span>
+            )}
             {stock.employee_count && stock.employee_count > 0 && (
               <span
                 style={{
