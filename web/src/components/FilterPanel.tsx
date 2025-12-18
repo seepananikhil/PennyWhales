@@ -396,7 +396,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               { id: "under500k", label: "< 500K" },
               { id: "500kto1m", label: "500K - 1M" },
               { id: "1mto2m", label: "1M - 2M" },
-              { id: "over2m", label: "> 2M" },
+              { id: "2mto5m", label: "2M - 5M" },
+              { id: "5mto10m", label: "5M - 10M" },
+              { id: "over10m", label: "> 10M" },
             ].map((opt) => (
               <FilterChip
                 key={opt.id}

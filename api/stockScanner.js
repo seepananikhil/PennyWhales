@@ -206,7 +206,12 @@ class StockScanner {
       const existingStock = await dbService.getStockByTicker(ticker);
       
       // Calculate fire level to determine if we should fetch description
-      const fireLevel = calculateFireLevel({ blackrock_pct: blackrockPct, vanguard_pct: vanguardPct });
+      const fireLevel = calculateFireLevel({ 
+        blackrock_pct: blackrockPct, 
+        vanguard_pct: vanguardPct,
+        blackrock_market_value: blackrockMarketValue,
+        vanguard_market_value: vanguardMarketValue
+      });
       
       if (fireLevel > 0) {
         if (!existingStock || !existingStock.description) {

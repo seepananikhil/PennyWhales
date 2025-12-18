@@ -47,7 +47,7 @@ const Dashboard: React.FC = () => {
     ipoDate: new Set(),
     recommendations: new Set(),
     industries: new Set(),
-    volumeFilter: new Set()
+    volumeFilter: new Set(['500kto1m', '1mto2m', '2mto5m', '5mto10m', 'over10m'])
   });
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string[]>([]); // Multi-sort: order of sort criteria
@@ -730,8 +730,12 @@ const Dashboard: React.FC = () => {
               return volume >= 500000 && volume < 1000000;
             case '1mto2m':
               return volume >= 1000000 && volume < 2000000;
-            case 'over2m':
-              return volume >= 2000000;
+            case '2mto5m':
+              return volume >= 2000000 && volume < 5000000;
+            case '5mto10m':
+              return volume >= 5000000 && volume < 10000000;
+            case 'over10m':
+              return volume >= 10000000;
             default:
               return true;
           }

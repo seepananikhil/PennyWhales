@@ -180,6 +180,95 @@ async function autoPopulateHotPicks() {
   }
 }
 
+// Check for fire stock drops and notify
+async function checkFireDrops(previousResults, newResults) {
+  try {
+    if (!previousResults || !previousResults.stocks) {
+      console.log("⚠️ No previous scan results to compare");
+      return;
+    }
+
+    // Create maps for quick lookup
+    const previousStocksMap = new Map();
+    previousResults.stocks.forEach(stock => {
+      if (stock.fire_level >= 3) {
+        previousStocksMap.set(stock.ticker, stock);
+      }
+    });
+
+    const newStocksMap = new Map();
+    newResults.stocks.forEach(stock => {
+      newStocksMap.set(stock.ticker, stock);
+    });
+
+    // Find stocks that dropped from fire 3+ to 0 or were removed
+    const droppedStocks = [];
+    previousStocksMap.forEach((previousStock, ticker) => {
+      const newStock = newStocksMap.get(ticker);
+      if (!newStock || newStock.fire_level === 0) {
+        droppedStocks.push({
+          ticker,
+          previousFireLevel: previousStock.fire_level,
+          previousPrice: previousStock.price,
+          previousBlackrock: previousStock.blackrock_pct,
+          previousVanguard: previousStock.vanguard_pct,
+          newFireLevel: newStock ? newStock.fire_level : 'removed',
+          newPrice: newStock ? newStock.price : null
+        });
+      }
+    });
+
+    if (droppedStocks.length === 0) {
+      console.log("✅ No fire stock drops detected");
+      
+      // Send notification that check was performed successfully with no drops
+      const settings = await dbService.getSettings();
+      if (settings.telegramChatId) {
+        const previousFire3Plus = Array.from(previousStocksMap.values()).length;
+        const message = `✅ FIRE DROP CHECK COMPLETE\n\n${previousFire3Plus} stocks with Fire 3+ were checked.\nNo drops detected - all stocks maintaining their fire levels! 🔥`;
+        
+        try {
+          await telegramService.sendMessage(settings.telegramChatId, message);
+          console.log("✅ Fire drop check notification sent (no drops)");
+        } catch (error) {
+          console.error("❌ Failed to send fire drop check notification:", error.message);
+        }
+      }
+      
+      return;
+    }
+
+    console.log(`⚠️ Detected ${droppedStocks.length} fire stock drops: ${droppedStocks.map(s => s.ticker).join(', ')}`);
+
+    // Send Telegram notification
+    const settings = await dbService.getSettings();
+    if (settings.telegramChatId) {
+      const dropList = droppedStocks
+        .map(stock => 
+          `• ${stock.ticker}: ${'🔥'.repeat(stock.previousFireLevel)} → ${stock.newFireLevel === 'removed' ? '❌ REMOVED' : '❄️ Fire 0'}\n` +
+          `   Previous: $${stock.previousPrice.toFixed(2)} | BR: ${stock.previousBlackrock.toFixed(1)}% | VG: ${stock.previousVanguard.toFixed(1)}%` +
+          (stock.newPrice ? `\n   Current: $${stock.newPrice.toFixed(2)}` : '')
+        )
+        .join("\n\n");
+
+      const message = `⚠️ FIRE STOCK DROPS DETECTED ⚠️\n\nThe following stocks dropped from Fire 3+ to Fire 0 or were removed:\n\n${dropList}`;
+
+      try {
+        console.log(`📤 Sending fire drop notification for ${droppedStocks.length} stocks...`);
+        await telegramService.sendMessage(settings.telegramChatId, message);
+        console.log("✅ Fire drop notification sent");
+      } catch (error) {
+        console.error("❌ Failed to send fire drop notification:", error.message);
+      }
+    } else {
+      console.log("⚠️ Telegram chat ID not configured, skipping fire drop notification");
+    }
+
+  } catch (error) {
+    console.error("❌ Error checking fire drops:", error);
+  }
+}
+
 // API Routes
 
 // Start scan
@@ -401,6 +490,10 @@ app.post("/api/scan/start", async (req, res) => {
             total_fire_stocks: qualifyingStocks.length,
           },
         };
+
+        // Check for fire stock drops before saving new results
+        const previousResults = await dbService.getScanResults();
+        await checkFireDrops(previousResults, scanResults);
 
         await dbService.saveScanResults(scanResults);
 
