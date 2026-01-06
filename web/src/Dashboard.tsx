@@ -997,6 +997,18 @@ const Dashboard: React.FC = () => {
               // Sort by institutional ownership (lowest first)
               comparison = (stockA.inst_own || 0) - (stockB.inst_own || 0);
               break;
+            case 'holdings-change-desc':
+              // Sort by combined holdings change (biggest increase first)
+              const combinedChangeB = (stockB.blackrock_change || 0) + (stockB.vanguard_change || 0);
+              const combinedChangeA = (stockA.blackrock_change || 0) + (stockA.vanguard_change || 0);
+              comparison = combinedChangeB - combinedChangeA;
+              break;
+            case 'holdings-change-asc':
+              // Sort by combined holdings change (biggest decrease first)
+              const combinedChangeA2 = (stockA.blackrock_change || 0) + (stockA.vanguard_change || 0);
+              const combinedChangeB2 = (stockB.blackrock_change || 0) + (stockB.vanguard_change || 0);
+              comparison = combinedChangeA2 - combinedChangeB2;
+              break;
             case 'sma200-desc':
               // Sort by SMA200 (highest/most above 200MA first)
               comparison = (stockB.sma200 || 0) - (stockA.sma200 || 0);

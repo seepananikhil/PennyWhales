@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Stock } from "../types";
 import { theme, getFireLevelStyle, getSectorStyle } from "../theme";
 import api from "../api";
 import { SiTradingview } from "react-icons/si";
-import { FaBell, FaBellSlash, FaBrain } from "react-icons/fa";
+import { FaBell, FaBellSlash, FaBrain, FaShare, FaCopy, FaCheck } from "react-icons/fa";
 import { MdDelete, MdDeleteForever } from "react-icons/md";
 import PriceAlertModal from "./PriceAlertModal";
 import ReactMarkdown from "react-markdown";
+import html2canvas from "html2canvas";
 
 // Custom eye icons as React components
 const EyeIcon = ({ size = 16 }: { size?: number }) => (
@@ -72,6 +73,9 @@ const StockCard: React.FC<StockCardProps> = ({
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [aiAnalysis, setAIAnalysis] = useState<string | null>(null);
   const [aiLoading, setAILoading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const fireLevel = stock.fire_level || 0;
   const fireStyle = getFireLevelStyle(fireLevel);
@@ -131,6 +135,63 @@ const StockCard: React.FC<StockCardProps> = ({
       setAIAnalysis("Failed to load AI analysis. Please try again.");
     } finally {
       setAILoading(false);
+    }
+  };
+
+  // Share card as image
+  const handleShareCard = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!cardRef.current || isSharing) return;
+    
+    try {
+      setIsSharing(true);
+      setCopySuccess(false);
+      
+      // Small delay to ensure DOM is ready
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      // Capture the card as canvas
+      const canvas = await html2canvas(cardRef.current, {
+        background: '#ffffff',
+        logging: false,
+        useCORS: true,
+      });
+      
+      // Convert canvas to blob
+      canvas.toBlob(async (blob: Blob | null) => {
+        if (!blob) {
+          console.error('Failed to create image');
+          setIsSharing(false);
+          return;
+        }
+        
+        try {
+          // Copy to clipboard
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              'image/png': blob
+            })
+          ]);
+          
+          // Show success state
+          setCopySuccess(true);
+          
+          // Reset success state after 2 seconds
+          setTimeout(() => {
+            setCopySuccess(false);
+          }, 2000);
+        } catch (clipboardError) {
+          console.error('Clipboard error:', clipboardError);
+        }
+        
+        setIsSharing(false);
+      }, 'image/png');
+      
+    } catch (error) {
+      console.error('Error sharing card:', error);
+      setIsSharing(false);
+      setCopySuccess(false);
     }
   };
 
@@ -225,6 +286,7 @@ const StockCard: React.FC<StockCardProps> = ({
         `}
       </style>
       <div
+        ref={cardRef}
         onClick={() => {
           onOpenChart(stock.ticker);
           const url = new URL(window.location.href);
@@ -276,7 +338,7 @@ const StockCard: React.FC<StockCardProps> = ({
             >
               {stock.ticker}
             </span>
-            <span style={{ fontSize: "1.1rem" }}>{getFireEmoji(fireLevel)}</span>
+            <span style={{ fontSize: "0.7rem" }}>{getFireEmoji(fireLevel)}</span>
           </div>
 
           {/* Right: Action Buttons */}
@@ -664,6 +726,52 @@ const StockCard: React.FC<StockCardProps> = ({
                 <span style={{ animation: "pulse 1.5s ease-in-out infinite" }}>🔄</span>
               ) : (
                 FaBrain({ size: 12 })
+              )}
+            </span>
+            {/* Copy Button */}
+            <span
+              style={{
+                color: copySuccess ? "#10B981" : isSharing ? "#6B7280" : "#059669",
+                cursor: isSharing ? "wait" : "pointer",
+                fontSize: "1rem",
+                backgroundColor: copySuccess ? "#D1FAE5" : isSharing ? "#F3F4F6" : "#ECFDF5",
+                padding: "3px 4px",
+                borderRadius: "8px",
+                border: copySuccess ? "1px solid #6EE7B7" : isSharing ? "1px solid #D1D5DB" : "1px solid #A7F3D0",
+                boxShadow: copySuccess
+                  ? "0 1px 2px rgba(16,185,129,0.2)"
+                  : isSharing
+                  ? "0 1px 2px rgba(107,114,128,0.1)"
+                  : "0 1px 2px rgba(5,150,105,0.2)",
+                display: "inline-flex",
+                alignItems: "center",
+                transition: "all 0.2s ease",
+              }}
+              onClick={handleShareCard}
+              onMouseEnter={(e) => {
+                if (!isSharing && !copySuccess) {
+                  e.currentTarget.style.transform = "scale(1.1)";
+                  e.currentTarget.style.backgroundColor = "#A7F3D0";
+                  e.currentTarget.style.color = "#047857";
+                  e.currentTarget.style.boxShadow = "0 2px 4px rgba(5,150,105,0.3)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isSharing && !copySuccess) {
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.backgroundColor = "#ECFDF5";
+                  e.currentTarget.style.color = "#059669";
+                  e.currentTarget.style.boxShadow = "0 1px 2px rgba(5,150,105,0.2)";
+                }
+              }}
+              title={copySuccess ? "Copied!" : isSharing ? "Copying..." : "Copy as image"}
+            >
+              {copySuccess ? (
+                FaCheck({ size: 12 })
+              ) : isSharing ? (
+                <span style={{ animation: "pulse 1.5s ease-in-out infinite" }}>{FaCopy({ size: 12 })}</span>
+              ) : (
+                FaCopy({ size: 12 })
               )}
             </span>
           </div>
