@@ -34,9 +34,63 @@
     "ticker": "AGL",
     "targetPrice": 1,
     "condition": "above",
+    "active": false,
+    "triggered": true,
+    "created": "2025-12-18T11:35:37.958Z",
+    "triggeredAt": "2026-01-20T14:30:03.632Z",
+    "triggeredPrice": 1.02,
+    "updated": "2026-01-20T14:30:03.633Z"
+  },
+  {
+    "id": "alert_1769708422278",
+    "ticker": "HAIN",
+    "targetPrice": 1,
+    "condition": "below",
+    "active": false,
+    "triggered": true,
+    "created": "2026-01-29T17:40:22.278Z",
+    "triggeredAt": "2026-02-10T16:30:03.720Z",
+    "triggeredPrice": 0.8763,
+    "updated": "2026-02-10T16:30:03.720Z"
+  },
+  {
+    "id": "alert_1769709204031",
+    "ticker": "ALIT",
+    "targetPrice": 1,
+    "condition": "below",
     "active": true,
     "triggered": false,
-    "created": "2025-12-18T11:35:37.958Z",
+    "created": "2026-01-29T17:53:24.031Z",
+    "triggeredAt": null
+  },
+  {
+    "id": "alert_1770017775098",
+    "ticker": "OPEN",
+    "targetPrice": 4.5,
+    "condition": "below",
+    "active": true,
+    "triggered": false,
+    "created": "2026-02-02T07:36:15.098Z",
+    "triggeredAt": null
+  },
+  {
+    "id": "alert_1770657263102",
+    "ticker": "AMC",
+    "targetPrice": 1,
+    "condition": "below",
+    "active": true,
+    "triggered": false,
+    "created": "2026-02-09T17:14:23.102Z",
+    "triggeredAt": null
+  },
+  {
+    "id": "alert_1770741215717",
+    "ticker": "HAIN",
+    "targetPrice": 0.99,
+    "condition": "above",
+    "active": true,
+    "triggered": false,
+    "created": "2026-02-10T16:33:35.717Z",
     "triggeredAt": null
   }
 ]
