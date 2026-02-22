@@ -309,10 +309,10 @@ const AlertChartView: React.FC<AlertChartViewProps> = ({
                   }}>
                     <div style={{
                       textAlign: 'center',
-                      backgroundColor: stock.performance.week > 0 ? '#d4edda' : stock.performance.week < 0 ? '#f8d7da' : '#f8f9fa',
+                      backgroundColor: stock.performance.week !== undefined && stock.performance.week > 0 ? '#d4edda' : stock.performance.week !== undefined && stock.performance.week < 0 ? '#f8d7da' : '#f8f9fa',
                       padding: '5px 4px',
                       borderRadius: '6px',
-                      border: `1px solid ${stock.performance.week > 0 ? '#c3e6cb' : stock.performance.week < 0 ? '#f5c6cb' : '#e9ecef'}`,
+                      border: `1px solid ${stock.performance.week !== undefined && stock.performance.week > 0 ? '#c3e6cb' : stock.performance.week !== undefined && stock.performance.week < 0 ? '#f5c6cb' : '#e9ecef'}`,
                     }}>
                       <div style={{
                         fontSize: '0.7rem',
@@ -325,18 +325,18 @@ const AlertChartView: React.FC<AlertChartViewProps> = ({
                       <div style={{
                         fontSize: '0.85rem',
                         fontWeight: 'bold',
-                        color: stock.performance.week > 0 ? '#28a745' : stock.performance.week < 0 ? '#dc3545' : '#6c757d',
+                        color: stock.performance.week !== undefined && stock.performance.week > 0 ? '#28a745' : stock.performance.week !== undefined && stock.performance.week < 0 ? '#dc3545' : '#6c757d',
                       }}>
-                        {stock.performance.week > 0 ? '+' : ''}{stock.performance.week.toFixed(1)}%
+                        {stock.performance.week !== undefined ? `${stock.performance.week > 0 ? '+' : ''}${stock.performance.week.toFixed(1)}%` : '—'}
                       </div>
                     </div>
 
                     <div style={{
                       textAlign: 'center',
-                      backgroundColor: stock.performance.month > 0 ? '#d4edda' : stock.performance.month < 0 ? '#f8d7da' : '#f8f9fa',
+                      backgroundColor: stock.performance.month !== undefined && stock.performance.month > 0 ? '#d4edda' : stock.performance.month !== undefined && stock.performance.month < 0 ? '#f8d7da' : '#f8f9fa',
                       padding: '5px 4px',
                       borderRadius: '6px',
-                      border: `1px solid ${stock.performance.month > 0 ? '#c3e6cb' : stock.performance.month < 0 ? '#f5c6cb' : '#e9ecef'}`,
+                      border: `1px solid ${stock.performance.month !== undefined && stock.performance.month > 0 ? '#c3e6cb' : stock.performance.month !== undefined && stock.performance.month < 0 ? '#f5c6cb' : '#e9ecef'}`,
                     }}>
                       <div style={{
                         fontSize: '0.7rem',
@@ -349,18 +349,18 @@ const AlertChartView: React.FC<AlertChartViewProps> = ({
                       <div style={{
                         fontSize: '0.85rem',
                         fontWeight: 'bold',
-                        color: stock.performance.month > 0 ? '#28a745' : stock.performance.month < 0 ? '#dc3545' : '#6c757d',
+                        color: stock.performance.month !== undefined && stock.performance.month > 0 ? '#28a745' : stock.performance.month !== undefined && stock.performance.month < 0 ? '#dc3545' : '#6c757d',
                       }}>
-                        {stock.performance.month > 0 ? '+' : ''}{stock.performance.month.toFixed(1)}%
+                        {stock.performance.month !== undefined ? `${stock.performance.month > 0 ? '+' : ''}${stock.performance.month.toFixed(1)}%` : '—'}
                       </div>
                     </div>
 
                     <div style={{
                       textAlign: 'center',
-                      backgroundColor: stock.performance.year > 0 ? '#d4edda' : stock.performance.year < 0 ? '#f8d7da' : '#f8f9fa',
+                      backgroundColor: stock.performance.year !== undefined && stock.performance.year > 0 ? '#d4edda' : stock.performance.year !== undefined && stock.performance.year < 0 ? '#f8d7da' : '#f8f9fa',
                       padding: '5px 4px',
                       borderRadius: '6px',
-                      border: `1px solid ${stock.performance.year > 0 ? '#c3e6cb' : stock.performance.year < 0 ? '#f5c6cb' : '#e9ecef'}`,
+                      border: `1px solid ${stock.performance.year !== undefined && stock.performance.year > 0 ? '#c3e6cb' : stock.performance.year !== undefined && stock.performance.year < 0 ? '#f5c6cb' : '#e9ecef'}`,
                     }}>
                       <div style={{
                         fontSize: '0.7rem',
@@ -373,9 +373,9 @@ const AlertChartView: React.FC<AlertChartViewProps> = ({
                       <div style={{
                         fontSize: '0.85rem',
                         fontWeight: 'bold',
-                        color: stock.performance.year > 0 ? '#28a745' : stock.performance.year < 0 ? '#dc3545' : '#6c757d',
+                        color: stock.performance.year !== undefined && stock.performance.year > 0 ? '#28a745' : stock.performance.year !== undefined && stock.performance.year < 0 ? '#dc3545' : '#6c757d',
                       }}>
-                        {stock.performance.year > 0 ? '+' : ''}{stock.performance.year.toFixed(1)}%
+                        {stock.performance.year !== undefined ? `${stock.performance.year > 0 ? '+' : ''}${stock.performance.year.toFixed(1)}%` : '—'}
                       </div>
                     </div>
                   </div>

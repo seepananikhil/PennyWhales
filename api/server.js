@@ -12,6 +12,7 @@ const { scrapeFinvizScreener } = require("./finvizScraper");
 const alertChecker = require("./alertChecker");
 const telegramService = require("./telegramService");
 const { analyzeStock } = require("./llmAnalyzer");
+const sendInstitutionalChanges = require("./sendInstitutionalChanges");
 
 // Make fetch available for Node.js if not available
 if (typeof fetch === "undefined") {
@@ -511,6 +512,9 @@ app.post("/api/scan/start", async (req, res) => {
         // Auto-populate Hot Picks watchlist after scan completes
         await autoPopulateHotPicks();
 
+        // Send institutional changes telegram notification
+        await sendInstitutionalChanges();
+
         scanState.scanning = false;
         scanState.last_scan = new Date().toISOString();
 
@@ -539,25 +543,57 @@ app.get("/api/scan/status", (req, res) => {
 // Get latest results
 app.get("/api/scan/results", async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+    
     const results = await dbService.getScanResults();
     
-    // Filter stocks to only include those with price below $2
-    if (results && results.stocks) {
-      // results.stocks = results.stocks.filter(stock => stock.price && stock.price < 2.0);
-      
-      // Update summary counts
-      if (results.summary) {
-        results.summary.qualifying_count = results.stocks.length;
-        results.summary.fire_level_5 = results.stocks.filter((s) => s.fire_level === 5).length;
-        results.summary.fire_level_4 = results.stocks.filter((s) => s.fire_level === 4).length;
-        results.summary.fire_level_3 = results.stocks.filter((s) => s.fire_level === 3).length;
-        results.summary.fire_level_2 = results.stocks.filter((s) => s.fire_level === 2).length;
-        results.summary.fire_level_1 = results.stocks.filter((s) => s.fire_level === 1).length;
-        results.summary.total_fire_stocks = results.stocks.length;
-      }
+    if (!results || !results.stocks) {
+      return res.json({
+        stocks: [],
+        summary: {},
+        timestamp: new Date().toISOString(),
+        pagination: {
+          page: 1,
+          limit,
+          total: 0,
+          totalPages: 0,
+          hasMore: false
+        }
+      });
     }
     
-    res.json(results);
+    // Filter stocks to only include those with price below $2
+    // results.stocks = results.stocks.filter(stock => stock.price && stock.price < 2.0);
+    
+    const totalStocks = results.stocks.length;
+    const totalPages = Math.ceil(totalStocks / limit);
+    const paginatedStocks = results.stocks.slice(skip, skip + limit);
+    
+    // Update summary counts for paginated results
+    const summary = results.summary || {};
+    summary.total_stocks = totalStocks;
+    summary.qualifying_count = totalStocks;
+    summary.fire_level_5 = results.stocks.filter((s) => s.fire_level === 5).length;
+    summary.fire_level_4 = results.stocks.filter((s) => s.fire_level === 4).length;
+    summary.fire_level_3 = results.stocks.filter((s) => s.fire_level === 3).length;
+    summary.fire_level_2 = results.stocks.filter((s) => s.fire_level === 2).length;
+    summary.fire_level_1 = results.stocks.filter((s) => s.fire_level === 1).length;
+    summary.total_fire_stocks = totalStocks;
+    
+    res.json({
+      stocks: paginatedStocks,
+      summary,
+      timestamp: results.timestamp,
+      pagination: {
+        page,
+        limit,
+        total: totalStocks,
+        totalPages,
+        hasMore: page < totalPages
+      }
+    });
   } catch (error) {
     console.error("Error getting scan results:", error);
     res.status(500).json({ error: "Failed to get scan results" });
@@ -658,6 +694,23 @@ app.post("/api/scan", async (req, res) => {
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Test institutional changes notification
+app.post("/api/test/institutional-changes", async (req, res) => {
+  try {
+    await sendInstitutionalChanges();
+    res.json({ 
+      success: true, 
+      message: "Institutional changes notification sent successfully" 
+    });
+  } catch (error) {
+    console.error("Error sending institutional changes:", error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
 });
 
 // Live price proxy endpoint
@@ -1425,6 +1478,27 @@ app.get("/api/telegram/updates", async (req, res) => {
   } catch (error) {
     console.error("Error getting updates:", error);
     res.status(500).json({ error: "Failed to get updates" });
+  }
+});
+
+// Institutional Changes Endpoints
+app.get("/api/institutional-changes", async (req, res) => {
+  try {
+    const changes = await dbService.getInstitutionalChanges();
+    res.json(changes);
+  } catch (error) {
+    console.error("Error getting institutional changes:", error);
+    res.status(500).json({ error: "Failed to get institutional changes" });
+  }
+});
+
+app.delete("/api/institutional-changes", async (req, res) => {
+  try {
+    const result = await dbService.clearInstitutionalChanges();
+    res.json({ success: true, message: "Institutional changes history cleared", data: result });
+  } catch (error) {
+    console.error("Error clearing institutional changes:", error);
+    res.status(500).json({ error: "Failed to clear institutional changes" });
   }
 });
 

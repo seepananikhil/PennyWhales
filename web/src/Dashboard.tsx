@@ -39,15 +39,15 @@ const Dashboard: React.FC = () => {
     industries: Set<string>;
     volumeFilter: Set<string>;
   }>({
-    fireLevels: new Set([5, 4]),
+    fireLevels: new Set(),
     priceFilters: new Set(),
-    marketValueFilters: new Set(),
+    marketValueFilters: new Set(['300to1b', 'over1b']),
     sectors: new Set(),
     employeeCount: new Set(),
     ipoDate: new Set(),
     recommendations: new Set(),
     industries: new Set(),
-    volumeFilter: new Set(['500kto1m', '1mto2m', '2mto5m', '5mto10m', 'over10m'])
+    volumeFilter: new Set()
   });
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string[]>([]); // Multi-sort: order of sort criteria
@@ -56,10 +56,28 @@ const Dashboard: React.FC = () => {
   const [topLosers, setTopLosers] = useState<string[]>([]);
   const [filterPanelOpen, setFilterPanelOpen] = useState<boolean>(false);
   const [urlTicker, setUrlTicker] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageLimit] = useState<number>(50);
+  const [pagination, setPagination] = useState<{
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  } | null>(null);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    if (!isInitialLoad) {
+      setCurrentPage(1);
+      setStockData(new Map());
+      loadStockData(true);
+    }
+  }, [activeFilter, JSON.stringify(Array.from(multiFilters.fireLevels)), JSON.stringify(Array.from(multiFilters.priceFilters)), JSON.stringify(Array.from(multiFilters.marketValueFilters)), JSON.stringify(Array.from(multiFilters.sectors)), JSON.stringify(Array.from(multiFilters.industries)), searchQuery, sortOrder]);
   
   useEffect(() => {
     // Read ticker and sector from URL
@@ -105,9 +123,26 @@ const Dashboard: React.FC = () => {
     }
   }, [activeWatchlistId]);
 
+  useEffect(() => {
+    loadStockData();
+  }, [currentPage]);
+
   const loadData = async () => {
-    await Promise.all([loadTickers(), loadStockData(), loadHoldings(), loadWatchlists(), loadTopMovers()]);
+    await Promise.all([loadTickers(), loadStockData(true), loadHoldings(), loadWatchlists(), loadTopMovers()]);
   };
+
+  const loadMoreData = async () => {
+    if (pagination && pagination.hasMore && !loadingMore) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  // Load more data when page changes (except initial load)
+  useEffect(() => {
+    if (currentPage > 1) {
+      loadStockData(false);
+    }
+  }, [currentPage]);
 
   const loadTopMovers = async () => {
     try {
@@ -133,18 +168,45 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const loadStockData = async () => {
+  const loadStockData = async (reset: boolean = false) => {
     try {
-      const results = await api.getLatestResults();
+      if (reset) {
+        setLoading(true);
+        setIsInitialLoad(false);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const page = reset ? 1 : currentPage;
+      const results = await api.getLatestResults(page, pageLimit);
+      
       if (results?.stocks) {
-        const stockMap = new Map<string, Stock>();
-        results.stocks.forEach(stock => {
-          stockMap.set(stock.ticker, stock);
+        setStockData(prevData => {
+          const stockMap = reset ? new Map<string, Stock>() : new Map(prevData);
+          results.stocks.forEach(stock => {
+            stockMap.set(stock.ticker, stock);
+          });
+          return stockMap;
         });
-        setStockData(stockMap);
+        
+        // Update pagination state
+        if (results.pagination) {
+          setPagination({
+            total: results.pagination.total,
+            totalPages: results.pagination.totalPages,
+            hasMore: results.pagination.hasMore
+          });
+        }
+
+        if (reset) {
+          setCurrentPage(1);
+        }
       }
     } catch (err) {
       console.error('Error loading stock data:', err);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -997,16 +1059,28 @@ const Dashboard: React.FC = () => {
               // Sort by institutional ownership (lowest first)
               comparison = (stockA.inst_own || 0) - (stockB.inst_own || 0);
               break;
+            case 'holdings-value-desc':
+              // Sort by total institutional market value holdings (biggest first)
+              const totalValueB = (stockB.blackrock_market_value || 0) + (stockB.vanguard_market_value || 0) + (stockB.statestreet_market_value || 0);
+              const totalValueA = (stockA.blackrock_market_value || 0) + (stockA.vanguard_market_value || 0) + (stockA.statestreet_market_value || 0);
+              comparison = totalValueB - totalValueA;
+              break;
+            case 'holdings-value-asc':
+              // Sort by total institutional market value holdings (smallest first)
+              const totalValueA2 = (stockA.blackrock_market_value || 0) + (stockA.vanguard_market_value || 0) + (stockA.statestreet_market_value || 0);
+              const totalValueB2 = (stockB.blackrock_market_value || 0) + (stockB.vanguard_market_value || 0) + (stockB.statestreet_market_value || 0);
+              comparison = totalValueA2 - totalValueB2;
+              break;
             case 'holdings-change-desc':
               // Sort by combined holdings change (biggest increase first)
-              const combinedChangeB = (stockB.blackrock_change || 0) + (stockB.vanguard_change || 0);
-              const combinedChangeA = (stockA.blackrock_change || 0) + (stockA.vanguard_change || 0);
+              const combinedChangeB = (stockB.blackrock_change || 0) + (stockB.vanguard_change || 0) + (stockB.statestreet_change || 0);
+              const combinedChangeA = (stockA.blackrock_change || 0) + (stockA.vanguard_change || 0) + (stockA.statestreet_change || 0);
               comparison = combinedChangeB - combinedChangeA;
               break;
             case 'holdings-change-asc':
               // Sort by combined holdings change (biggest decrease first)
-              const combinedChangeA2 = (stockA.blackrock_change || 0) + (stockA.vanguard_change || 0);
-              const combinedChangeB2 = (stockB.blackrock_change || 0) + (stockB.vanguard_change || 0);
+              const combinedChangeA2 = (stockA.blackrock_change || 0) + (stockA.vanguard_change || 0) + (stockA.statestreet_change || 0);
+              const combinedChangeB2 = (stockB.blackrock_change || 0) + (stockB.vanguard_change || 0) + (stockB.statestreet_change || 0);
               comparison = combinedChangeA2 - combinedChangeB2;
               break;
             case 'sma200-desc':
@@ -1242,18 +1316,6 @@ const Dashboard: React.FC = () => {
             }}>
               🎯 Dashboard
             </h1>
-            <span style={{
-              fontSize: theme.typography.fontSize.base,
-              backgroundColor: theme.status.success,
-              color: 'white',
-              padding: `6px ${theme.spacing.md}`,
-              borderRadius: theme.borderRadius.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              boxShadow: theme.ui.shadow.sm,
-              whiteSpace: 'nowrap'
-            }}>
-              {filteredStocks.length} {filteredStocks.length === 1 ? 'Stock' : 'Stocks'}
-            </span>
             
             {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0 || multiFilters.sectors.size > 0 || multiFilters.employeeCount.size > 0 || multiFilters.ipoDate.size > 0 || multiFilters.volumeFilter.size > 0) && (
               <span style={{
@@ -1436,7 +1498,7 @@ const Dashboard: React.FC = () => {
                   e.currentTarget.style.boxShadow = activeWatchlistId ? theme.ui.shadow.md : 'none';
                 }}
               >
-                <option value="">📊 All Stocks ({tickersWithData.length})</option>
+                <option value="">📊 All Stocks ({pagination?.total || stockData.size})</option>
                 {watchlists.map((watchlist) => {
                   const watchlistId = watchlist.id || watchlist._id;
                   return (
@@ -1566,6 +1628,9 @@ const Dashboard: React.FC = () => {
               showDeleteButton={true}
               tradingViewChartUrl="https://www.tradingview.com/chart/StTMbjgz/?symbol="
               initialSelectedTicker={urlTicker}
+              onLoadMore={loadMoreData}
+              hasMore={pagination?.hasMore || false}
+              loadingMore={loadingMore}
             />
           </>
         ) : (

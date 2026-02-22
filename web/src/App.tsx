@@ -7,6 +7,7 @@ import Scans from './Scans';
 import Alerts from './Alerts';
 import Settings from './Settings';
 import Sectors from './Sectors';
+import InstitutionalChanges from './InstitutionalChanges';
 import Sidebar from './components/Sidebar';
 
 const AppContent: React.FC = () => {
@@ -28,6 +29,7 @@ const AppContent: React.FC = () => {
               <Route path="/scans" element={<Scans />} />
               <Route path="/alerts" element={<Alerts />} />
               <Route path="/sectors" element={<Sectors />} />
+              <Route path="/institutional-changes" element={<InstitutionalChanges />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>

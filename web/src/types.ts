@@ -34,9 +34,14 @@ export interface Stock {
   recommendation?: string | null; // STRONG_BUY, BUY, WATCH, or null
   performance?: {
     day?: number;
-    week: number;
-    month: number;
-    year: number;
+    week?: number;
+    month?: number;
+    quarter?: number;
+    halfYear?: number;
+    ytd?: number;
+    year?: number;
+    threeYear?: number;
+    fiveYear?: number;
   };
 }
 
@@ -49,10 +54,20 @@ export interface ScanResult {
     fire_level_3?: number;
     fire_level_2?: number;
     fire_level_1?: number;
+    fire_level_5?: number;
+    fire_level_4?: number;
     total_fire_stocks?: number;
+    total_stocks?: number;
   };
   timestamp: string;
-  new_stocks_only: boolean;
+  new_stocks_only?: boolean;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
 }
 
 export interface ScanStatus {

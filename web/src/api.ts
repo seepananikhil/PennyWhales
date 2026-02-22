@@ -23,8 +23,10 @@ export const api = {
   },
 
   // Get latest scan results
-  getLatestResults: async (): Promise<ScanResult | null> => {
-    const response = await axios.get(`${API_BASE}/api/scan/results`);
+  getLatestResults: async (page: number = 1, limit: number = 50): Promise<ScanResult | null> => {
+    const response = await axios.get(`${API_BASE}/api/scan/results`, {
+      params: { page, limit }
+    });
     return response.data;
   },
 
@@ -269,6 +271,17 @@ export const api = {
 
   getTelegramUpdates: async (): Promise<{ success: boolean; updates?: any[]; error?: string }> => {
     const response = await axios.get(`${API_BASE}/api/telegram/updates`);
+    return response.data;
+  },
+
+  // Institutional Changes
+  getInstitutionalChanges: async (): Promise<{ additions: any[]; sells: any[] }> => {
+    const response = await axios.get(`${API_BASE}/api/institutional-changes`);
+    return response.data;
+  },
+
+  clearInstitutionalChanges: async (): Promise<{ success: boolean; message: string }> => {
+    const response = await axios.delete(`${API_BASE}/api/institutional-changes`);
     return response.data;
   }
 };

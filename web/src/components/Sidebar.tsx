@@ -65,6 +65,15 @@ const Sidebar: React.FC<SidebarProps> = ({
         </NavLink>
 
         <NavLink
+          to="/institutional-changes"
+          className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+          title="Institutional Changes"
+        >
+          <span className="nav-icon">🏦</span>
+          <span className="nav-text">Inst. Changes</span>
+        </NavLink>
+
+        <NavLink
           to="/settings"
           className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
           title="Settings"

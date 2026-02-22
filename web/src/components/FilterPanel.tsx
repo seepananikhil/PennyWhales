@@ -234,7 +234,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               {[
                 { key: "combined", label: "🔥 Big 3 %", icon: "🔥" },
                 { key: "fire", label: "🔥 Fire Level", icon: "🔥" },
-                { key: "holdings-change", label: "📊 Holdings Δ", icon: "📊" },
+                { key: "holdings-value", label: "💎 Holdings $", icon: "💎" },
+                { key: "holdings-change", label: "📊 Holdings %", icon: "📊" },
                 { key: "price", label: "💰 Price", icon: "💰" },
                 { key: "daily-change", label: "📈 Daily %", icon: "📈" },
                 { key: "weekly-change", label: "📅 Weekly %", icon: "📅" },

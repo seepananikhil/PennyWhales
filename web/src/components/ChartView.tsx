@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Stock } from '../types';
 import { theme } from '../theme';
 import StockCard from './StockCard';
@@ -20,6 +20,10 @@ interface ChartViewProps {
   showDeleteButton?: boolean;
   tradingViewChartUrl?: string;
   initialSelectedTicker?: string | null;
+  showLastUpdated?: boolean;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  loadingMore?: boolean;
 }
 
 const ChartView: React.FC<ChartViewProps> = ({
@@ -33,12 +37,36 @@ const ChartView: React.FC<ChartViewProps> = ({
   onDeleteTicker,
   showWatchButton = true,
   showDeleteButton = false,
-  initialSelectedTicker = null
+  initialSelectedTicker = null,
+  showLastUpdated = false,
+  onLoadMore,
+  hasMore = false,
+  loadingMore = false
 }) => {
   const [selectedTicker, setSelectedTicker] = useState<string | null>(
     stocks.length > 0 ? stocks[0] : null
   );
   const [exchange, setExchange] = useState<'default' | 'NASDAQ' | 'NYSE'>('default');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Infinite scroll handler
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer || !onLoadMore) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+      
+      // Load more when scrolled to 80% of content
+      if (scrollPercentage > 0.8 && hasMore && !loadingMore && onLoadMore) {
+        onLoadMore();
+      }
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [onLoadMore, hasMore, loadingMore]);
 
   // Reset exchange when ticker changes
   useEffect(() => {
@@ -102,10 +130,13 @@ const ChartView: React.FC<ChartViewProps> = ({
         minHeight: 0
       }}>
         {/* Left Sidebar - Stock Cards */}
-        <div style={{
+        <div 
+          ref={scrollContainerRef}
+          style={{
           width: '400px',
           flexShrink: 0,
           overflowY: 'auto',
+          overflowX: 'hidden',
           borderRight: `1px solid ${theme.ui.border}`,
           paddingRight: theme.spacing.md,
           paddingBottom: theme.spacing.xxl,
@@ -148,10 +179,44 @@ const ChartView: React.FC<ChartViewProps> = ({
                   showDeleteButton={showDeleteButton}
                   onDeleteTicker={onDeleteTicker}
                   isSelected={isSelected}
+                  showLastUpdated={showLastUpdated}
                 />
               </div>
             );
           })}
+          
+          {/* Loading More Indicator */}
+          {loadingMore && (
+            <div style={{
+              padding: theme.spacing.lg,
+              textAlign: 'center',
+              color: theme.ui.text.secondary
+            }}>
+              <div style={{
+                fontSize: '1.5rem',
+                marginBottom: theme.spacing.xs,
+                animation: 'spin 1s linear infinite'
+              }}>
+                🔄
+              </div>
+              <div style={{ fontSize: theme.typography.fontSize.sm }}>
+                Loading more stocks...
+              </div>
+            </div>
+          )}
+          
+          {/* End of Results Indicator */}
+          {!loadingMore && !hasMore && stocks.length > 0 && (
+            <div style={{
+              padding: theme.spacing.md,
+              textAlign: 'center',
+              color: theme.ui.text.secondary,
+              fontSize: theme.typography.fontSize.sm,
+              fontStyle: 'italic'
+            }}>
+              All stocks loaded
+            </div>
+          )}
         </div>
 
         {/* Right Side - TradingView Chart */}

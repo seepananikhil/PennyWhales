@@ -40,6 +40,7 @@ interface StockCardProps {
   showDeleteButton?: boolean;
   onDeleteTicker?: (ticker: string) => void;
   isSelected?: boolean;
+  showLastUpdated?: boolean;
 }
 
 const StockCard: React.FC<StockCardProps> = ({
@@ -56,6 +57,7 @@ const StockCard: React.FC<StockCardProps> = ({
   showDeleteButton = true,
   onDeleteTicker,
   isSelected = false,
+  showLastUpdated = false,
 }) => {
   const [currentPrice, setCurrentPrice] = useState(
     livePrice?.price || stock.price || 0
@@ -926,7 +928,7 @@ const StockCard: React.FC<StockCardProps> = ({
           }}
         >
           {/* Price Row */}
-          <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "6px" }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "6px", flexWrap: "wrap" }}>
             <span
               style={{
                 fontWeight: "bold",
@@ -957,6 +959,42 @@ const StockCard: React.FC<StockCardProps> = ({
               >
                 {priceChange > 0 ? "+" : ""}
                 {priceChange.toFixed(2)}%
+              </span>
+            )}
+            {showLastUpdated && lastUpdated && (
+              <span
+                style={{
+                  fontSize: "0.7rem",
+                  color: "#6c757d",
+                  fontWeight: "500",
+                  marginLeft: "auto",
+                }}
+                title={lastUpdated.toLocaleString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              >
+                {(() => {
+                  const now = new Date();
+                  const diffMs = now.getTime() - lastUpdated.getTime();
+                  const diffMins = Math.floor(diffMs / 60000);
+                  const diffHours = Math.floor(diffMs / 3600000);
+                  const diffDays = Math.floor(diffMs / 86400000);
+
+                  if (diffMins < 1) return 'Just now';
+                  if (diffMins < 60) return `${diffMins}m ago`;
+                  if (diffHours < 24) return `${diffHours}h ago`;
+                  if (diffDays < 7) return `${diffDays}d ago`;
+                  
+                  return lastUpdated.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: lastUpdated.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+                  });
+                })()}
               </span>
             )}
           </div>
@@ -1406,17 +1444,17 @@ const StockCard: React.FC<StockCardProps> = ({
               style={{
                 textAlign: "center",
                 backgroundColor:
-                  stock.performance.week > 0
+                  stock.performance.week !== undefined && stock.performance.week > 0
                     ? "#d4edda"
-                    : stock.performance.week < 0
+                    : stock.performance.week !== undefined && stock.performance.week < 0
                     ? "#f8d7da"
                     : "#f8f9fa",
                 padding: "5px 4px",
                 borderRadius: "6px",
                 border: `1px solid ${
-                  stock.performance.week > 0
+                  stock.performance.week !== undefined && stock.performance.week > 0
                     ? "#c3e6cb"
-                    : stock.performance.week < 0
+                    : stock.performance.week !== undefined && stock.performance.week < 0
                     ? "#f5c6cb"
                     : "#e9ecef"
                 }`,
@@ -1437,15 +1475,16 @@ const StockCard: React.FC<StockCardProps> = ({
                   fontSize: "0.85rem",
                   fontWeight: "bold",
                   color:
-                    stock.performance.week > 0
+                    stock.performance.week !== undefined && stock.performance.week > 0
                       ? "#28a745"
-                      : stock.performance.week < 0
+                      : stock.performance.week !== undefined && stock.performance.week < 0
                       ? "#dc3545"
                       : "#6c757d",
                 }}
               >
-                {stock.performance.week > 0 ? "+" : ""}
-                {stock.performance.week.toFixed(1)}%
+                {stock.performance.week !== undefined
+                  ? `${stock.performance.week > 0 ? "+" : ""}${stock.performance.week.toFixed(1)}%`
+                  : "—"}
               </div>
             </div>
 
@@ -1453,17 +1492,17 @@ const StockCard: React.FC<StockCardProps> = ({
               style={{
                 textAlign: "center",
                 backgroundColor:
-                  stock.performance.month > 0
+                  stock.performance.month !== undefined && stock.performance.month > 0
                     ? "#d4edda"
-                    : stock.performance.month < 0
+                    : stock.performance.month !== undefined && stock.performance.month < 0
                     ? "#f8d7da"
                     : "#f8f9fa",
                 padding: "5px 4px",
                 borderRadius: "6px",
                 border: `1px solid ${
-                  stock.performance.month > 0
+                  stock.performance.month !== undefined && stock.performance.month > 0
                     ? "#c3e6cb"
-                    : stock.performance.month < 0
+                    : stock.performance.month !== undefined && stock.performance.month < 0
                     ? "#f5c6cb"
                     : "#e9ecef"
                 }`,
@@ -1484,15 +1523,16 @@ const StockCard: React.FC<StockCardProps> = ({
                   fontSize: "0.85rem",
                   fontWeight: "bold",
                   color:
-                    stock.performance.month > 0
+                    stock.performance.month !== undefined && stock.performance.month > 0
                       ? "#28a745"
-                      : stock.performance.month < 0
+                      : stock.performance.month !== undefined && stock.performance.month < 0
                       ? "#dc3545"
                       : "#6c757d",
                 }}
               >
-                {stock.performance.month > 0 ? "+" : ""}
-                {stock.performance.month.toFixed(1)}%
+                {stock.performance.month !== undefined
+                  ? `${stock.performance.month > 0 ? "+" : ""}${stock.performance.month.toFixed(1)}%`
+                  : "—"}
               </div>
             </div>
 
@@ -1500,17 +1540,17 @@ const StockCard: React.FC<StockCardProps> = ({
               style={{
                 textAlign: "center",
                 backgroundColor:
-                  stock.performance.year > 0
+                  stock.performance.year !== undefined && stock.performance.year > 0
                     ? "#d4edda"
-                    : stock.performance.year < 0
+                    : stock.performance.year !== undefined && stock.performance.year < 0
                     ? "#f8d7da"
                     : "#f8f9fa",
                 padding: "5px 4px",
                 borderRadius: "6px",
                 border: `1px solid ${
-                  stock.performance.year > 0
+                  stock.performance.year !== undefined && stock.performance.year > 0
                     ? "#c3e6cb"
-                    : stock.performance.year < 0
+                    : stock.performance.year !== undefined && stock.performance.year < 0
                     ? "#f5c6cb"
                     : "#e9ecef"
                 }`,
@@ -1531,15 +1571,16 @@ const StockCard: React.FC<StockCardProps> = ({
                   fontSize: "0.85rem",
                   fontWeight: "bold",
                   color:
-                    stock.performance.year > 0
+                    stock.performance.year !== undefined && stock.performance.year > 0
                       ? "#28a745"
-                      : stock.performance.year < 0
+                      : stock.performance.year !== undefined && stock.performance.year < 0
                       ? "#dc3545"
                       : "#6c757d",
                 }}
               >
-                {stock.performance.year > 0 ? "+" : ""}
-                {stock.performance.year.toFixed(1)}%
+                {stock.performance.year !== undefined
+                  ? `${stock.performance.year > 0 ? "+" : ""}${stock.performance.year.toFixed(1)}%`
+                  : "—"}
               </div>
             </div>
           </div>

@@ -9,7 +9,8 @@ const DB_FILES = {
   watchlists: path.join(__dirname, 'data', 'watchlists.json'),
   holdings: path.join(__dirname, 'data', 'holdings.json'),
   priceAlerts: path.join(__dirname, 'data', 'priceAlerts.json'),
-  settings: path.join(__dirname, 'data', 'settings.json')
+  settings: path.join(__dirname, 'data', 'settings.json'),
+  institutionalChanges: path.join(__dirname, 'data', 'institutionalChanges.json')
 };
 
 class DatabaseService {
@@ -93,6 +94,16 @@ class DatabaseService {
       telegramBotToken: null
     };
     await this.dbs.settings.write();
+
+    // Initialize institutional changes database
+    const institutionalChangesAdapter = new JSONFile(DB_FILES.institutionalChanges);
+    this.dbs.institutionalChanges = new Low(institutionalChangesAdapter, {});
+    await this.dbs.institutionalChanges.read();
+    this.dbs.institutionalChanges.data = this.dbs.institutionalChanges.data || {
+      additions: [],
+      sells: []
+    };
+    await this.dbs.institutionalChanges.write();
 
     this.initialized = true;
     console.log('📊 Database initialized (multi-file mode)');
@@ -669,6 +680,134 @@ class DatabaseService {
     await this.dbs.settings.write();
     console.log('⚙️ Updated settings');
     return this.dbs.settings.data;
+  }
+
+  // Institutional Changes Management
+  async getInstitutionalChanges() {
+    await this.init();
+    return this.dbs.institutionalChanges.data;
+  }
+
+  async saveInstitutionalChanges(additions, sells) {
+    await this.init();
+    const timestamp = new Date().toISOString();
+    const now = new Date();
+    const AGGREGATION_WINDOW_DAYS = 30; // Aggregate changes within 30 days
+    
+    // Ensure data structure exists
+    if (!this.dbs.institutionalChanges.data.additions) {
+      this.dbs.institutionalChanges.data.additions = [];
+    }
+    if (!this.dbs.institutionalChanges.data.sells) {
+      this.dbs.institutionalChanges.data.sells = [];
+    }
+    
+    // Helper function to aggregate institutional changes
+    const aggregateChanges = (newStocks, existingStocks) => {
+      const result = [];
+      const processedTickers = new Set();
+      
+      for (const newStock of newStocks) {
+        if (processedTickers.has(newStock.ticker)) continue;
+        
+        // Find existing entry for this ticker within aggregation window
+        const existingIndex = existingStocks.findIndex(existing => {
+          if (existing.ticker !== newStock.ticker) return false;
+          const existingDate = new Date(existing.detected_at);
+          const daysDiff = (now - existingDate) / (1000 * 60 * 60 * 24);
+          return daysDiff <= AGGREGATION_WINDOW_DAYS;
+        });
+        
+        if (existingIndex >= 0) {
+          // Check if ownership has actually changed
+          const existing = existingStocks[existingIndex];
+          
+          // Compare current ownership percentages
+          const brSame = Math.abs((existing.blackrock_pct || 0) - (newStock.blackrock_pct || 0)) < 0.01;
+          const vgSame = Math.abs((existing.vanguard_pct || 0) - (newStock.vanguard_pct || 0)) < 0.01;
+          const ssSame = Math.abs((existing.statestreet_pct || 0) - (newStock.statestreet_pct || 0)) < 0.01;
+          
+          if (brSame && vgSame && ssSame) {
+            // No actual change - keep existing entry with updated timestamp
+            result.push({
+              ...existing,
+              detected_at: timestamp,
+              price: newStock.price // Update current price
+            });
+            processedTickers.add(newStock.ticker);
+            existingStocks.splice(existingIndex, 1);
+          } else {
+            // Actual change detected - calculate delta from baseline
+            const baseBlackrock = existing.initial_blackrock_pct !== undefined ? existing.initial_blackrock_pct : (existing.blackrock_pct || 0) - (existing.blackrock_change || 0);
+            const baseVanguard = existing.initial_vanguard_pct !== undefined ? existing.initial_vanguard_pct : (existing.vanguard_pct || 0) - (existing.vanguard_change || 0);
+            const baseStatestreet = existing.initial_statestreet_pct !== undefined ? existing.initial_statestreet_pct : (existing.statestreet_pct || 0) - (existing.statestreet_change || 0);
+            
+            const newBrChange = (newStock.blackrock_pct || 0) - baseBlackrock;
+            const newVgChange = (newStock.vanguard_pct || 0) - baseVanguard;
+            const newSsChange = (newStock.statestreet_pct || 0) - baseStatestreet;
+            
+            const aggregated = {
+              ...newStock,
+              blackrock_change: newBrChange,
+              vanguard_change: newVgChange,
+              statestreet_change: newSsChange,
+              totalChange: newBrChange + newVgChange + newSsChange,
+              initial_blackrock_pct: baseBlackrock,
+              initial_vanguard_pct: baseVanguard,
+              initial_statestreet_pct: baseStatestreet,
+              detected_at: timestamp,
+              first_detected_at: existing.first_detected_at || existing.detected_at,
+              aggregation_count: (existing.aggregation_count || 1) + 1
+            };
+            result.push(aggregated);
+            processedTickers.add(newStock.ticker);
+            existingStocks.splice(existingIndex, 1);
+          }
+        } else {
+          // New entry - calculate baseline
+          const baseBlackrock = (newStock.blackrock_pct || 0) - (newStock.blackrock_change || 0);
+          const baseVanguard = (newStock.vanguard_pct || 0) - (newStock.vanguard_change || 0);
+          const baseStatestreet = (newStock.statestreet_pct || 0) - (newStock.statestreet_change || 0);
+          
+          result.push({
+            ...newStock,
+            initial_blackrock_pct: baseBlackrock,
+            initial_vanguard_pct: baseVanguard,
+            initial_statestreet_pct: baseStatestreet,
+            detected_at: timestamp,
+            first_detected_at: timestamp,
+            aggregation_count: 1
+          });
+          processedTickers.add(newStock.ticker);
+        }
+      }
+      
+      // Add remaining existing stocks that weren't aggregated
+      return [...result, ...existingStocks];
+    };
+    
+    // Aggregate additions and sells
+    const aggregatedAdditions = aggregateChanges(additions, [...this.dbs.institutionalChanges.data.additions]);
+    const aggregatedSells = aggregateChanges(sells, [...this.dbs.institutionalChanges.data.sells]);
+    
+    // Keep only last 100 entries for each
+    this.dbs.institutionalChanges.data.additions = aggregatedAdditions.slice(0, 100);
+    this.dbs.institutionalChanges.data.sells = aggregatedSells.slice(0, 100);
+    
+    await this.dbs.institutionalChanges.write();
+    console.log(`💾 Saved ${additions.length} additions and ${sells.length} sells to institutional changes history (smart aggregation within ${AGGREGATION_WINDOW_DAYS} days)`);
+    return this.dbs.institutionalChanges.data;
+  }
+
+  async clearInstitutionalChanges() {
+    await this.init();
+    this.dbs.institutionalChanges.data = {
+      additions: [],
+      sells: []
+    };
+    await this.dbs.institutionalChanges.write();
+    console.log('🗑️ Cleared institutional changes history');
+    return this.dbs.institutionalChanges.data;
   }
 }
 

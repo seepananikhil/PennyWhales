@@ -14,20 +14,24 @@
     "ticker": "SABR",
     "targetPrice": 1.1,
     "condition": "below",
-    "active": true,
-    "triggered": false,
+    "active": false,
+    "triggered": true,
     "created": "2025-12-17T03:46:42.355Z",
-    "triggeredAt": null
+    "triggeredAt": "2026-02-18T19:30:02.363Z",
+    "triggeredPrice": 1.1,
+    "updated": "2026-02-18T19:30:02.363Z"
   },
   {
     "id": "alert_1765992242879",
     "ticker": "OPEN",
     "targetPrice": 5,
     "condition": "below",
-    "active": true,
-    "triggered": false,
+    "active": false,
+    "triggered": true,
     "created": "2025-12-17T17:24:02.879Z",
-    "triggeredAt": null
+    "triggeredAt": "2026-02-18T17:30:03.012Z",
+    "triggeredPrice": 4.61,
+    "updated": "2026-02-18T17:30:03.012Z"
   },
   {
     "id": "alert_1766057737958",
@@ -58,10 +62,12 @@
     "ticker": "ALIT",
     "targetPrice": 1,
     "condition": "below",
-    "active": true,
-    "triggered": false,
+    "active": false,
+    "triggered": true,
     "created": "2026-01-29T17:53:24.031Z",
-    "triggeredAt": null
+    "triggeredAt": "2026-02-19T15:30:02.132Z",
+    "triggeredPrice": 0.875,
+    "updated": "2026-02-19T15:30:02.132Z"
   },
   {
     "id": "alert_1770017775098",
