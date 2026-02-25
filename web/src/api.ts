@@ -23,9 +23,9 @@ export const api = {
   },
 
   // Get latest scan results
-  getLatestResults: async (page: number = 1, limit: number = 50): Promise<ScanResult | null> => {
+  getLatestResults: async (page: number = 1, limit: number = 50, searchQuery: string = ''): Promise<ScanResult | null> => {
     const response = await axios.get(`${API_BASE}/api/scan/results`, {
-      params: { page, limit }
+      params: { page, limit, searchQuery }
     });
     return response.data;
   },

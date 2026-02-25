@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const axios = require('axios');
+const { execSync } = require('child_process');
 const dbService = require('./database');
 const { getStockPriceData } = require('./priceUtils');
 const { calculateFireLevel, calculateRecommendation } = require('./fireUtils');
@@ -33,21 +35,17 @@ class StockScanner {
     return await getStockPriceData(ticker);
   }
 
-  // Get institutional holdings from Nasdaq
+  // Get institutional holdings from Nasdaq using curl (node-fetch/axios blocked by Akamai)
   async getNasdaqHoldings(ticker) {
     try {
-      const response = await fetch(
-        `https://api.nasdaq.com/api/company/${ticker}/institutional-holdings`,
-        {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          }
-        }
-      );
-
-      if (!response.ok) return null;
-      return await response.json();
+      const curlCmd = `curl -s "https://api.nasdaq.com/api/company/${ticker}/institutional-holdings" -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"`;
+      const output = execSync(curlCmd, { encoding: 'utf-8' });
+      const data = JSON.parse(output);
+      
+      console.log(`✅ Nasdaq API returned data for ${ticker}`);
+      return data;
     } catch (error) {
+      console.log(`⚠️ Nasdaq API failed for ${ticker}: ${error.message.substring(0, 50)}`);
       return null;
     }
   }
@@ -55,6 +53,7 @@ class StockScanner {
   // Parse BlackRock and Vanguard holdings
   parseHoldings(data, marketCap) {
     if (!data?.data?.holdingsTransactions?.table?.rows) {
+      console.log('⚠️ No holdings rows found:', JSON.stringify(data?.data?.holdingsTransactions?.table, null, 2));
       return { 
         blackrockMarketValue: 0,
         vanguardMarketValue: 0,
@@ -79,7 +78,6 @@ class StockScanner {
         if (!holding.ownerName) continue;
 
         const ownerName = holding.ownerName.toUpperCase();
-        
         // Parse market value (remove $ and commas, convert to number)
         // Note: marketValue from API is in thousands of dollars
         // Convert to millions for easier filtering and display
@@ -530,7 +528,7 @@ class StockScanner {
   }
 }
 
-// Make fetch available globally for Node.js
+// Make fetch available globally for Node.js (if still needed)
 if (typeof fetch === 'undefined') {
   global.fetch = require('node-fetch');
 }

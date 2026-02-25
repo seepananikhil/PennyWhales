@@ -1189,7 +1189,7 @@ const StockCard: React.FC<StockCardProps> = ({
                   color: "#4F46E5",
                 }}
               >
-                {stock.blackrock_pct.toFixed(1)}%
+                {(stock.blackrock_pct || 0).toFixed(1)}%
               </span>
             </div>
             {stock.blackrock_market_value &&
@@ -1247,7 +1247,7 @@ const StockCard: React.FC<StockCardProps> = ({
                   color: "#4F46E5",
                 }}
               >
-                {stock.vanguard_pct.toFixed(1)}%
+                {(stock.vanguard_pct || 0).toFixed(1)}%
               </span>
             </div>
             {stock.vanguard_market_value && stock.vanguard_market_value > 0 && (

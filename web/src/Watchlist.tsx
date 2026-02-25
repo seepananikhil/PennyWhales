@@ -262,13 +262,18 @@ const Watchlist: React.FC = () => {
   };
 
   const getFilteredAndSortedStocks = (): Stock[] => {
-    console.log('getFilteredAndSortedStocks - activeWatchlist:', activeWatchlist);
-    if (!activeWatchlist?.stockData) return [];
+    console.log('getFilteredAndSortedStocks - stockData:', stockData); // Log the global stockData
     
-    console.log('Raw stockData from watchlist:', activeWatchlist.stockData);
+    let stocksToFilter: Stock[] = Array.from(stockData.values()); // Use global stockData
     
+    // If an active watchlist is selected, filter to only include stocks in that watchlist
+    if (activeWatchlistId && activeWatchlist?.stocks) {
+      const activeWatchlistTickerSet = new Set(activeWatchlist.stocks);
+      stocksToFilter = stocksToFilter.filter(stock => activeWatchlistTickerSet.has(stock.ticker));
+    }
+
     // Filter out stocks without data (where all values are null)
-    let stocksWithData = activeWatchlist.stockData.filter((stock: Stock) => 
+    let stocksWithData = stocksToFilter.filter((stock: Stock) => 
       stock.price !== null && stock.ticker
     );
 

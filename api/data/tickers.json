@@ -14,7 +14,6 @@
     "SLS",
     "KRRO",
     "IHRT",
-    "AISP",
     "CARS",
     "ATOM",
     "FOXF",
@@ -381,7 +380,6 @@
     "SKIN",
     "TRC",
     "RCEL",
-    "FF",
     "PCG",
     "BSET",
     "EBC",
@@ -921,7 +919,14 @@
     "CNH",
     "TRIP",
     "UAA",
-    "ARR"
+    "ARR",
+    "CAI",
+    "CZR",
+    "CCOI",
+    "PAR",
+    "YELP",
+    "JCAP",
+    "ALHC"
   ],
   "rejectedTickers": [
     "FCEL",
@@ -1984,6 +1989,16 @@
     "MPLT",
     "PNNT",
     "SLI",
-    "VLRS"
+    "VLRS",
+    "FF",
+    "BMEZ",
+    "BCAT",
+    "KLAR",
+    "FSSL",
+    "CHYM",
+    "AERO",
+    "FOA",
+    "AISP",
+    "SLM"
   ]
 }

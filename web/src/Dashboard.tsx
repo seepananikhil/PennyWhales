@@ -18,6 +18,7 @@ const Dashboard: React.FC = () => {
   const [holdings, setHoldings] = useState<Set<string>>(new Set());
   const [watchlists, setWatchlists] = useState<any[]>([]);
   const [activeWatchlistId, setActiveWatchlistId] = useState<string>('');
+  const [activeWatchlist, setActiveWatchlist] = useState<any>(null);
   const [watchlistStocks, setWatchlistStocks] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +53,7 @@ const Dashboard: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string[]>([]); // Multi-sort: order of sort criteria
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
   const [topGainers, setTopGainers] = useState<string[]>([]);
   const [topLosers, setTopLosers] = useState<string[]>([]);
   const [filterPanelOpen, setFilterPanelOpen] = useState<boolean>(false);
@@ -77,7 +79,7 @@ const Dashboard: React.FC = () => {
       setStockData(new Map());
       loadStockData(true);
     }
-  }, [activeFilter, JSON.stringify(Array.from(multiFilters.fireLevels)), JSON.stringify(Array.from(multiFilters.priceFilters)), JSON.stringify(Array.from(multiFilters.marketValueFilters)), JSON.stringify(Array.from(multiFilters.sectors)), JSON.stringify(Array.from(multiFilters.industries)), searchQuery, sortOrder]);
+  }, [activeFilter, JSON.stringify(Array.from(multiFilters.fireLevels)), JSON.stringify(Array.from(multiFilters.priceFilters)), JSON.stringify(Array.from(multiFilters.marketValueFilters)), JSON.stringify(Array.from(multiFilters.sectors)), JSON.stringify(Array.from(multiFilters.industries)), debouncedSearchQuery, sortOrder]);
   
   useEffect(() => {
     // Read ticker and sector from URL
@@ -177,30 +179,51 @@ const Dashboard: React.FC = () => {
         setLoadingMore(true);
       }
 
-      const page = reset ? 1 : currentPage;
-      const results = await api.getLatestResults(page, pageLimit);
-      
-      if (results?.stocks) {
-        setStockData(prevData => {
-          const stockMap = reset ? new Map<string, Stock>() : new Map(prevData);
-          results.stocks.forEach(stock => {
+      // If watchlist is active, use stockData directly without API call
+      if (activeWatchlistId && activeWatchlist?.stockData) {
+        const stockMap = new Map<string, Stock>();
+        activeWatchlist.stockData.forEach((stock: Stock) => {
+          if (stock.ticker) {
             stockMap.set(stock.ticker, stock);
-          });
-          return stockMap;
+          }
         });
+        setStockData(stockMap);
         
-        // Update pagination state
-        if (results.pagination) {
-          setPagination({
-            total: results.pagination.total,
-            totalPages: results.pagination.totalPages,
-            hasMore: results.pagination.hasMore
+        // Set pagination based on watchlist stocks
+        const total = activeWatchlist.stocks?.length || 0;
+        const totalPages = Math.ceil(total / pageLimit);
+        setPagination({
+          total,
+          totalPages,
+          hasMore: currentPage < totalPages
+        });
+      } else {
+        // Only call results API if no active watchlist
+        const page = reset ? 1 : currentPage;
+        const results = await api.getLatestResults(page, pageLimit, debouncedSearchQuery);
+        
+        if (results?.stocks) {
+          setStockData(prevData => {
+            const stockMap = reset ? new Map<string, Stock>() : new Map(prevData);
+            results.stocks.forEach(stock => {
+              stockMap.set(stock.ticker, stock);
+            });
+            return stockMap;
           });
+          
+          // Update pagination state
+          if (results.pagination) {
+            setPagination({
+              total: results.pagination.total,
+              totalPages: results.pagination.totalPages,
+              hasMore: results.pagination.hasMore
+            });
+          }
         }
+      }
 
-        if (reset) {
-          setCurrentPage(1);
-        }
+      if (reset) {
+        setCurrentPage(1);
       }
     } catch (err) {
       console.error('Error loading stock data:', err);
@@ -275,7 +298,28 @@ const Dashboard: React.FC = () => {
       console.log('Loading active watchlist:', id);
       const watchlist = await api.getWatchlist(id);
       console.log('Loaded watchlist:', watchlist);
+      setActiveWatchlist(watchlist);
       setWatchlistStocks(new Set(watchlist.stocks || []));
+      
+      // Reload stock data from the watchlist
+      if (watchlist.stockData) {
+        const stockMap = new Map<string, Stock>();
+        watchlist.stockData.forEach((stock: Stock) => {
+          if (stock.ticker) {
+            stockMap.set(stock.ticker, stock);
+          }
+        });
+        setStockData(stockMap);
+        
+        // Set pagination based on watchlist stocks
+        const total = watchlist.stocks?.length || 0;
+        const totalPages = Math.ceil(total / pageLimit);
+        setPagination({
+          total,
+          totalPages,
+          hasMore: 1 > totalPages
+        });
+      }
     } catch (err) {
       console.error('Error loading active watchlist:', err);
     }
@@ -1265,6 +1309,16 @@ const Dashboard: React.FC = () => {
     });
     return Array.from(industries).sort();
   }, [tickersWithData, stockData, multiFilters.sectors]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500); // 500ms debounce delay
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
 
   if (loading) {
     return (

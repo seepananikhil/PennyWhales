@@ -90,13 +90,13 @@
     "triggeredAt": null
   },
   {
-    "id": "alert_1770741215717",
-    "ticker": "HAIN",
-    "targetPrice": 0.99,
-    "condition": "above",
+    "id": "alert_1771901976135",
+    "ticker": "NFE",
+    "targetPrice": 1,
+    "condition": "below",
     "active": true,
     "triggered": false,
-    "created": "2026-02-10T16:33:35.717Z",
+    "created": "2026-02-24T02:59:36.135Z",
     "triggeredAt": null
   }
 ]

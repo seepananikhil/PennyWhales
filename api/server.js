@@ -545,31 +545,113 @@ app.get("/api/scan/results", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
-    const skip = (page - 1) * limit;
-    
+    const searchQuery = req.query.searchQuery ? req.query.searchQuery.toLowerCase() : '';
+    const fireLevels = req.query.fireLevels ? req.query.fireLevels.split(',').map(Number) : [];
+    const priceFilters = req.query.priceFilters ? req.query.priceFilters.split(',') : [];
+    const marketValueFilters = req.query.marketValueFilters ? req.query.marketValueFilters.split(',') : [];
+    const sectors = req.query.sectors ? req.query.sectors.split(',') : [];
+    const industries = req.query.industries ? req.query.industries.split(',') : [];
+    const volumeFilter = req.query.volumeFilter ? req.query.volumeFilter.split(',') : [];
     const results = await dbService.getScanResults();
-    
-    if (!results || !results.stocks) {
-      return res.json({
-        stocks: [],
-        summary: {},
-        timestamp: new Date().toISOString(),
-        pagination: {
-          page: 1,
-          limit,
-          total: 0,
-          totalPages: 0,
-          hasMore: false
-        }
+
+    let stocksToPaginate = results.stocks;
+
+    // Apply search query filter if provided
+    if (searchQuery) {
+      stocksToPaginate = stocksToPaginate.filter(stock =>
+        stock.ticker.toLowerCase().includes(searchQuery)
+      );
+    }
+
+    // Fire level filter
+    if (fireLevels.length > 0) {
+      stocksToPaginate = stocksToPaginate.filter(stock => fireLevels.includes(stock.fire_level));
+    }
+
+    // Price filter
+    if (priceFilters.length > 0) {
+      stocksToPaginate = stocksToPaginate.filter(stock => {
+        return priceFilters.some(filter => {
+          switch (filter) {
+            case 'under1':
+              return stock.price < 1.0;
+            case '1to3':
+              return stock.price >= 1.0 && stock.price < 3.0;
+            case '3to5':
+              return stock.price >= 3.0 && stock.price < 5.0;
+            case '5to10':
+              return stock.price >= 5.0 && stock.price < 10.0;
+            case 'over10':
+              return stock.price >= 10.0;
+            default:
+              return true;
+          }
+        });
+      });
+    }
+
+    // Market value filter
+    if (marketValueFilters.length > 0) {
+      stocksToPaginate = stocksToPaginate.filter(stock => {
+        const marketCap = stock.market_cap;
+        if (marketCap === null || marketCap === undefined || marketCap === 0) return false;
+        return marketValueFilters.some(filter => {
+          switch (filter) {
+            case 'under100':
+              return marketCap < 100;
+            case '100to300':
+              return marketCap >= 100 && marketCap < 300;
+            case '300to1b':
+              return marketCap >= 300 && marketCap < 1000;
+            case 'over1b':
+              return marketCap >= 1000;
+            default:
+              return true;
+          }
+        });
+      });
+    }
+
+    // Sector filter
+    if (sectors.length > 0) {
+      stocksToPaginate = stocksToPaginate.filter(stock => sectors.includes(stock.sector));
+    }
+
+    // Industry filter
+    if (industries.length > 0) {
+      stocksToPaginate = stocksToPaginate.filter(stock => industries.includes(stock.industry));
+    }
+
+    // Volume filter
+    if (volumeFilter.length > 0) {
+      stocksToPaginate = stocksToPaginate.filter(stock => {
+        const volume = stock.avg_volume;
+        if (volume === null || volume === undefined) return false;
+        return volumeFilter.some(filter => {
+          switch (filter) {
+            case 'under500k':
+              return volume < 500000;
+            case '500kto1m':
+              return volume >= 500000 && volume < 1000000;
+            case '1mto2m':
+              return volume >= 1000000 && volume < 2000000;
+            case '2mto5m':
+              return volume >= 2000000 && volume < 5000000;
+            case '5mto10m':
+              return volume >= 5000000 && volume < 10000000;
+            case 'over10m':
+              return volume >= 10000000;
+            default:
+              return true;
+          }
+        });
       });
     }
     
-    // Filter stocks to only include those with price below $2
-    // results.stocks = results.stocks.filter(stock => stock.price && stock.price < 2.0);
-    
-    const totalStocks = results.stocks.length;
+    const totalStocks = stocksToPaginate.length;
     const totalPages = Math.ceil(totalStocks / limit);
-    const paginatedStocks = results.stocks.slice(skip, skip + limit);
+    const skip = (page - 1) * limit;
+    const paginatedStocks = stocksToPaginate.slice(skip, skip + limit);
     
     // Update summary counts for paginated results
     const summary = results.summary || {};
@@ -1160,24 +1242,26 @@ app.get("/api/watchlists/:id", async (req, res) => {
       return res.status(404).json({ error: "Watchlist not found" });
     }
 
-    // Add stock data to the watchlist
+    // Get scan results and filter by watchlist tickers only
     const scanResults = await dbService.getScanResults();
-    const stockData = new Map();
-
+    const tickerSet = new Set(watchlist.stocks);
+    
+    let stockData = [];
     if (scanResults && scanResults.stocks) {
-      scanResults.stocks.forEach((stock) => {
-        stockData.set(stock.ticker, stock);
-      });
+      stockData = scanResults.stocks.filter((stock) => tickerSet.has(stock.ticker));
     }
 
-    const stocksWithFullData = watchlist.stocks.map((ticker) => {
-      const stock = stockData.get(ticker);
-      return stock || { ticker };
+    // Add missing tickers (not in scan results) as empty objects
+    const existingTickers = new Set(stockData.map(s => s.ticker));
+    watchlist.stocks.forEach((ticker) => {
+      if (!existingTickers.has(ticker)) {
+        stockData.push({ ticker });
+      }
     });
 
     const watchlistWithStockData = {
       ...watchlist,
-      stockData: stocksWithFullData,
+      stockData: stockData,
     };
 
     res.json(watchlistWithStockData);
