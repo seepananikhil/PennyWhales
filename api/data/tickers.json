@@ -691,7 +691,6 @@
     "ALMU",
     "NXE",
     "BW",
-    "TTGT",
     "AEVA",
     "LSPD",
     "ARHS",
@@ -770,7 +769,6 @@
     "GRNT",
     "FSM",
     "IQ",
-    "SEER",
     "SB",
     "SKYH",
     "KT",
@@ -926,7 +924,13 @@
     "PAR",
     "YELP",
     "JCAP",
-    "ALHC"
+    "ALHC",
+    "ATHM",
+    "MGPI",
+    "TLSI",
+    "QURE",
+    "PGNY",
+    "FLGT"
   ],
   "rejectedTickers": [
     "FCEL",
@@ -1999,6 +2003,11 @@
     "AERO",
     "FOA",
     "AISP",
-    "SLM"
+    "SLM",
+    "TTGT",
+    "SEER",
+    "BMM",
+    "CAN",
+    "ODD"
   ]
 }

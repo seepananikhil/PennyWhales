@@ -283,14 +283,19 @@ app.post("/api/scan/start", async (req, res) => {
     scanState.error = null;
     scanState.progress = { current: 0, total: 0, percentage: 0 };
 
-    res.json({ success: true, message: "Scan started successfully" });
+    const { isMini = false } = req.body; // Get scan mode from request body
+    const scanMode = isMini ? "mini" : "full";
+    console.log(`📊 Starting ${scanMode.toUpperCase()} scan...`);
+
+    res.json({ success: true, message: `${scanMode} scan started successfully` });
 
     // Run scan asynchronously
     (async () => {
       try {
-        // Step 1: Fetch Finviz data (main screener)
-        console.log("📊 Fetching top performers from Finviz...");
-        const finvizStocks = await scrapeFinvizScreener();
+        // Step 1: Fetch Finviz data (use mini URL if specified)
+        console.log(`📊 Fetching stocks from Finviz (${scanMode} mode)...`);
+        const finvizUrl = isMini ? process.env.FINVIZ_SCREENER_URL_MINI : process.env.FINVIZ_SCREENER_URL;
+        const finvizStocks = await scrapeFinvizScreener(finvizUrl);
 
         let tickersToScan = [];
         let allTickers = [];
@@ -305,23 +310,36 @@ app.post("/api/scan/start", async (req, res) => {
         let finvizTickers = [];
         if (finvizStocks && finvizStocks.length > 0) {
           finvizTickers = finvizStocks.map((s) => s.ticker.toUpperCase().trim());
-          console.log(`✅ Fetched ${finvizTickers.length} tickers from main Finviz screener`);
+          console.log(`✅ Fetched ${finvizTickers.length} tickers from ${isMini ? 'mini' : 'main'} Finviz screener`);
         }
 
-        if (finvizTickers.length > 0) {
-          // Merge all tickers: existing + main screener (unique only)
-          const combinedTickers = [...new Set([...existingTickers, ...finvizTickers])];
-          allTickers = combinedTickers.filter(ticker => !rejectedTickers.includes(ticker));
-          tickersToScan = allTickers;
-          
-          console.log(`🔄 Merged to ${allTickers.length} non-rejected tickers (from ${existingTickers.length} existing + ${finvizTickers.length} main, ${combinedTickers.length - allTickers.length} rejected excluded)`);
-          console.log(`🎯 Will scan all ${tickersToScan.length} merged tickers`);
+        if (isMini) {
+          // Mini scan: only scan new mini tickers not in rejection list (ignore industry exclusions but respect rejections)
+          if (finvizTickers.length > 0) {
+            // Filter out tickers already in rejection list
+            tickersToScan = finvizTickers.filter(ticker => !rejectedTickers.includes(ticker));
+            console.log(`🎯 Mini scan: Will scan ${tickersToScan.length} mini tickers (filtered from ${finvizTickers.length}, skipping ${finvizTickers.length - tickersToScan.length} rejected)`);
+          } else {
+            console.log("⚠️ No mini tickers fetched from Finviz");
+            scanState.scanning = false;
+            return;
+          }
         } else {
-          console.log("⚠️ No data fetched from Finviz, using existing tickers");
-          allTickers = existingTickers;
-          tickersToScan = existingTickers.filter(
-            (ticker) => !rejectedTickers.includes(ticker)
-          );
+          // Full scan: merge with existing tickers
+          if (finvizTickers.length > 0) {
+            const combinedTickers = [...new Set([...existingTickers, ...finvizTickers])];
+            allTickers = combinedTickers.filter(ticker => !rejectedTickers.includes(ticker));
+            tickersToScan = allTickers;
+            
+            console.log(`🔄 Merged to ${allTickers.length} non-rejected tickers (from ${existingTickers.length} existing + ${finvizTickers.length} main, ${combinedTickers.length - allTickers.length} rejected excluded)`);
+            console.log(`🎯 Will scan all ${tickersToScan.length} merged tickers`);
+          } else {
+            console.log("⚠️ No data fetched from Finviz, using existing tickers");
+            allTickers = existingTickers;
+            tickersToScan = existingTickers.filter(
+              (ticker) => !rejectedTickers.includes(ticker)
+            );
+          }
         }
 
         if (tickersToScan.length === 0) {
@@ -353,7 +371,7 @@ app.post("/api/scan/start", async (req, res) => {
           console.log(`🔎 [${i+1}/${tickersToScan.length}] Analyzing ${ticker}...`);
 
           try {
-            const result = await scanner.analyzeTicker(ticker);
+            const result = await scanner.analyzeTicker(ticker, isMini);
 
             if (result.success) {
               const stock = result.data;
@@ -418,7 +436,7 @@ app.post("/api/scan/start", async (req, res) => {
               // Add longer delay before retry (500ms)
               await new Promise(resolve => setTimeout(resolve, 500));
               
-              const result = await scanner.analyzeTicker(ticker);
+              const result = await scanner.analyzeTicker(ticker, isMini);
 
               if (result.success && result.data) {
                 const stock = result.data;
@@ -456,8 +474,8 @@ app.post("/api/scan/start", async (req, res) => {
           }
         }
 
-        // Step 4: Add rejected tickers to rejected collection
-        if (rejectedTickersToAdd.length > 0) {
+        // Step 4: Add rejected tickers to rejected collection (only for full scans)
+        if (!isMini && rejectedTickersToAdd.length > 0) {
           await dbService.addRejectedTickers(rejectedTickersToAdd);
           console.log(
             `🚫 Added ${rejectedTickersToAdd.length} rejected tickers`
@@ -468,6 +486,8 @@ app.post("/api/scan/start", async (req, res) => {
             const reason = rejectedReasons[ticker] || 'unknown reason';
             console.log(`   • ${ticker}: ${reason}`);
           });
+        } else if (isMini && rejectedTickersToAdd.length > 0) {
+          console.log(`⏭️ Mini scan: Skipping rejection list (${rejectedTickersToAdd.length} would-be rejected)`);
         }
 
         // Step 5: Save scan results
@@ -492,9 +512,43 @@ app.post("/api/scan/start", async (req, res) => {
           },
         };
 
-        // Check for fire stock drops before saving new results
+        // Check for fire stock drops before saving new results (only for full scans)
         const previousResults = await dbService.getScanResults();
-        await checkFireDrops(previousResults, scanResults);
+        if (!isMini) {
+          await checkFireDrops(previousResults, scanResults);
+        } else {
+          console.log(`⏭️ Mini scan: Skipping fire drop check`);
+        }
+
+        // For mini scans, merge with existing results instead of replacing
+        if (isMini && previousResults && previousResults.stocks) {
+          console.log(`📊 Mini scan: Merging ${qualifyingStocks.length} new stocks with ${previousResults.stocks.length} existing stocks...`);
+          
+          // Create a map of new mini scan stocks by ticker for fast lookup
+          const newStocksMap = new Map(qualifyingStocks.map(s => [s.ticker, s]));
+          
+          // Keep all existing stocks, but update/replace those found in mini scan
+          const mergedStocks = previousResults.stocks.map(stock => {
+            if (newStocksMap.has(stock.ticker)) {
+              // Replace with new mini scan data
+              return newStocksMap.get(stock.ticker);
+            }
+            // Keep old stock
+            return stock;
+          });
+          
+          // Add any new stocks from mini scan that weren't in previous results
+          for (const [ticker, stock] of newStocksMap) {
+            if (!mergedStocks.find(s => s.ticker === ticker)) {
+              mergedStocks.push(stock);
+            }
+          }
+          
+          // Update scan results to use merged stocks
+          scanResults.stocks = mergedStocks;
+          scanResults.summary.total_fire_stocks = mergedStocks.length;
+          console.log(`✅ Merged results: ${mergedStocks.length} total stocks`);
+        }
 
         await dbService.saveScanResults(scanResults);
 
@@ -504,16 +558,46 @@ app.post("/api/scan/start", async (req, res) => {
           );
         }
 
-        // Step 6: Update ticker list with only qualifying tickers (remove non-qualifying ones)
-        const qualifyingTickers = qualifyingStocks.map((s) => s.ticker);
-        await dbService.updateTickers(qualifyingTickers);
-        console.log(`💾 Updated ticker list with ${qualifyingTickers.length} qualifying tickers`);
+        // Step 6: Update ticker list only for full scans (not mini scans)
+        if (!isMini) {
+          const qualifyingTickers = qualifyingStocks.map((s) => s.ticker);
+          await dbService.updateTickers(qualifyingTickers);
+          console.log(`💾 Updated ticker list with ${qualifyingTickers.length} qualifying tickers`);
 
-        // Auto-populate Hot Picks watchlist after scan completes
-        await autoPopulateHotPicks();
+          // Auto-populate Hot Picks watchlist after full scan completes
+          await autoPopulateHotPicks();
 
-        // Send institutional changes telegram notification
-        await sendInstitutionalChanges();
+          // Send institutional changes telegram notification
+          await sendInstitutionalChanges();
+        } else {
+          console.log(`⏭️ Mini scan: Skipping ticker list update and auto-populate`);
+          
+          // Send mini scan notification to Telegram - only if fire stocks under $1
+          try {
+            const settings = await dbService.getSettings();
+            if (settings && settings.telegramChatId) {
+              // Filter fire stocks under $1
+              const fireStocksUnder1 = qualifyingStocks.filter(s => s.fire_level >= 1 && s.price < 1.0);
+              
+              if (fireStocksUnder1.length > 0) {
+                let miniMessage = `🔥 *Mini Scan - Fire Stocks Under $1*\n\n`;
+                miniMessage += `Found ${fireStocksUnder1.length} fire stock(s) under $1:\n\n`;
+                
+                fireStocksUnder1.forEach(stock => {
+                  miniMessage += `🔴 *${stock.ticker}* - Fire ${stock.fire_level}\n`;
+                  miniMessage += `   Price: $${stock.price.toFixed(2)}\n`;
+                });
+                
+                await telegramService.sendMessage(settings.telegramChatId, miniMessage);
+                console.log(`📤 Mini scan notification sent (${fireStocksUnder1.length} fire stocks under $1)`);
+              } else {
+                console.log(`ℹ️ Mini scan complete: No fire stocks under $1`);
+              }
+            }
+          } catch (telegramError) {
+            console.error(`⚠️ Failed to send mini scan telegram notification:`, telegramError.message);
+          }
+        }
 
         scanState.scanning = false;
         scanState.last_scan = new Date().toISOString();

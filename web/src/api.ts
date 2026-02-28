@@ -5,8 +5,8 @@ const API_BASE = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:
 
 export const api = {
   // Start a new scan
-  startScan: async (fireStocksOnly: boolean = false): Promise<{ success: boolean; message: string }> => {
-    const response = await axios.post(`${API_BASE}/api/scan/start`, { fireStocksOnly });
+  startScan: async (isMini: boolean = false): Promise<{ success: boolean; message: string }> => {
+    const response = await axios.post(`${API_BASE}/api/scan/start`, { isMini });
     return response.data;
   },
   

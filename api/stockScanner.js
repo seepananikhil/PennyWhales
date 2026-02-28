@@ -129,7 +129,7 @@ class StockScanner {
   }
 
   // Analyze a single ticker
-  async analyzeTicker(ticker) {
+  async analyzeTicker(ticker, isMini = false) {
     try {
       // Get stock price
       const priceData = await this.getStockPrice(ticker);
@@ -167,9 +167,9 @@ class StockScanner {
 
       const { blackrockMarketValue, vanguardMarketValue, statestreetMarketValue, blackrockPct, vanguardPct, statestreetPct } = holdings;
 
-      // Check if stock should be excluded (therapeutics, lending, etc.)
+      // Check if stock should be excluded (therapeutics, lending, etc.) - skip for mini scans
       const tempStock = { industry, company_name: companyName, description: null };
-      if (shouldExcludeStock(tempStock)) {
+      if (!isMini && shouldExcludeStock(tempStock)) {
         return { 
           success: false, 
           reason: 'excluded',
@@ -223,9 +223,9 @@ class StockScanner {
         }
       }
       
-      // Re-check exclusion with description now available
+      // Re-check exclusion with description now available (skip for mini scans)
       const stockWithDesc = { industry, company_name: companyName, description };
-      if (shouldExcludeStock(stockWithDesc)) {
+      if (!isMini && shouldExcludeStock(stockWithDesc)) {
         return { 
           success: false, 
           reason: 'excluded',

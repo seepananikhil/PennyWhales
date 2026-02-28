@@ -34,7 +34,7 @@ const Scans: React.FC = () => {
     }
   };
 
-  const handleStartScan = async (scanType: "full" | "fireStocksOnly") => {
+  const handleStartScan = async (scanType: "full" | "mini") => {
     if (scanStatus?.scanning) {
       setError("A scan is already in progress");
       return;
@@ -44,7 +44,7 @@ const Scans: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const result = await api.startScan(scanType === "fireStocksOnly");
+      const result = await api.startScan(scanType === "mini");
 
       if (result.success) {
         // Immediately refresh status to show scanning state
@@ -484,6 +484,125 @@ const Scans: React.FC = () => {
               {scanStatus?.scanning
                 ? "⏳ Scan in Progress..."
                 : "🚀 Start Full Scan"}
+            </button>
+          </div>
+
+          {/* Mini Scan Card */}
+          <div
+            style={{
+              backgroundColor: theme.ui.surface,
+              borderRadius: theme.borderRadius.lg,
+              border: `1px solid ${theme.ui.border}`,
+              padding: theme.spacing.lg,
+              boxShadow: theme.ui.shadow.sm,
+              transition: `all ${theme.transition.normal}`,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: theme.spacing.md,
+                marginBottom: theme.spacing.md,
+              }}
+            >
+              <span style={{ fontSize: "32px" }}>⚡</span>
+              <div>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: theme.typography.fontSize.lg,
+                    fontWeight: theme.typography.fontWeight.semibold,
+                    color: theme.ui.text.primary,
+                  }}
+                >
+                  Mini Scan
+                </h3>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: theme.typography.fontSize.sm,
+                    color: theme.ui.text.secondary,
+                  }}
+                >
+                  Quick scan with mini price filter (≤$3)
+                </p>
+              </div>
+            </div>
+
+            <div
+              style={{
+                backgroundColor: theme.ui.background,
+                borderRadius: theme.borderRadius.md,
+                padding: theme.spacing.md,
+                marginBottom: theme.spacing.md,
+                border: `1px solid ${theme.ui.border}`,
+              }}
+            >
+              <h4
+                style={{
+                  margin: `0 0 ${theme.spacing.sm} 0`,
+                  fontSize: theme.typography.fontSize.sm,
+                  fontWeight: theme.typography.fontWeight.semibold,
+                  color: theme.ui.text.primary,
+                }}
+              >
+                What this does:
+              </h4>
+              <ul
+                style={{
+                  margin: 0,
+                  paddingLeft: theme.spacing.md,
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.ui.text.secondary,
+                  lineHeight: 1.4,
+                }}
+              >
+                <li>Scans stocks with price ≤ $3</li>
+                <li>Focuses on micro-cap opportunities</li>
+                <li>Updates only mini results</li>
+                <li>Faster scan time</li>
+                <li>Merges with main results</li>
+              </ul>
+            </div>
+
+            <button
+              onClick={() => handleStartScan("mini")}
+              disabled={loading || scanStatus?.scanning}
+              style={{
+                width: "100%",
+                padding: `${theme.spacing.md} ${theme.spacing.lg}`,
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: scanStatus?.scanning
+                  ? theme.ui.background
+                  : "#ff9800",
+                color: scanStatus?.scanning ? theme.ui.text.secondary : "white",
+                cursor:
+                  loading || scanStatus?.scanning ? "not-allowed" : "pointer",
+                fontSize: theme.typography.fontSize.base,
+                fontWeight: theme.typography.fontWeight.semibold,
+                transition: `all ${theme.transition.normal}`,
+                opacity: loading || scanStatus?.scanning ? 0.6 : 1,
+                border: `1px solid ${
+                  scanStatus?.scanning ? theme.ui.border : "#ff9800"
+                }`,
+              }}
+              onMouseEnter={(e) => {
+                if (!loading && !scanStatus?.scanning) {
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                  e.currentTarget.style.boxShadow = theme.ui.shadow.md;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading && !scanStatus?.scanning) {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
+                }
+              }}
+            >
+              {scanStatus?.scanning
+                ? "⏳ Scan in Progress..."
+                : "⚡ Start Mini Scan"}
             </button>
           </div>
         </div>
