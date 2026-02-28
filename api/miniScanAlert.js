@@ -55,13 +55,21 @@ async function scrapeFinvizMini() {
 
 async function getStockPrice(ticker) {
   try {
-    const response = await axios.get(`https://query1.finance.yahoo.com/v10/finance/quoteSummary/${ticker}?modules=price`, {
-      headers: { 'User-Agent': 'Mozilla/5.0' },
-      timeout: 5000
-    });
+    // Use curl to fetch directly (same method that works in main project)
+    const curlCmd = `curl -s "https://finviz.com/quote.ashx?t=${ticker}" -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"`;
+    const html = execSync(curlCmd, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024, timeout: 8000 });
+
+    // Extract price using regex - look for patterns like $123.45
+    const priceMatch = html.match(/Current Price[^$]*\$?([\d.]+)/i) || 
+                      html.match(/strongbox text-xl[^>]*>([^<]*\d+\.\d+)/i) ||
+                      html.match(/>([0-9]+\.[0-9]{2})</i);
     
-    const price = response.data?.quoteSummary?.result?.[0]?.price?.regularMarketPrice?.raw;
-    return price || null;
+    if (priceMatch) {
+      const price = parseFloat(priceMatch[1]);
+      if (price > 0) return price;
+    }
+
+    return null;
   } catch (error) {
     return null;
   }
