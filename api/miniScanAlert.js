@@ -17,7 +17,9 @@ const path = require('path');
 const fs = require('fs');
 
 // ============= CONFIG =============
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+// On GitHub: Uses TELEGRAM_BOT_TOKEN secret
+// Locally: Uses hardcoded token as fallback
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8436443776:AAHnLjR19aNTQ9U4wQcOvpd6giT3dwAabJ4';
 const FINVIZ_MINI_URL = 'https://finviz.com/screener.ashx?v=411&f=cap_smallover%2Csh_instown_o20%2Csh_price_u3&o=-change';
 
 // Load chat ID from settings.json
@@ -225,12 +227,7 @@ function calculateFireLevel(stock) {
 
 async function sendTelegramMessage(message) {
   try {
-    // Check if Telegram is configured
-    if (!TELEGRAM_BOT_TOKEN) {
-      console.error('❌ TELEGRAM_BOT_TOKEN environment variable not set');
-      return false;
-    }
-    
+    // Check if Telegram chatId is configured
     if (!TELEGRAM_CHAT_ID) {
       console.error('❌ Telegram chat ID not found in settings.json');
       return false;
@@ -340,7 +337,9 @@ async function runMiniScanAlert() {
           price: parseFloat(price.toFixed(2)),
           fireLevel,
           blackrockPct: parseFloat(blackrockPct.toFixed(2)),
-          vanguardPct: parseFloat(vanguardPct.toFixed(2))
+          vanguardPct: parseFloat(vanguardPct.toFixed(2)),
+          blackrockValue: parseFloat(blackrockValue.toFixed(2)),
+          vanguardValue: parseFloat(vanguardValue.toFixed(2))
         });
       } else {
         console.log(` $${price.toFixed(2)} (no fire)`);
@@ -375,8 +374,14 @@ async function runMiniScanAlert() {
     fireStocksUnder1.forEach(stock => {
       const fireEmoji = stock.fireLevel === 5 ? '🔴' : stock.fireLevel === 4 ? '🟠' : '🟡';
       message += `${fireEmoji} ${stock.ticker} - Fire Level ${stock.fireLevel}\n`;
-      message += `   Price: $${stock.price.toFixed(2)}\n`;
-      message += `   BlackRock: ${stock.blackrockPct}% | Vanguard: ${stock.vanguardPct}%\n\n`;
+      message += `   💵 Price: $${stock.price.toFixed(2)}\n`;
+      
+      // Show market values (most important) and percentages (if available)
+      const brDisplay = stock.blackrockValue > 0 ? `$${stock.blackrockValue}M` : `${stock.blackrockPct}%`;
+      const vgDisplay = stock.vanguardValue > 0 ? `$${stock.vanguardValue}M` : `${stock.vanguardPct}%`;
+      
+      message += `   📈 BR: ${brDisplay}`;
+      message += ` | VG: ${vgDisplay}\n\n`;
     });
     
     message += `${'='.repeat(50)}\n✅ Mini Scan Complete`;
