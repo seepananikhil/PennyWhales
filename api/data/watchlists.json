@@ -3,32 +3,22 @@
     "id": "watchlist_1762530124412",
     "name": "Hot Picks",
     "stocks": [
-      "HAIN",
       "KOS",
       "AGL",
-      "FSP",
-      "ARAY",
-      "DCGO",
       "RZLT",
       "TSE",
-      "MYPS",
-      "IRBT",
       "NFE",
-      "MVIS",
-      "MXCT",
       "SABR",
-      "QSI",
-      "SLQT",
       "HUMA",
       "OPK",
       "SKIN",
       "LAB",
-      "CDXS",
       "ALIT",
-      "AMC"
+      "AMC",
+      "BYND"
     ],
     "created": "2025-11-07T15:42:04.412Z",
-    "updated": "2026-02-28T04:34:27.059Z"
+    "updated": "2026-03-08T09:05:25.822Z"
   },
   {
     "id": "watchlist_1764608576236",
@@ -36,9 +26,6 @@
     "stocks": [
       "BDN",
       "GNL",
-      "MPW",
-      "DCGO",
-      "HAIN",
       "NFE",
       "KOS",
       "SABR",
@@ -47,7 +34,6 @@
       "ALIT",
       "NEOG",
       "ILPT",
-      "SLQT",
       "PAGS",
       "NWL",
       "EXPI",
@@ -56,6 +42,6 @@
       "BBBY"
     ],
     "created": "2025-12-01T17:02:56.236Z",
-    "updated": "2026-02-20T17:27:04.243Z"
+    "updated": "2026-03-08T09:05:41.851Z"
   }
 ]

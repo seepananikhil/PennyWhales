@@ -78,18 +78,18 @@ async function autoPopulateHotPicks() {
     // Check for 5-fire stocks under $1.00 and send separate notification
     const fire5StocksUnder1 = hotPicks.filter((stock) => stock.fire_level === 5 && stock.price < 1.0);
     const stocksUnder100 = hotPicks.filter((stock) => stock.price < 1.0);
-    
+
     console.log(`🔍 Hot Picks check: ${hotPicks.length} total, ${stocksUnder100.length} under $1.00, ${fire5StocksUnder1.length} 5-fire under $1.00`);
-    
+
     // Get settings to check if Telegram is enabled
     const settings = await dbService.getSettings();
     console.log(`🔍 Telegram settings check: chatId=${settings.telegramChatId ? 'configured' : 'NOT configured'}`);
-    
+
     if (settings.telegramChatId) {
       // Send separate notification for 5-fire stocks under $1.00
       if (fire5StocksUnder1.length > 0) {
         console.log(`🔥🔥🔥 CRITICAL: Found ${fire5StocksUnder1.length} 5-FIRE stocks under $1.00!`);
-        
+
         const fire5StockList = fire5StocksUnder1
           .map(
             (stock) =>
@@ -113,7 +113,7 @@ async function autoPopulateHotPicks() {
           );
         }
       }
-      
+
       // Send regular notification for all hot picks under $1.00
       if (stocksUnder100.length > 0) {
         console.log(
@@ -221,13 +221,13 @@ async function checkFireDrops(previousResults, newResults) {
 
     if (droppedStocks.length === 0) {
       console.log("✅ No fire stock drops detected");
-      
+
       // Send notification that check was performed successfully with no drops
       const settings = await dbService.getSettings();
       if (settings.telegramChatId) {
         const previousFire3Plus = Array.from(previousStocksMap.values()).length;
         const message = `✅ FIRE DROP CHECK COMPLETE\n\n${previousFire3Plus} stocks with Fire 3+ were checked.\nNo drops detected - all stocks maintaining their fire levels! 🔥`;
-        
+
         try {
           await telegramService.sendMessage(settings.telegramChatId, message);
           console.log("✅ Fire drop check notification sent (no drops)");
@@ -235,7 +235,7 @@ async function checkFireDrops(previousResults, newResults) {
           console.error("❌ Failed to send fire drop check notification:", error.message);
         }
       }
-      
+
       return;
     }
 
@@ -245,7 +245,7 @@ async function checkFireDrops(previousResults, newResults) {
     const settings = await dbService.getSettings();
     if (settings.telegramChatId) {
       const dropList = droppedStocks
-        .map(stock => 
+        .map(stock =>
           `• ${stock.ticker}: ${'🔥'.repeat(stock.previousFireLevel)} → ${stock.newFireLevel === 'removed' ? '❌ REMOVED' : '❄️ Fire 0'}\n` +
           `   Previous: $${stock.previousPrice.toFixed(2)} | BR: ${stock.previousBlackrock.toFixed(1)}% | VG: ${stock.previousVanguard.toFixed(1)}%` +
           (stock.newPrice ? `\n   Current: $${stock.newPrice.toFixed(2)}` : '')
@@ -330,7 +330,7 @@ app.post("/api/scan/start", async (req, res) => {
             const combinedTickers = [...new Set([...existingTickers, ...finvizTickers])];
             allTickers = combinedTickers.filter(ticker => !rejectedTickers.includes(ticker));
             tickersToScan = allTickers;
-            
+
             console.log(`🔄 Merged to ${allTickers.length} non-rejected tickers (from ${existingTickers.length} existing + ${finvizTickers.length} main, ${combinedTickers.length - allTickers.length} rejected excluded)`);
             console.log(`🎯 Will scan all ${tickersToScan.length} merged tickers`);
           } else {
@@ -368,7 +368,7 @@ app.post("/api/scan/start", async (req, res) => {
         console.log(`📍 Starting ticker analysis loop...`);
         for (let i = 0; i < tickersToScan.length; i++) {
           const ticker = tickersToScan[i];
-          console.log(`🔎 [${i+1}/${tickersToScan.length}] Analyzing ${ticker}...`);
+          console.log(`🔎 [${i + 1}/${tickersToScan.length}] Analyzing ${ticker}...`);
 
           try {
             const result = await scanner.analyzeTicker(ticker, isMini);
@@ -388,8 +388,8 @@ app.post("/api/scan/start", async (req, res) => {
               // Consolidated failure logging based on reason
               const reason = result.reason || 'unknown';
               if (reason === 'market_cap_too_low') {
-                // Silent skip - don't retry, this is intentional filtering
-                // Don't add to failedTickers - these stocks don't qualify
+                // Silent skip — don't retry, don't reject permanently
+                // Stock may grow above $200M in a future scan
               } else if (reason === 'excluded') {
                 rejectedTickersToAdd.push(ticker);
                 const excludeInfo = result.data?.industry || result.data?.company_name || 'unknown';
@@ -428,23 +428,20 @@ app.post("/api/scan/start", async (req, res) => {
           );
 
           const retriedFailures = [];
-          
+
           for (let i = 0; i < failedTickers.length; i++) {
             const ticker = failedTickers[i];
 
             try {
               // Add longer delay before retry (500ms)
               await new Promise(resolve => setTimeout(resolve, 500));
-              
+
               const result = await scanner.analyzeTicker(ticker, isMini);
 
               if (result.success && result.data) {
                 const stock = result.data;
-                // fire_level already calculated in analyzeTicker
-
                 if (stock.fire_level > 0) {
                   qualifyingStocks.push(stock);
-                  
                   console.log(`✅ ${ticker} (retry): fire_level=${stock.fire_level}`);
                 } else {
                   rejectedTickersToAdd.push(ticker);
@@ -520,37 +517,8 @@ app.post("/api/scan/start", async (req, res) => {
           console.log(`⏭️ Mini scan: Skipping fire drop check`);
         }
 
-        // For mini scans, merge with existing results instead of replacing
-        if (isMini && previousResults && previousResults.stocks) {
-          console.log(`📊 Mini scan: Merging ${qualifyingStocks.length} new stocks with ${previousResults.stocks.length} existing stocks...`);
-          
-          // Create a map of new mini scan stocks by ticker for fast lookup
-          const newStocksMap = new Map(qualifyingStocks.map(s => [s.ticker, s]));
-          
-          // Keep all existing stocks, but update/replace those found in mini scan
-          const mergedStocks = previousResults.stocks.map(stock => {
-            if (newStocksMap.has(stock.ticker)) {
-              // Replace with new mini scan data
-              return newStocksMap.get(stock.ticker);
-            }
-            // Keep old stock
-            return stock;
-          });
-          
-          // Add any new stocks from mini scan that weren't in previous results
-          for (const [ticker, stock] of newStocksMap) {
-            if (!mergedStocks.find(s => s.ticker === ticker)) {
-              mergedStocks.push(stock);
-            }
-          }
-          
-          // Update scan results to use merged stocks
-          scanResults.stocks = mergedStocks;
-          scanResults.summary.total_fire_stocks = mergedStocks.length;
-          console.log(`✅ Merged results: ${mergedStocks.length} total stocks`);
-        }
-
         await dbService.saveScanResults(scanResults);
+
 
         if (failedTickers.length > 0) {
           console.log(
@@ -571,23 +539,23 @@ app.post("/api/scan/start", async (req, res) => {
           await sendInstitutionalChanges();
         } else {
           console.log(`⏭️ Mini scan: Skipping ticker list update and auto-populate`);
-          
+
           // Send mini scan notification to Telegram - only if fire stocks under $1
           try {
             const settings = await dbService.getSettings();
             if (settings && settings.telegramChatId) {
               // Filter fire stocks under $1
               const fireStocksUnder1 = qualifyingStocks.filter(s => s.fire_level >= 1 && s.price < 1.0);
-              
+
               if (fireStocksUnder1.length > 0) {
                 let miniMessage = `🔥 *Mini Scan - Fire Stocks Under $1*\n\n`;
                 miniMessage += `Found ${fireStocksUnder1.length} fire stock(s) under $1:\n\n`;
-                
+
                 fireStocksUnder1.forEach(stock => {
                   miniMessage += `🔴 *${stock.ticker}* - Fire ${stock.fire_level}\n`;
                   miniMessage += `   Price: $${stock.price.toFixed(2)}\n`;
                 });
-                
+
                 await telegramService.sendMessage(settings.telegramChatId, miniMessage);
                 console.log(`📤 Mini scan notification sent (${fireStocksUnder1.length} fire stocks under $1)`);
               } else {
@@ -636,9 +604,16 @@ app.get("/api/scan/results", async (req, res) => {
     const sectors = req.query.sectors ? req.query.sectors.split(',') : [];
     const industries = req.query.industries ? req.query.industries.split(',') : [];
     const volumeFilter = req.query.volumeFilter ? req.query.volumeFilter.split(',') : [];
+    const sortOrder = req.query.sortOrder ? req.query.sortOrder.split(',') : [];
     const results = await dbService.getScanResults();
+    const rejectedTickers = new Set(await dbService.getRejectedTickers());
 
-    let stocksToPaginate = results.stocks;
+    console.log(`📡 GET /api/scan/results: page=${page}, limit=${limit}, searchQuery="${searchQuery}"`);
+    console.log(`📦 DB results: ${results.stocks?.length || 0} stocks, ${rejectedTickers.size} rejected tickers`);
+
+    // Always filter out rejected stocks (market_cap_too_low, excluded, etc.) from results
+    let stocksToPaginate = (results.stocks || []).filter(stock => !rejectedTickers.has(stock.ticker));
+
 
     // Apply search query filter if provided
     if (searchQuery) {
@@ -731,12 +706,80 @@ app.get("/api/scan/results", async (req, res) => {
         });
       });
     }
-    
+
+    // Server-side sorting (applied before pagination so sort works across all pages)
+    if (sortOrder.length > 0) {
+      stocksToPaginate = stocksToPaginate.sort((a, b) => {
+        for (const sortKey of sortOrder) {
+          let comparison = 0;
+          switch (sortKey) {
+            case 'combined-desc': {
+              const ca = (a.vanguard_pct || 0) + (a.blackrock_pct || 0) + (a.statestreet_pct || 0);
+              const cb = (b.vanguard_pct || 0) + (b.blackrock_pct || 0) + (b.statestreet_pct || 0);
+              comparison = cb - ca; break;
+            }
+            case 'combined-asc': {
+              const ca = (a.vanguard_pct || 0) + (a.blackrock_pct || 0) + (a.statestreet_pct || 0);
+              const cb = (b.vanguard_pct || 0) + (b.blackrock_pct || 0) + (b.statestreet_pct || 0);
+              comparison = ca - cb; break;
+            }
+            case 'fire-desc': comparison = (b.fire_level || 0) - (a.fire_level || 0); break;
+            case 'fire-asc': comparison = (a.fire_level || 0) - (b.fire_level || 0); break;
+            case 'price-desc': comparison = (b.price || 0) - (a.price || 0); break;
+            case 'price-asc': comparison = (a.price || 0) - (b.price || 0); break;
+            case 'market-value-desc': comparison = (b.market_cap || 0) - (a.market_cap || 0); break;
+            case 'market-value-asc': comparison = (a.market_cap || 0) - (b.market_cap || 0); break;
+            case 'daily-change-desc': comparison = (b.performance?.day || 0) - (a.performance?.day || 0); break;
+            case 'daily-change-asc': comparison = (a.performance?.day || 0) - (b.performance?.day || 0); break;
+            case 'weekly-change-desc': comparison = (b.performance?.week || 0) - (a.performance?.week || 0); break;
+            case 'weekly-change-asc': comparison = (a.performance?.week || 0) - (b.performance?.week || 0); break;
+            case 'monthly-change-desc': comparison = (b.performance?.month || 0) - (a.performance?.month || 0); break;
+            case 'monthly-change-asc': comparison = (a.performance?.month || 0) - (b.performance?.month || 0); break;
+            case 'holdings-value-desc': {
+              const hva = (a.blackrock_market_value || 0) + (a.vanguard_market_value || 0) + (a.statestreet_market_value || 0);
+              const hvb = (b.blackrock_market_value || 0) + (b.vanguard_market_value || 0) + (b.statestreet_market_value || 0);
+              comparison = hvb - hva; break;
+            }
+            case 'holdings-value-asc': {
+              const hva = (a.blackrock_market_value || 0) + (a.vanguard_market_value || 0) + (a.statestreet_market_value || 0);
+              const hvb = (b.blackrock_market_value || 0) + (b.vanguard_market_value || 0) + (b.statestreet_market_value || 0);
+              comparison = hva - hvb; break;
+            }
+            case 'holdings-change-desc': comparison = (b.inst_trans || 0) - (a.inst_trans || 0); break;
+            case 'holdings-change-asc': comparison = (a.inst_trans || 0) - (b.inst_trans || 0); break;
+            case 'employees-desc': comparison = (b.employee_count || 0) - (a.employee_count || 0); break;
+            case 'employees-asc': comparison = (a.employee_count || 0) - (b.employee_count || 0); break;
+            case 'inst-trans-desc': comparison = (b.inst_trans || 0) - (a.inst_trans || 0); break;
+            case 'inst-trans-asc': comparison = (a.inst_trans || 0) - (b.inst_trans || 0); break;
+            case 'inst-own-desc': comparison = (b.inst_own || 0) - (a.inst_own || 0); break;
+            case 'inst-own-asc': comparison = (a.inst_own || 0) - (b.inst_own || 0); break;
+            case 'sma200-desc': comparison = (b.sma200 || 0) - (a.sma200 || 0); break;
+            case 'sma200-asc': comparison = (a.sma200 || 0) - (b.sma200 || 0); break;
+            case 'ipo-date-desc': {
+              if (!a.ipo_date && !b.ipo_date) { comparison = 0; break; }
+              if (!a.ipo_date) { comparison = 1; break; }
+              if (!b.ipo_date) { comparison = -1; break; }
+              comparison = new Date(b.ipo_date).getTime() - new Date(a.ipo_date).getTime(); break;
+            }
+            case 'ipo-date-asc': {
+              if (!a.ipo_date && !b.ipo_date) { comparison = 0; break; }
+              if (!a.ipo_date) { comparison = 1; break; }
+              if (!b.ipo_date) { comparison = -1; break; }
+              comparison = new Date(a.ipo_date).getTime() - new Date(b.ipo_date).getTime(); break;
+            }
+            default: break;
+          }
+          if (comparison !== 0) return comparison;
+        }
+        return 0;
+      });
+    }
+
     const totalStocks = stocksToPaginate.length;
     const totalPages = Math.ceil(totalStocks / limit);
     const skip = (page - 1) * limit;
     const paginatedStocks = stocksToPaginate.slice(skip, skip + limit);
-    
+
     // Update summary counts for paginated results
     const summary = results.summary || {};
     summary.total_stocks = totalStocks;
@@ -747,7 +790,7 @@ app.get("/api/scan/results", async (req, res) => {
     summary.fire_level_2 = results.stocks.filter((s) => s.fire_level === 2).length;
     summary.fire_level_1 = results.stocks.filter((s) => s.fire_level === 1).length;
     summary.total_fire_stocks = totalStocks;
-    
+
     res.json({
       stocks: paginatedStocks,
       summary,
@@ -765,6 +808,7 @@ app.get("/api/scan/results", async (req, res) => {
     res.status(500).json({ error: "Failed to get scan results" });
   }
 });
+
 
 // Clear scan results
 app.post("/api/scan/clear", async (req, res) => {
@@ -866,15 +910,15 @@ app.get("/api/health", (req, res) => {
 app.post("/api/test/institutional-changes", async (req, res) => {
   try {
     await sendInstitutionalChanges();
-    res.json({ 
-      success: true, 
-      message: "Institutional changes notification sent successfully" 
+    res.json({
+      success: true,
+      message: "Institutional changes notification sent successfully"
     });
   } catch (error) {
     console.error("Error sending institutional changes:", error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 });
@@ -905,74 +949,6 @@ app.get("/api/price/:ticker", async (req, res) => {
   }
 });
 
-app.get("/api/movers/all", async (req, res) => {
-  try {
-    const { limit = 10, minPrice, maxPrice } = req.query;
-    const results = await dbService.getScanResults();
-
-    if (!results || !results.stocks) {
-      return res.json({ gainers: [], losers: [], count: 0 });
-    }
-
-    // Filter stocks with valid price data and only fire stocks (fire_level > 0)
-    let stocks = results.stocks.filter(
-      (stock) =>
-        stock.price &&
-        stock.previous_close &&
-        stock.previous_close > 0 &&
-        stock.fire_level &&
-        stock.fire_level > 0
-    );
-
-    // Apply price filters if provided
-    if (minPrice) {
-      stocks = stocks.filter((stock) => stock.price >= parseFloat(minPrice));
-    }
-    if (maxPrice) {
-      stocks = stocks.filter((stock) => stock.price <= parseFloat(maxPrice));
-    }
-
-    // Calculate price change percentage
-    const stocksWithChange = stocks.map((stock) => {
-      const priceChange = stock.price - stock.previous_close;
-      const priceChangePercent = (priceChange / stock.previous_close) * 100;
-      return {
-        ticker: stock.ticker,
-        price: stock.price,
-        previousClose: stock.previous_close,
-        priceChange: priceChange,
-        priceChangePercent: priceChangePercent,
-        fireLevel: stock.fire_level || 0,
-        blackrockPct: stock.blackrock_pct || 0,
-        vanguardPct: stock.vanguard_pct || 0,
-      };
-    });
-
-    // Get top gainers - sorted by highest percentage gain
-    const gainers = stocksWithChange
-      .filter((stock) => stock.priceChangePercent > 0)
-      .sort((a, b) => b.priceChangePercent - a.priceChangePercent) // Highest gains first
-      .slice(0, parseInt(limit));
-
-    // Get top losers - sorted by biggest percentage loss
-    const losers = stocksWithChange
-      .filter((stock) => stock.priceChangePercent < 0)
-      .sort((a, b) => a.priceChangePercent - b.priceChangePercent) // Most negative first
-      .slice(0, parseInt(limit));
-
-    res.json({
-      gainers,
-      losers,
-      gainersCount: gainers.length,
-      losersCount: losers.length,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error("Error getting movers:", error);
-    res.status(500).json({ error: "Failed to get movers" });
-  }
-});
-
 // Ticker Management Endpoints
 app.get("/api/tickers", async (req, res) => {
   try {
@@ -988,20 +964,20 @@ app.get("/api/tickers", async (req, res) => {
 app.post("/api/analyze/:ticker", async (req, res) => {
   try {
     const { ticker } = req.params;
-    
+
     // Get stock data from database
     const scanResults = await dbService.getScanResults();
     const stock = scanResults.stocks.find(s => s.ticker.toUpperCase() === ticker.toUpperCase());
-    
+
     if (!stock) {
       return res.status(404).json({ error: `Stock ${ticker} not found in database` });
     }
-    
+
     console.log(`🤖 Analyzing ${ticker} with AI...`);
-    
+
     // Get AI analysis
     const analysis = await analyzeStock(stock);
-    
+
     res.json({
       ticker: stock.ticker,
       analysis: analysis.analysis,
@@ -1012,9 +988,9 @@ app.post("/api/analyze/:ticker", async (req, res) => {
     });
   } catch (error) {
     console.error("Error analyzing stock:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Failed to analyze stock",
-      message: error.message 
+      message: error.message
     });
   }
 });
@@ -1024,11 +1000,11 @@ app.get("/api/sectors/performance", async (req, res) => {
   try {
     const { timeframe = 'yearOne' } = req.query;
     console.log(`📊 Fetching sector performance data for ${timeframe}...`);
-    
+
     // Fetch directly from SPDR API
     const axios = require('axios');
     const apiUrl = 'https://www.ssga.com/bin/v1/ssmp/fund/sectortool.fp.json';
-    
+
     const response = await axios.get(apiUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -1040,10 +1016,10 @@ app.get("/api/sectors/performance", async (req, res) => {
     });
 
     const sectors = [];
-    
+
     if (response.data && response.data.data) {
       const performanceData = response.data.data[timeframe] || [];
-      
+
       performanceData.forEach(fund => {
         sectors.push({
           ticker: fund.fundTicker.toUpperCase(),
@@ -1058,10 +1034,10 @@ app.get("/api/sectors/performance", async (req, res) => {
           timestamp: new Date().toISOString()
         });
       });
-      
+
       console.log(`✅ Successfully fetched ${sectors.length} sectors from SPDR API (${timeframe})`);
     }
-    
+
     res.json({
       sectors,
       count: sectors.length,
@@ -1070,9 +1046,9 @@ app.get("/api/sectors/performance", async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting sector performance:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Failed to get sector performance",
-      message: error.message 
+      message: error.message
     });
   }
 });
@@ -1161,8 +1137,7 @@ app.patch("/api/tickers", async (req, res) => {
 
     if (added.length > 0) {
       console.log(
-        `✅ Added ${added.length} qualifying tickers to ticker list (${
-          tickers.length - added.length
+        `✅ Added ${added.length} qualifying tickers to ticker list (${tickers.length - added.length
         } rejected)`
       );
 
@@ -1181,9 +1156,8 @@ app.patch("/api/tickers", async (req, res) => {
       tickers: added,
       message:
         added.length > 0
-          ? `${added.length} qualifying tickers added (${
-              tickers.length - added.length
-            } rejected for no fire)`
+          ? `${added.length} qualifying tickers added (${tickers.length - added.length
+          } rejected for no fire)`
           : "No qualifying tickers found",
     });
   } catch (error) {
@@ -1329,7 +1303,7 @@ app.get("/api/watchlists/:id", async (req, res) => {
     // Get scan results and filter by watchlist tickers only
     const scanResults = await dbService.getScanResults();
     const tickerSet = new Set(watchlist.stocks);
-    
+
     let stockData = [];
     if (scanResults && scanResults.stocks) {
       stockData = scanResults.stocks.filter((stock) => tickerSet.has(stock.ticker));
@@ -1449,13 +1423,13 @@ app.delete("/api/watchlists/:id/stocks", async (req, res) => {
 app.get("/api/alerts", async (req, res) => {
   try {
     const alerts = await dbService.getPriceAlerts();
-    
+
     // Get scan results to enrich alerts with fire level data
     const scanResults = await dbService.getScanResults();
     const stocksMap = new Map(
       (scanResults.stocks || []).map(stock => [stock.ticker, stock])
     );
-    
+
     // Enrich alerts with fire level and other stock data
     const enrichedAlerts = alerts.map(alert => {
       const stockData = stocksMap.get(alert.ticker);
@@ -1470,7 +1444,7 @@ app.get("/api/alerts", async (req, res) => {
       }
       return alert;
     });
-    
+
     res.json({ alerts: enrichedAlerts, count: enrichedAlerts.length });
   } catch (error) {
     console.error("Error getting alerts:", error);
@@ -1482,11 +1456,11 @@ app.get("/api/alerts/ticker/:ticker", async (req, res) => {
   try {
     const { ticker } = req.params;
     const alerts = await dbService.getAlertsByTicker(ticker);
-    
+
     // Get scan results to enrich alerts with fire level data
     const scanResults = await dbService.getScanResults();
     const stockData = (scanResults.stocks || []).find(s => s.ticker === ticker.toUpperCase());
-    
+
     // Enrich alerts with fire level and other stock data
     const enrichedAlerts = alerts.map(alert => {
       if (stockData) {
@@ -1500,7 +1474,7 @@ app.get("/api/alerts/ticker/:ticker", async (req, res) => {
       }
       return alert;
     });
-    
+
     res.json({ alerts: enrichedAlerts, count: enrichedAlerts.length });
   } catch (error) {
     console.error("Error getting alerts for ticker:", error);
@@ -1693,7 +1667,7 @@ app.listen(PORT, () => {
 
   // Setup hourly alert checking between 8 PM - 3 AM IST
   console.log(`🔔 Alert checks scheduled every hour from 8 PM to 3 AM IST`);
-  
+
   // Check alerts at 8 PM, 9 PM, 10 PM, 11 PM, 12 AM, 1 AM, 2 AM, and 3 AM IST
   cron.schedule(
     "0 20,21,22,23,0,1,2,3 * * *",
@@ -1710,7 +1684,7 @@ app.listen(PORT, () => {
 
   // Setup cron job for scans at 8:15 PM and 3:15 AM IST
   console.log(`⏰ Scheduled scans set for 8:15 PM IST and 3:15 AM IST (runs daily)`);
-  
+
   // Evening scan at 8:15 PM IST
   cron.schedule(
     "15 20 * * *",

@@ -9,7 +9,7 @@ export const api = {
     const response = await axios.post(`${API_BASE}/api/scan/start`, { isMini });
     return response.data;
   },
-  
+
   // Scan multiple stocks
   scanMultipleStocks: async (tickers: string[]): Promise<{ success: boolean; stocks?: any[]; count?: number; errors?: any[]; error?: string }> => {
     const response = await axios.post(`${API_BASE}/api/scan`, { tickers });
@@ -23,12 +23,31 @@ export const api = {
   },
 
   // Get latest scan results
-  getLatestResults: async (page: number = 1, limit: number = 50, searchQuery: string = ''): Promise<ScanResult | null> => {
-    const response = await axios.get(`${API_BASE}/api/scan/results`, {
-      params: { page, limit, searchQuery }
-    });
+  getLatestResults: async (
+    page: number = 1,
+    limit: number = 50,
+    searchQuery: string = '',
+    fireLevels: number[] = [],
+    priceFilters: string[] = [],
+    marketValueFilters: string[] = [],
+    sectors: string[] = [],
+    industries: string[] = [],
+    volumeFilter: string[] = [],
+    sortOrder: string[] = []
+  ): Promise<ScanResult | null> => {
+    const params: any = { page, limit };
+    if (searchQuery) params.searchQuery = searchQuery;
+    if (fireLevels.length > 0) params.fireLevels = fireLevels.join(',');
+    if (priceFilters.length > 0) params.priceFilters = priceFilters.join(',');
+    if (marketValueFilters.length > 0) params.marketValueFilters = marketValueFilters.join(',');
+    if (sectors.length > 0) params.sectors = sectors.join(',');
+    if (industries.length > 0) params.industries = industries.join(',');
+    if (volumeFilter.length > 0) params.volumeFilter = volumeFilter.join(',');
+    if (sortOrder.length > 0) params.sortOrder = sortOrder.join(',');
+    const response = await axios.get(`${API_BASE}/api/scan/results`, { params });
     return response.data;
   },
+
 
   // Ticker Management
   getTickers: async (): Promise<{ tickers: string[]; count: number }> => {
@@ -141,86 +160,7 @@ export const api = {
     return response.data;
   },
 
-  // Top Gainers and Losers
-  getTopGainers: async (limit: number = 10, minPrice?: number, maxPrice?: number): Promise<{
-    gainers: Array<{
-      ticker: string;
-      price: number;
-      previousClose: number;
-      priceChange: number;
-      priceChangePercent: number;
-      fireLevel: number;
-      blackrockPct: number;
-      vanguardPct: number;
-    }>;
-    count: number;
-    timestamp: string;
-  }> => {
-    const params = new URLSearchParams();
-    params.append('limit', limit.toString());
-    if (minPrice !== undefined) params.append('minPrice', minPrice.toString());
-    if (maxPrice !== undefined) params.append('maxPrice', maxPrice.toString());
-    
-    const response = await axios.get(`${API_BASE}/api/movers/gainers?${params.toString()}`);
-    return response.data;
-  },
 
-  getTopLosers: async (limit: number = 10, minPrice?: number, maxPrice?: number): Promise<{
-    losers: Array<{
-      ticker: string;
-      price: number;
-      previousClose: number;
-      priceChange: number;
-      priceChangePercent: number;
-      fireLevel: number;
-      blackrockPct: number;
-      vanguardPct: number;
-    }>;
-    count: number;
-    timestamp: string;
-  }> => {
-    const params = new URLSearchParams();
-    params.append('limit', limit.toString());
-    if (minPrice !== undefined) params.append('minPrice', minPrice.toString());
-    if (maxPrice !== undefined) params.append('maxPrice', maxPrice.toString());
-    
-    const response = await axios.get(`${API_BASE}/api/movers/losers?${params.toString()}`);
-    return response.data;
-  },
-
-  getTopMovers: async (limit: number = 10, minPrice?: number, maxPrice?: number): Promise<{
-    gainers: Array<{
-      ticker: string;
-      price: number;
-      previousClose: number;
-      priceChange: number;
-      priceChangePercent: number;
-      fireLevel: number;
-      blackrockPct: number;
-      vanguardPct: number;
-    }>;
-    losers: Array<{
-      ticker: string;
-      price: number;
-      previousClose: number;
-      priceChange: number;
-      priceChangePercent: number;
-      fireLevel: number;
-      blackrockPct: number;
-      vanguardPct: number;
-    }>;
-    gainersCount: number;
-    losersCount: number;
-    timestamp: string;
-  }> => {
-    const params = new URLSearchParams();
-    params.append('limit', limit.toString());
-    if (minPrice !== undefined) params.append('minPrice', minPrice.toString());
-    if (maxPrice !== undefined) params.append('maxPrice', maxPrice.toString());
-    
-    const response = await axios.get(`${API_BASE}/api/movers/all?${params.toString()}`);
-    return response.data;
-  },
 
   // Price Alerts
   getAlerts: async (): Promise<{ alerts: any[]; count: number }> => {

@@ -1,16 +1,16 @@
 // Utility for checking if a stock should be excluded from scanning
 
 const THERAPEUTICS_KEYWORDS = [
-  'therapeutic', 
+  'therapeutic',
   'therapeutics'
 ];
 
 const LOAN_KEYWORDS = [
-  'loan', 
-  'lending', 
-  'mortgage lender', 
-  'mortgage bank', 
-  'consumer lending', 
+  'loan',
+  'lending',
+  'mortgage lender',
+  'mortgage bank',
+  'consumer lending',
   'specialty finance'
 ];
 
@@ -23,14 +23,14 @@ function shouldExcludeStock(stock) {
   const industry = (stock.industry || '').toLowerCase();
   const companyName = (stock.company_name || '').toLowerCase();
   const description = (stock.description || '').toLowerCase();
-  
-  const isExcluded = THERAPEUTICS_KEYWORDS.some(k => 
+
+  const isExcluded = THERAPEUTICS_KEYWORDS.some(k =>
     industry.includes(k) || companyName.includes(k) || description.includes(k)
-  ) || LOAN_KEYWORDS.some(k => 
+  ) || LOAN_KEYWORDS.some(k =>
     industry.includes(k) || companyName.includes(k) || description.includes(k)
   );
-  
-  return isExcluded;
+
+  return false;
 }
 
 module.exports = {

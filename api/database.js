@@ -118,7 +118,7 @@ class DatabaseService {
   async addTicker(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
-    
+
     if (!this.dbs.tickers.data.tickers.includes(normalizedTicker)) {
       this.dbs.tickers.data.tickers.push(normalizedTicker);
       await this.dbs.tickers.write();
@@ -131,7 +131,7 @@ class DatabaseService {
   async addTickers(tickers) {
     await this.init();
     const added = [];
-    
+
     for (const ticker of tickers) {
       const normalizedTicker = ticker.toUpperCase().trim();
       if (!this.dbs.tickers.data.tickers.includes(normalizedTicker)) {
@@ -139,12 +139,12 @@ class DatabaseService {
         added.push(normalizedTicker);
       }
     }
-    
+
     if (added.length > 0) {
       await this.dbs.tickers.write();
       console.log(`✅ Added ${added.length} new tickers`);
     }
-    
+
     return added;
   }
 
@@ -152,16 +152,16 @@ class DatabaseService {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
     const index = this.dbs.tickers.data.tickers.indexOf(normalizedTicker);
-    
+
     if (index > -1) {
       this.dbs.tickers.data.tickers.splice(index, 1);
-      
+
       // Add to rejected tickers list
       if (!this.dbs.tickers.data.rejectedTickers.includes(normalizedTicker)) {
         this.dbs.tickers.data.rejectedTickers.push(normalizedTicker);
         console.log(`🚫 Added ${normalizedTicker} to rejected tickers`);
       }
-      
+
       await this.dbs.tickers.write();
       console.log(`🗑️ Removed ticker: ${normalizedTicker}`);
       return true;
@@ -177,29 +177,65 @@ class DatabaseService {
     return this.dbs.tickers.data.tickers;
   }
 
-  // Rejected Tickers Management (for stocks with fire_level <= 0)
+  // Rejected Tickers Management (30-day auto-expiry)
   async getRejectedTickers() {
     await this.init();
-    return this.dbs.tickers.data.rejectedTickers || [];
+    const EXPIRY_DAYS = 30;
+    const now = Date.now();
+    const raw = this.dbs.tickers.data.rejectedTickers || [];
+
+    // Migrate old plain-string format to object format
+    const normalized = raw.map(entry =>
+      typeof entry === 'string'
+        ? { ticker: entry, rejectedAt: new Date(0).toISOString() } // treat old entries as expired
+        : entry
+    );
+
+    // Filter out entries older than 30 days
+    const valid = normalized.filter(entry => {
+      const age = (now - new Date(entry.rejectedAt).getTime()) / (1000 * 60 * 60 * 24);
+      return age < EXPIRY_DAYS;
+    });
+
+    // Persist if we cleaned anything up
+    if (valid.length !== raw.length) {
+      this.dbs.tickers.data.rejectedTickers = valid;
+      await this.dbs.tickers.write();
+      console.log(`🧹 Expired ${raw.length - valid.length} rejected tickers (>30 days old)`);
+    }
+
+    return valid.map(entry => entry.ticker);
   }
 
   async addRejectedTickers(tickers) {
     await this.init();
     const added = [];
-    
+    // Get current valid (non-expired) ticker strings to check duplicates
+    const existingTickers = await this.getRejectedTickers();
+    const existingSet = new Set(existingTickers);
+    const now = new Date().toISOString();
+
     for (const ticker of tickers) {
       const normalizedTicker = ticker.toUpperCase().trim();
-      if (!this.dbs.tickers.data.rejectedTickers.includes(normalizedTicker)) {
-        this.dbs.tickers.data.rejectedTickers.push(normalizedTicker);
+      if (!existingSet.has(normalizedTicker)) {
+        this.dbs.tickers.data.rejectedTickers.push({ ticker: normalizedTicker, rejectedAt: now });
         added.push(normalizedTicker);
+      } else {
+        // Refresh the timestamp for already-rejected tickers so the 30-day window resets
+        const idx = this.dbs.tickers.data.rejectedTickers.findIndex(
+          e => (typeof e === 'string' ? e : e.ticker) === normalizedTicker
+        );
+        if (idx > -1) {
+          this.dbs.tickers.data.rejectedTickers[idx] = { ticker: normalizedTicker, rejectedAt: now };
+        }
       }
     }
-    
-    if (added.length > 0) {
+
+    if (added.length > 0 || tickers.length > 0) {
       await this.dbs.tickers.write();
-      console.log(`🚫 Added ${added.length} rejected tickers`);
+      if (added.length > 0) console.log(`🚫 Added ${added.length} rejected tickers (expire in 30 days)`);
     }
-    
+
     return added;
   }
 
@@ -219,7 +255,7 @@ class DatabaseService {
   async addHolding(ticker) {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
-    
+
     if (!this.dbs.holdings.data.stocks.includes(normalizedTicker)) {
       this.dbs.holdings.data.stocks.push(normalizedTicker);
       this.dbs.holdings.data.last_updated = new Date().toISOString();
@@ -234,7 +270,7 @@ class DatabaseService {
     await this.init();
     const normalizedTicker = ticker.toUpperCase().trim();
     const index = this.dbs.holdings.data.stocks.indexOf(normalizedTicker);
-    
+
     if (index > -1) {
       this.dbs.holdings.data.stocks.splice(index, 1);
       this.dbs.holdings.data.last_updated = new Date().toISOString();
@@ -254,7 +290,7 @@ class DatabaseService {
   // Scan Results Management
   async getScanResults() {
     await this.init();
-    
+
     // Retry logic for read operations in case of temporary file system issues
     let retries = 3;
     while (retries > 0) {
@@ -283,44 +319,44 @@ class DatabaseService {
 
   async saveScanResults(results) {
     await this.init();
-    
+
     // Get previous scan results to calculate changes
     const previousResults = this.dbs.scanResults.data?.stocks || [];
     const previousStocksMap = new Map(previousResults.map(s => [s.ticker, s]));
-    
+
     // Use the stocks and summary as they come from the scanner
     const stocks = results.stocks || [];
-    
+
     // Remove duplicates by ticker, keeping the last occurrence (defensive coding)
-    const uniqueStocks = stocks.filter((stock, index, arr) => 
+    const uniqueStocks = stocks.filter((stock, index, arr) =>
       arr.findIndex(s => s.ticker === stock.ticker) === index
     );
-    
+
     // Add change tracking for institutional holdings
     const stocksWithChanges = uniqueStocks.map(stock => {
       const previousStock = previousStocksMap.get(stock.ticker);
-      
+
       if (previousStock) {
         // Calculate changes based on PERCENTAGE POINT DIFFERENCE
         // This tracks real ownership changes (shares bought/sold)
         const blackrockPctChange = (stock.blackrock_pct || 0) - (previousStock.blackrock_pct || 0);
         const vanguardPctChange = (stock.vanguard_pct || 0) - (previousStock.vanguard_pct || 0);
-        
+
         // Only update change if there's a significant percentage point difference
         // Threshold: 0.05 percentage points (0.05% of shares outstanding)
         const threshold = 0.05;
-        
+
         // Round changes to 2 decimal places
         const roundedBlackrockChange = Math.round(blackrockPctChange * 100) / 100;
         const roundedVanguardChange = Math.round(vanguardPctChange * 100) / 100;
-        
+
         return {
           ...stock,
-          blackrock_change: Math.abs(blackrockPctChange) > threshold 
-            ? roundedBlackrockChange 
+          blackrock_change: Math.abs(blackrockPctChange) > threshold
+            ? roundedBlackrockChange
             : (previousStock.blackrock_change || 0),
-          vanguard_change: Math.abs(vanguardPctChange) > threshold 
-            ? roundedVanguardChange 
+          vanguard_change: Math.abs(vanguardPctChange) > threshold
+            ? roundedVanguardChange
             : (previousStock.vanguard_change || 0),
           previous_fire_level: previousStock.fire_level
         };
@@ -334,7 +370,7 @@ class DatabaseService {
         };
       }
     });
-    
+
     // Save results with minimal processing
     this.dbs.scanResults.data = {
       ...results,
@@ -345,7 +381,7 @@ class DatabaseService {
       },
       timestamp: new Date().toISOString()
     };
-    
+
     // Retry logic for write operations
     let retries = 3;
     while (retries > 0) {
@@ -367,7 +403,7 @@ class DatabaseService {
 
   async clearScanResults() {
     await this.init();
-    
+
     // Clear scan results with minimal structure
     this.dbs.scanResults.data = {
       stocks: [],
@@ -378,7 +414,7 @@ class DatabaseService {
       },
       timestamp: null
     };
-    
+
     await this.dbs.scanResults.write();
     console.log('🗑️ Cleared scan results');
   }
@@ -418,17 +454,15 @@ class DatabaseService {
   async updateWatchlist(id, updates) {
     await this.init();
     const watchlistIndex = this.dbs.watchlists.data?.findIndex(w => w.id === id);
-    
+
     if (watchlistIndex === -1) {
       throw new Error('Watchlist not found');
     }
 
-    // Handle stocks merging BEFORE spreading updates
-    let mergedStocks = null;
+    // Process stocks if provided
+    let updatedStocks = null;
     if (updates.stocks) {
-      const existingStocks = this.dbs.watchlists.data[watchlistIndex].stocks || [];
-      const newStocks = updates.stocks.map(s => s.toUpperCase().trim());
-      mergedStocks = [...new Set([...existingStocks, ...newStocks])];
+      updatedStocks = updates.stocks.map(s => s.toUpperCase().trim());
     }
 
     // Create a copy of updates without stocks
@@ -440,9 +474,9 @@ class DatabaseService {
       updated: new Date().toISOString()
     };
 
-    // Apply merged stocks if we have them
-    if (mergedStocks) {
-      this.dbs.watchlists.data[watchlistIndex].stocks = mergedStocks;
+    // Apply updated stocks if we have them
+    if (updatedStocks) {
+      this.dbs.watchlists.data[watchlistIndex].stocks = updatedStocks;
     }
 
     await this.dbs.watchlists.write();
@@ -453,7 +487,7 @@ class DatabaseService {
   async deleteWatchlist(id) {
     await this.init();
     const watchlistIndex = this.dbs.watchlists.data?.findIndex(w => w.id === id);
-    
+
     if (watchlistIndex === -1) {
       throw new Error('Watchlist not found');
     }
@@ -467,14 +501,14 @@ class DatabaseService {
   async addToWatchlist(id, stocks) {
     await this.init();
     const watchlist = await this.getWatchlist(id);
-    
+
     if (!watchlist) {
       throw new Error('Watchlist not found');
     }
 
     const normalizedStocks = stocks.map(s => s.toUpperCase().trim());
     const newStocks = normalizedStocks.filter(stock => !watchlist.stocks.includes(stock));
-    
+
     if (newStocks.length > 0) {
       watchlist.stocks.push(...newStocks);
       await this.updateWatchlist(id, { stocks: watchlist.stocks });
@@ -486,14 +520,14 @@ class DatabaseService {
   async removeFromWatchlist(id, stocks) {
     await this.init();
     const watchlist = await this.getWatchlist(id);
-    
+
     if (!watchlist) {
       throw new Error('Watchlist not found');
     }
 
     const normalizedStocks = stocks.map(s => s.toUpperCase().trim());
     const filteredStocks = watchlist.stocks.filter(stock => !normalizedStocks.includes(stock));
-    
+
     await this.updateWatchlist(id, { stocks: filteredStocks });
     return { removed: watchlist.stocks.length - filteredStocks.length, total: filteredStocks.length };
   }
@@ -501,7 +535,7 @@ class DatabaseService {
   // Migration: Add fire levels to existing data (legacy function)
   async migrateAddFireLevels() {
     await this.init();
-    
+
     if (!this.dbs.scanResults.data || !this.dbs.scanResults.data.stocks) {
       console.log('No scan results to migrate');
       return { migrated: 0 };
@@ -509,7 +543,7 @@ class DatabaseService {
 
     // Import calculateFireLevel only for this legacy migration
     const { calculateFireLevel } = require('./fireUtils');
-    
+
     let migrated = 0;
     const stocks = this.dbs.scanResults.data.stocks;
 
@@ -525,7 +559,7 @@ class DatabaseService {
       const fireLevel3 = stocks.filter(s => s.fire_level === 3).length;
       const fireLevel2 = stocks.filter(s => s.fire_level === 2).length;
       const fireLevel1 = stocks.filter(s => s.fire_level === 1).length;
-      
+
       this.dbs.scanResults.data.summary = {
         ...this.dbs.scanResults.data.summary,
         fire_level_3: fireLevel3,
@@ -625,7 +659,7 @@ class DatabaseService {
   async removePriceAlert(alertId) {
     await this.init();
     const index = this.dbs.priceAlerts.data.findIndex(a => a.id === alertId);
-    
+
     if (index > -1) {
       const removed = this.dbs.priceAlerts.data.splice(index, 1)[0];
       await this.dbs.priceAlerts.write();
@@ -638,7 +672,7 @@ class DatabaseService {
   async updatePriceAlert(alertId, updates) {
     await this.init();
     const alertIndex = this.dbs.priceAlerts.data.findIndex(a => a.id === alertId);
-    
+
     if (alertIndex === -1) {
       throw new Error('Alert not found');
     }
@@ -693,7 +727,7 @@ class DatabaseService {
     const timestamp = new Date().toISOString();
     const now = new Date();
     const AGGREGATION_WINDOW_DAYS = 30; // Aggregate changes within 30 days
-    
+
     // Ensure data structure exists
     if (!this.dbs.institutionalChanges.data.additions) {
       this.dbs.institutionalChanges.data.additions = [];
@@ -701,15 +735,15 @@ class DatabaseService {
     if (!this.dbs.institutionalChanges.data.sells) {
       this.dbs.institutionalChanges.data.sells = [];
     }
-    
+
     // Helper function to aggregate institutional changes
     const aggregateChanges = (newStocks, existingStocks) => {
       const result = [];
       const processedTickers = new Set();
-      
+
       for (const newStock of newStocks) {
         if (processedTickers.has(newStock.ticker)) continue;
-        
+
         // Find existing entry for this ticker within aggregation window
         const existingIndex = existingStocks.findIndex(existing => {
           if (existing.ticker !== newStock.ticker) return false;
@@ -717,16 +751,16 @@ class DatabaseService {
           const daysDiff = (now - existingDate) / (1000 * 60 * 60 * 24);
           return daysDiff <= AGGREGATION_WINDOW_DAYS;
         });
-        
+
         if (existingIndex >= 0) {
           // Check if ownership has actually changed
           const existing = existingStocks[existingIndex];
-          
+
           // Compare current ownership percentages
           const brSame = Math.abs((existing.blackrock_pct || 0) - (newStock.blackrock_pct || 0)) < 0.01;
           const vgSame = Math.abs((existing.vanguard_pct || 0) - (newStock.vanguard_pct || 0)) < 0.01;
           const ssSame = Math.abs((existing.statestreet_pct || 0) - (newStock.statestreet_pct || 0)) < 0.01;
-          
+
           if (brSame && vgSame && ssSame) {
             // No actual change - keep existing entry with updated timestamp
             result.push({
@@ -741,11 +775,11 @@ class DatabaseService {
             const baseBlackrock = existing.initial_blackrock_pct !== undefined ? existing.initial_blackrock_pct : (existing.blackrock_pct || 0) - (existing.blackrock_change || 0);
             const baseVanguard = existing.initial_vanguard_pct !== undefined ? existing.initial_vanguard_pct : (existing.vanguard_pct || 0) - (existing.vanguard_change || 0);
             const baseStatestreet = existing.initial_statestreet_pct !== undefined ? existing.initial_statestreet_pct : (existing.statestreet_pct || 0) - (existing.statestreet_change || 0);
-            
+
             const newBrChange = (newStock.blackrock_pct || 0) - baseBlackrock;
             const newVgChange = (newStock.vanguard_pct || 0) - baseVanguard;
             const newSsChange = (newStock.statestreet_pct || 0) - baseStatestreet;
-            
+
             const aggregated = {
               ...newStock,
               blackrock_change: newBrChange,
@@ -768,7 +802,7 @@ class DatabaseService {
           const baseBlackrock = (newStock.blackrock_pct || 0) - (newStock.blackrock_change || 0);
           const baseVanguard = (newStock.vanguard_pct || 0) - (newStock.vanguard_change || 0);
           const baseStatestreet = (newStock.statestreet_pct || 0) - (newStock.statestreet_change || 0);
-          
+
           result.push({
             ...newStock,
             initial_blackrock_pct: baseBlackrock,
@@ -781,19 +815,19 @@ class DatabaseService {
           processedTickers.add(newStock.ticker);
         }
       }
-      
+
       // Add remaining existing stocks that weren't aggregated
       return [...result, ...existingStocks];
     };
-    
+
     // Aggregate additions and sells
     const aggregatedAdditions = aggregateChanges(additions, [...this.dbs.institutionalChanges.data.additions]);
     const aggregatedSells = aggregateChanges(sells, [...this.dbs.institutionalChanges.data.sells]);
-    
+
     // Keep only last 100 entries for each
     this.dbs.institutionalChanges.data.additions = aggregatedAdditions.slice(0, 100);
     this.dbs.institutionalChanges.data.sells = aggregatedSells.slice(0, 100);
-    
+
     await this.dbs.institutionalChanges.write();
     console.log(`💾 Saved ${additions.length} additions and ${sells.length} sells to institutional changes history (smart aggregation within ${AGGREGATION_WINDOW_DAYS} days)`);
     return this.dbs.institutionalChanges.data;

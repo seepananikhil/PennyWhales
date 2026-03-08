@@ -41,7 +41,7 @@ class StockScanner {
       const curlCmd = `curl -s "https://api.nasdaq.com/api/company/${ticker}/institutional-holdings" -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"`;
       const output = execSync(curlCmd, { encoding: 'utf-8' });
       const data = JSON.parse(output);
-      
+
       console.log(`✅ Nasdaq API returned data for ${ticker}`);
       return data;
     } catch (error) {
@@ -49,12 +49,12 @@ class StockScanner {
       return null;
     }
   }
-  
+
   // Parse BlackRock and Vanguard holdings
   parseHoldings(data, marketCap) {
     if (!data?.data?.holdingsTransactions?.table?.rows) {
       console.log('⚠️ No holdings rows found:', JSON.stringify(data?.data?.holdingsTransactions?.table, null, 2));
-      return { 
+      return {
         blackrockMarketValue: 0,
         vanguardMarketValue: 0,
         statestreetMarketValue: 0,
@@ -111,14 +111,14 @@ class StockScanner {
     let blackrockPct = 0;
     let vanguardPct = 0;
     let statestreetPct = 0;
-    
+
     if (marketCap && marketCap > 0) {
       blackrockPct = Math.round(((blackrockMarketValue / marketCap) * 100) * 100) / 100;
       vanguardPct = Math.round(((vanguardMarketValue / marketCap) * 100) * 100) / 100;
       statestreetPct = Math.round(((statestreetMarketValue / marketCap) * 100) * 100) / 100;
     }
 
-    return { 
+    return {
       blackrockMarketValue: blackrockMarketValue,
       vanguardMarketValue: vanguardMarketValue,
       statestreetMarketValue: statestreetMarketValue,
@@ -145,7 +145,7 @@ class StockScanner {
 
       // Get comprehensive ticker data from Finviz (all metrics including performance, valuation, profitability, etc.)
       const finvizData = await getComprehensiveFinvizData(ticker);
-      
+
       // Extract data with fallbacks
       const performance = finvizData?.performance || { day: null, week: null, month: null, year: null };
       let employeeCount = finvizData?.company?.employees || null;
@@ -159,6 +159,12 @@ class StockScanner {
       const sma200 = finvizData?.technical?.sma200 || null;
       const avgVolume = finvizData?.trading?.avgVolume || null;
 
+      // Reject stocks with market cap under 200M for full scans
+      if (!isMini && marketCap !== null && marketCap < 200) {
+        console.log(`🚫 ${ticker}: Market cap too low ($${marketCap}M < $200M) - skipping`);
+        return { success: false, reason: 'market_cap_too_low', marketCap };
+      }
+
       // Parse holdings and filter by market cap (do this early so we have holdings data for rejection responses)
       const holdings = this.parseHoldings(holdingsData, marketCap);
       if (!holdings) {
@@ -170,8 +176,8 @@ class StockScanner {
       // Check if stock should be excluded (therapeutics, lending, etc.) - skip for mini scans
       const tempStock = { industry, company_name: companyName, description: null };
       if (!isMini && shouldExcludeStock(tempStock)) {
-        return { 
-          success: false, 
+        return {
+          success: false,
           reason: 'excluded',
           data: {
             ticker,
@@ -202,15 +208,15 @@ class StockScanner {
       // Get company description only for stocks with fire level > 0
       let description = null;
       const existingStock = await dbService.getStockByTicker(ticker);
-      
+
       // Calculate fire level to determine if we should fetch description
-      const fireLevel = calculateFireLevel({ 
-        blackrock_pct: blackrockPct, 
+      const fireLevel = calculateFireLevel({
+        blackrock_pct: blackrockPct,
         vanguard_pct: vanguardPct,
         blackrock_market_value: blackrockMarketValue,
         vanguard_market_value: vanguardMarketValue
       });
-      
+
       if (fireLevel > 0) {
         if (!existingStock || !existingStock.description) {
           // Only fetch description if it's not already stored and stock has fire
@@ -222,12 +228,12 @@ class StockScanner {
           description = existingStock.description;
         }
       }
-      
+
       // Re-check exclusion with description now available (skip for mini scans)
       const stockWithDesc = { industry, company_name: companyName, description };
       if (!isMini && shouldExcludeStock(stockWithDesc)) {
-        return { 
-          success: false, 
+        return {
+          success: false,
           reason: 'excluded',
           data: {
             ticker,
@@ -306,10 +312,10 @@ class StockScanner {
       if (!isDailyScan) {
         // Full scan: only save stocks with fire_level > 0
         let qualifyingStocks = stocks.filter(s => s.fire_level > 0);
-        
+
         // Only remove tickers with fire_level 0 (not -1 which indicates missing data issues)
         const nonQualifyingTickers = stocks.filter(s => s.fire_level === 0).map(s => s.ticker);
-        
+
         const results = {
           stocks: qualifyingStocks,
           summary: {
@@ -325,7 +331,7 @@ class StockScanner {
         };
 
         await dbService.saveScanResults(results);
-        
+
         // Remove only tickers with fire_level 0 (insufficient holdings, but data was fetchable)
         // Keep tickers with fire_level -1 or missing data (temporary issues)
         if (nonQualifyingTickers.length > 0) {
@@ -334,18 +340,18 @@ class StockScanner {
           }
           console.log(`🗑️ Removed ${nonQualifyingTickers.length} non-qualifying tickers (fire_level 0) from ticker list`);
         }
-        
+
         console.log(`✅ Full scan saved: ${qualifyingStocks.length} qualifying stocks (filtered from ${stocks.length} scanned)`);
         return;
       }
 
       // Daily scan: merge with existing results and remove stocks that lost fire
       const currentResults = await dbService.getScanResults();
-      
+
       if (!currentResults || !currentResults.stocks) {
         console.log('⚠️ No existing scan results found. Saving daily scan as new results.');
         let qualifyingStocks = stocks.filter(s => s.fire_level > 0);
-        
+
         await dbService.saveScanResults({
           stocks: qualifyingStocks,
           summary: { total_processed: totalProcessed, qualifying_count: qualifyingStocks.length },
@@ -383,9 +389,9 @@ class StockScanner {
       const removedTickers = currentResults.stocks
         .filter(stock => updatedStocksMap.has(stock.ticker) && updatedStocksMap.get(stock.ticker).fire_level <= 0)
         .map(stock => stock.ticker);
-      
+
       const removedCount = currentResults.stocks.length - mergedStocks.length;
-      
+
       const results = {
         stocks: mergedStocks,
         summary: {
@@ -396,7 +402,7 @@ class StockScanner {
       };
 
       await dbService.saveScanResults(results);
-      
+
       // Remove non-qualifying tickers from the tickers list
       if (removedTickers.length > 0) {
         for (const ticker of removedTickers) {
@@ -404,7 +410,7 @@ class StockScanner {
         }
         console.log(`🗑️ Removed ${removedTickers.length} non-qualifying tickers from ticker list: ${removedTickers.join(', ')}`);
       }
-      
+
       console.log(`✅ Daily scan merged: Updated ${stocks.length} fire stocks, removed ${removedCount} non-qualifying, total ${mergedStocks.length} stocks`);
     } catch (error) {
       console.error('Error saving results:', error);
@@ -414,7 +420,7 @@ class StockScanner {
   // Main scan function
   async scan() {
     console.log('🎯 Starting JavaScript Stock Scanner...');
-    
+
     const allTickers = await this.loadTickers();
     if (allTickers.length === 0) {
       throw new Error('No tickers found');
@@ -422,16 +428,16 @@ class StockScanner {
 
     // For full scan, always process ALL tickers (no processed stocks filtering)
     const tickersToScan = allTickers;
-    
+
     console.log(`📊 Full scan: Processing ALL ${tickersToScan.length} tickers...`);
-    
+
     this.total = tickersToScan.length;
     this.processed = 0;
     this.results = [];
 
     for (const ticker of tickersToScan) {
       this.processed++;
-      
+
       if (this.onProgress) {
         this.onProgress({
           current: this.processed,
@@ -445,7 +451,7 @@ class StockScanner {
         const stock = result.data;
         // Calculate fire level for consistency with daily scan
         stock.fire_level = calculateFireLevel(stock);
-        
+
         this.results.push(stock);
         console.log(`✅ ${ticker} - $${stock.price.toFixed(2)} | BR:${stock.blackrock_pct.toFixed(1)}% VG:${stock.vanguard_pct.toFixed(1)}% | Fire:${stock.fire_level}🔥`);
       } else if (result.reason === 'excluded') {
@@ -461,7 +467,7 @@ class StockScanner {
     await this.saveResults(this.results, allTickers.length);
 
     console.log(`🎯 Scan complete: ${this.results.length} qualifying stocks found`);
-    
+
     return {
       stocks: this.results,
       summary: {
@@ -474,7 +480,7 @@ class StockScanner {
   // Scan new tickers and simply add them to existing results
   async scanNewTickers(newTickers) {
     console.log(`🆕 Starting scan for ${newTickers.length} new tickers...`);
-    
+
     if (newTickers.length === 0) {
       throw new Error('No new tickers provided for scanning');
     }
@@ -485,7 +491,7 @@ class StockScanner {
 
     for (const ticker of newTickers) {
       this.processed++;
-      
+
       if (this.onProgress) {
         this.onProgress({
           current: this.processed,
@@ -499,7 +505,7 @@ class StockScanner {
         const stock = result.data;
         // Calculate fire level for the new ticker
         stock.fire_level = calculateFireLevel(stock);
-        
+
         this.results.push(stock);
         console.log(`✅ NEW ${ticker} - $${stock.price.toFixed(2)} | BR:${stock.blackrock_pct.toFixed(1)}% VG:${stock.vanguard_pct.toFixed(1)}% | Fire:${stock.fire_level}🔥`);
       } else if (result.reason === 'excluded') {
@@ -513,9 +519,9 @@ class StockScanner {
 
     // Save results using daily scan logic (merge with existing results)
     await this.saveResults(this.results, newTickers.length, true);
-    
+
     console.log(`🆕 New ticker scan complete: ${this.results.length} stocks scanned`);
-    
+
     return {
       stocks: this.results, // Return all scanned stocks (including non-qualifying for reporting)
       summary: {

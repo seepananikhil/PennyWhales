@@ -87,19 +87,22 @@ const StockCard: React.FC<StockCardProps> = ({
       ? fireStyle.primary
       : theme.status.info
     : fireLevel > 0
-    ? fireStyle.border
-    : borderColor || theme.ui.border;
+      ? fireStyle.border
+      : borderColor || theme.ui.border;
   const cardBackgroundColor = isSelected
     ? fireLevel > 0
       ? fireStyle.background
       : "#e3f2fd"
     : fireLevel > 0
-    ? fireStyle.background
-    : "#f8f9fa";
+      ? fireStyle.background
+      : "#f8f9fa";
 
-  // Check if this stock has active alerts
+  // Visibility-based alert and live price fetching
   useEffect(() => {
-    const checkAlerts = async () => {
+    let visibilityTimer: NodeJS.Timeout | null = null;
+    let alertTimer: NodeJS.Timeout | null = null;
+
+    const fetchAlerts = async () => {
       try {
         const result = await api.getAlertsByTicker(stock.ticker);
         const activeAlerts = result.alerts.some(
@@ -110,8 +113,53 @@ const StockCard: React.FC<StockCardProps> = ({
         console.error("Error checking alerts:", error);
       }
     };
-    checkAlerts();
-  }, [stock.ticker, alertCheckKey]); // Re-check when alertCheckKey changes
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Card is visible - wait for alert check
+            alertTimer = setTimeout(() => {
+              fetchAlerts();
+            }, 800); // 800ms for alerts (quicker than price)
+
+            if (!livePrice) {
+              // Card is visible - wait 1.5 seconds before fetching price
+              visibilityTimer = setTimeout(() => {
+                fetchLivePrice();
+              }, 1500);
+            }
+          } else if (!entry.isIntersecting) {
+            // Card left viewport - cancel timers
+            if (visibilityTimer) {
+              clearTimeout(visibilityTimer);
+              visibilityTimer = null;
+            }
+            if (alertTimer) {
+              clearTimeout(alertTimer);
+              alertTimer = null;
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.1, // Trigger when even a small part is visible
+        rootMargin: "0px",
+      }
+    );
+
+    // Find the card element and observe it
+    const cardElement = document.getElementById(`stock-card-${stock.ticker}`);
+    if (cardElement) {
+      observer.observe(cardElement);
+    }
+
+    return () => {
+      if (visibilityTimer) clearTimeout(visibilityTimer);
+      if (alertTimer) clearTimeout(alertTimer);
+      observer.disconnect();
+    };
+  }, [stock.ticker, livePrice, alertCheckKey]);
 
   const handleAlertModalClose = () => {
     setShowAlertModal(false);
@@ -126,7 +174,7 @@ const StockCard: React.FC<StockCardProps> = ({
       setShowAIAnalysis(!showAIAnalysis);
       return;
     }
-    
+
     try {
       setAILoading(true);
       setShowAIAnalysis(true);
@@ -143,23 +191,23 @@ const StockCard: React.FC<StockCardProps> = ({
   // Share card as image
   const handleShareCard = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (!cardRef.current || isSharing) return;
-    
+
     try {
       setIsSharing(true);
       setCopySuccess(false);
-      
+
       // Small delay to ensure DOM is ready
       await new Promise(resolve => setTimeout(resolve, 50));
-      
+
       // Capture the card as canvas
       const canvas = await html2canvas(cardRef.current, {
         background: '#ffffff',
         logging: false,
         useCORS: true,
       });
-      
+
       // Convert canvas to blob
       canvas.toBlob(async (blob: Blob | null) => {
         if (!blob) {
@@ -167,7 +215,7 @@ const StockCard: React.FC<StockCardProps> = ({
           setIsSharing(false);
           return;
         }
-        
+
         try {
           // Copy to clipboard
           await navigator.clipboard.write([
@@ -175,10 +223,10 @@ const StockCard: React.FC<StockCardProps> = ({
               'image/png': blob
             })
           ]);
-          
+
           // Show success state
           setCopySuccess(true);
-          
+
           // Reset success state after 2 seconds
           setTimeout(() => {
             setCopySuccess(false);
@@ -186,10 +234,10 @@ const StockCard: React.FC<StockCardProps> = ({
         } catch (clipboardError) {
           console.error('Clipboard error:', clipboardError);
         }
-        
+
         setIsSharing(false);
       }, 'image/png');
-      
+
     } catch (error) {
       console.error('Error sharing card:', error);
       setIsSharing(false);
@@ -222,51 +270,6 @@ const StockCard: React.FC<StockCardProps> = ({
     }
   }, [livePrice]);
 
-  // Visibility-based live price fetching
-  // Fetch if card is visible for 1.5+ seconds (avoids auto-scroll triggers)
-  // Re-fetches every time card becomes visible again
-  useEffect(() => {
-    if (livePrice) {
-      // If live price is provided from parent, don't fetch independently
-      return;
-    }
-
-    let visibilityTimer: NodeJS.Timeout | null = null;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            // Card is visible - wait 1.5 seconds before fetching
-            visibilityTimer = setTimeout(() => {
-              fetchLivePrice();
-            }, 1500);
-          } else if (!entry.isIntersecting && visibilityTimer) {
-            // Card left viewport before 1.5 seconds - cancel fetch
-            clearTimeout(visibilityTimer);
-            visibilityTimer = null;
-          }
-        });
-      },
-      {
-        threshold: 0.5, // At least 50% of card must be visible
-        rootMargin: '0px',
-      }
-    );
-
-    // Find the card element and observe it
-    const cardElement = document.getElementById(`stock-card-${stock.ticker}`);
-    if (cardElement) {
-      observer.observe(cardElement);
-    }
-
-    return () => {
-      if (visibilityTimer) {
-        clearTimeout(visibilityTimer);
-      }
-      observer.disconnect();
-    };
-  }, [stock.ticker, livePrice]);
 
   const getFireEmoji = (level: number): string => {
     return getFireLevelStyle(level).emoji;
@@ -743,8 +746,8 @@ const StockCard: React.FC<StockCardProps> = ({
                 boxShadow: copySuccess
                   ? "0 1px 2px rgba(16,185,129,0.2)"
                   : isSharing
-                  ? "0 1px 2px rgba(107,114,128,0.1)"
-                  : "0 1px 2px rgba(5,150,105,0.2)",
+                    ? "0 1px 2px rgba(107,114,128,0.1)"
+                    : "0 1px 2px rgba(5,150,105,0.2)",
                 display: "inline-flex",
                 alignItems: "center",
                 transition: "all 0.2s ease",
@@ -903,14 +906,14 @@ const StockCard: React.FC<StockCardProps> = ({
                 ×
               </button>
             </div>
-            
+
             <div>
               <ReactMarkdown
                 components={{
-                  strong: ({node, ...props}) => <strong style={{ color: "#DC2626", fontWeight: "700", fontSize: "0.9rem" }} {...props} />,
-                  p: ({node, ...props}) => <p style={{ margin: "6px 0" }} {...props} />,
-                  ul: ({node, ...props}) => <ul style={{ margin: "6px 0", paddingLeft: "20px" }} {...props} />,
-                  li: ({node, ...props}) => <li style={{ margin: "4px 0" }} {...props} />
+                  strong: ({ node, ...props }) => <strong style={{ color: "#DC2626", fontWeight: "700", fontSize: "0.9rem" }} {...props} />,
+                  p: ({ node, ...props }) => <p style={{ margin: "6px 0" }} {...props} />,
+                  ul: ({ node, ...props }) => <ul style={{ margin: "6px 0", paddingLeft: "20px" }} {...props} />,
+                  li: ({ node, ...props }) => <li style={{ margin: "4px 0" }} {...props} />
                 }}
               >
                 {aiAnalysis}
@@ -988,7 +991,7 @@ const StockCard: React.FC<StockCardProps> = ({
                   if (diffMins < 60) return `${diffMins}m ago`;
                   if (diffHours < 24) return `${diffHours}h ago`;
                   if (diffDays < 7) return `${diffDays}d ago`;
-                  
+
                   return lastUpdated.toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
@@ -1108,7 +1111,7 @@ const StockCard: React.FC<StockCardProps> = ({
                 })()}
               </span>
             )}
-            
+
             {stock.sma200 !== null && stock.sma200 !== undefined && (
               <span
                 style={{
@@ -1131,11 +1134,11 @@ const StockCard: React.FC<StockCardProps> = ({
                   fontSize: "0.7rem",
                   color: "white",
                   fontWeight: "700",
-                  backgroundColor: stock.recommendation === 'STRONG_BUY' 
-                    ? '#dc3545' 
-                    : stock.recommendation === 'BUY' 
-                    ? '#fd7e14' 
-                    : '#ffc107',
+                  backgroundColor: stock.recommendation === 'STRONG_BUY'
+                    ? '#dc3545'
+                    : stock.recommendation === 'BUY'
+                      ? '#fd7e14'
+                      : '#ffc107',
                   padding: "3px 8px",
                   borderRadius: "6px",
                   border: "1px solid rgba(0,0,0,0.1)",
@@ -1143,11 +1146,11 @@ const StockCard: React.FC<StockCardProps> = ({
                 }}
                 title={`Recommendation: ${stock.recommendation.replace('_', ' ')}`}
               >
-                {stock.recommendation === 'STRONG_BUY' 
-                  ? 'STRONG BUY' 
-                  : stock.recommendation === 'BUY' 
-                  ? 'BUY' 
-                  : 'WATCH'}
+                {stock.recommendation === 'STRONG_BUY'
+                  ? 'STRONG BUY'
+                  : stock.recommendation === 'BUY'
+                    ? 'BUY'
+                    : 'WATCH'}
               </span>
             )}
           </div>
@@ -1335,8 +1338,8 @@ const StockCard: React.FC<StockCardProps> = ({
           </div>
 
           {/* Institutional Ownership & Transaction */}
-          {(stock.inst_own !== null && stock.inst_own !== undefined) || 
-           (stock.inst_trans !== null && stock.inst_trans !== undefined) ? (
+          {(stock.inst_own !== null && stock.inst_own !== undefined) ||
+            (stock.inst_trans !== null && stock.inst_trans !== undefined) ? (
             <div
               style={{
                 backgroundColor: stock.inst_trans && stock.inst_trans > 0 ? "#d4edda" : stock.inst_trans && stock.inst_trans < 0 ? "#f8d7da" : "#f8f9fa",
@@ -1399,17 +1402,16 @@ const StockCard: React.FC<StockCardProps> = ({
                   stock.performance.day && stock.performance.day > 0
                     ? "#d4edda"
                     : stock.performance.day && stock.performance.day < 0
-                    ? "#f8d7da"
-                    : "#f8f9fa",
+                      ? "#f8d7da"
+                      : "#f8f9fa",
                 padding: "5px 4px",
                 borderRadius: "6px",
-                border: `1px solid ${
-                  stock.performance.day && stock.performance.day > 0
+                border: `1px solid ${stock.performance.day && stock.performance.day > 0
                     ? "#c3e6cb"
                     : stock.performance.day && stock.performance.day < 0
-                    ? "#f5c6cb"
-                    : "#e9ecef"
-                }`,
+                      ? "#f5c6cb"
+                      : "#e9ecef"
+                  }`,
               }}
             >
               <div
@@ -1430,8 +1432,8 @@ const StockCard: React.FC<StockCardProps> = ({
                     stock.performance.day && stock.performance.day > 0
                       ? "#28a745"
                       : stock.performance.day && stock.performance.day < 0
-                      ? "#dc3545"
-                      : "#6c757d",
+                        ? "#dc3545"
+                        : "#6c757d",
                 }}
               >
                 {stock.performance.day !== null && stock.performance.day !== undefined
@@ -1447,17 +1449,16 @@ const StockCard: React.FC<StockCardProps> = ({
                   stock.performance.week !== undefined && stock.performance.week > 0
                     ? "#d4edda"
                     : stock.performance.week !== undefined && stock.performance.week < 0
-                    ? "#f8d7da"
-                    : "#f8f9fa",
+                      ? "#f8d7da"
+                      : "#f8f9fa",
                 padding: "5px 4px",
                 borderRadius: "6px",
-                border: `1px solid ${
-                  stock.performance.week !== undefined && stock.performance.week > 0
+                border: `1px solid ${stock.performance.week !== undefined && stock.performance.week > 0
                     ? "#c3e6cb"
                     : stock.performance.week !== undefined && stock.performance.week < 0
-                    ? "#f5c6cb"
-                    : "#e9ecef"
-                }`,
+                      ? "#f5c6cb"
+                      : "#e9ecef"
+                  }`,
               }}
             >
               <div
@@ -1478,8 +1479,8 @@ const StockCard: React.FC<StockCardProps> = ({
                     stock.performance.week !== undefined && stock.performance.week > 0
                       ? "#28a745"
                       : stock.performance.week !== undefined && stock.performance.week < 0
-                      ? "#dc3545"
-                      : "#6c757d",
+                        ? "#dc3545"
+                        : "#6c757d",
                 }}
               >
                 {stock.performance.week !== undefined
@@ -1495,17 +1496,16 @@ const StockCard: React.FC<StockCardProps> = ({
                   stock.performance.month !== undefined && stock.performance.month > 0
                     ? "#d4edda"
                     : stock.performance.month !== undefined && stock.performance.month < 0
-                    ? "#f8d7da"
-                    : "#f8f9fa",
+                      ? "#f8d7da"
+                      : "#f8f9fa",
                 padding: "5px 4px",
                 borderRadius: "6px",
-                border: `1px solid ${
-                  stock.performance.month !== undefined && stock.performance.month > 0
+                border: `1px solid ${stock.performance.month !== undefined && stock.performance.month > 0
                     ? "#c3e6cb"
                     : stock.performance.month !== undefined && stock.performance.month < 0
-                    ? "#f5c6cb"
-                    : "#e9ecef"
-                }`,
+                      ? "#f5c6cb"
+                      : "#e9ecef"
+                  }`,
               }}
             >
               <div
@@ -1526,8 +1526,8 @@ const StockCard: React.FC<StockCardProps> = ({
                     stock.performance.month !== undefined && stock.performance.month > 0
                       ? "#28a745"
                       : stock.performance.month !== undefined && stock.performance.month < 0
-                      ? "#dc3545"
-                      : "#6c757d",
+                        ? "#dc3545"
+                        : "#6c757d",
                 }}
               >
                 {stock.performance.month !== undefined
@@ -1543,17 +1543,16 @@ const StockCard: React.FC<StockCardProps> = ({
                   stock.performance.year !== undefined && stock.performance.year > 0
                     ? "#d4edda"
                     : stock.performance.year !== undefined && stock.performance.year < 0
-                    ? "#f8d7da"
-                    : "#f8f9fa",
+                      ? "#f8d7da"
+                      : "#f8f9fa",
                 padding: "5px 4px",
                 borderRadius: "6px",
-                border: `1px solid ${
-                  stock.performance.year !== undefined && stock.performance.year > 0
+                border: `1px solid ${stock.performance.year !== undefined && stock.performance.year > 0
                     ? "#c3e6cb"
                     : stock.performance.year !== undefined && stock.performance.year < 0
-                    ? "#f5c6cb"
-                    : "#e9ecef"
-                }`,
+                      ? "#f5c6cb"
+                      : "#e9ecef"
+                  }`,
               }}
             >
               <div
@@ -1574,8 +1573,8 @@ const StockCard: React.FC<StockCardProps> = ({
                     stock.performance.year !== undefined && stock.performance.year > 0
                       ? "#28a745"
                       : stock.performance.year !== undefined && stock.performance.year < 0
-                      ? "#dc3545"
-                      : "#6c757d",
+                        ? "#dc3545"
+                        : "#6c757d",
                 }}
               >
                 {stock.performance.year !== undefined

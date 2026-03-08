@@ -42,7 +42,8 @@ const Dashboard: React.FC = () => {
   }>({
     fireLevels: new Set(),
     priceFilters: new Set(),
-    marketValueFilters: new Set(['300to1b', 'over1b']),
+    marketValueFilters: new Set<string>([]),
+
     sectors: new Set(),
     employeeCount: new Set(),
     ipoDate: new Set(),
@@ -54,8 +55,7 @@ const Dashboard: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<string[]>([]); // Multi-sort: order of sort criteria
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
-  const [topGainers, setTopGainers] = useState<string[]>([]);
-  const [topLosers, setTopLosers] = useState<string[]>([]);
+
   const [filterPanelOpen, setFilterPanelOpen] = useState<boolean>(false);
   const [urlTicker, setUrlTicker] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -66,7 +66,9 @@ const Dashboard: React.FC = () => {
     hasMore: boolean;
   } | null>(null);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
+
 
   useEffect(() => {
     loadData();
@@ -80,15 +82,15 @@ const Dashboard: React.FC = () => {
       loadStockData(true);
     }
   }, [activeFilter, JSON.stringify(Array.from(multiFilters.fireLevels)), JSON.stringify(Array.from(multiFilters.priceFilters)), JSON.stringify(Array.from(multiFilters.marketValueFilters)), JSON.stringify(Array.from(multiFilters.sectors)), JSON.stringify(Array.from(multiFilters.industries)), debouncedSearchQuery, sortOrder]);
-  
+
   useEffect(() => {
     // Read ticker and sector from URL
     const params = new URLSearchParams(window.location.search);
     const ticker = params.get('ticker');
     const sector = params.get('sector');
-    
+
     setUrlTicker(ticker ? ticker.toUpperCase() : null);
-    
+
     // Apply sector filter if present
     if (sector) {
       setMultiFilters(prev => ({
@@ -97,15 +99,15 @@ const Dashboard: React.FC = () => {
       }));
       setActiveFilter('multifilter');
     }
-    
+
     // Listen for browser back/forward navigation
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
       const ticker = params.get('ticker');
       const sector = params.get('sector');
-      
+
       setUrlTicker(ticker ? ticker.toUpperCase() : null);
-      
+
       if (sector) {
         setMultiFilters(prev => ({
           ...prev,
@@ -114,7 +116,7 @@ const Dashboard: React.FC = () => {
         setActiveFilter('multifilter');
       }
     };
-    
+
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
@@ -130,7 +132,8 @@ const Dashboard: React.FC = () => {
   }, [currentPage]);
 
   const loadData = async () => {
-    await Promise.all([loadTickers(), loadStockData(true), loadHoldings(), loadWatchlists(), loadTopMovers()]);
+    await Promise.all([loadTickers(), loadStockData(true), loadHoldings(), loadWatchlists()]);
+
   };
 
   const loadMoreData = async () => {
@@ -146,19 +149,13 @@ const Dashboard: React.FC = () => {
     }
   }, [currentPage]);
 
-  const loadTopMovers = async () => {
-    try {
-      const { gainers, losers } = await api.getTopMovers(20);
-      setTopGainers(gainers.map(g => g.ticker));
-      setTopLosers(losers.map(l => l.ticker));
-    } catch (err) {
-      console.error('Error loading top movers:', err);
-    }
-  };
+
 
   const loadTickers = async () => {
     try {
-      setLoading(true);
+      if (isInitialLoad) setLoading(true);
+      else setIsRefreshing(true);
+
       const data = await api.getTickers();
       setTickers(data?.tickers || []);
       setError(null);
@@ -167,14 +164,18 @@ const Dashboard: React.FC = () => {
       console.error('Error loading tickers:', err);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
   const loadStockData = async (reset: boolean = false) => {
     try {
       if (reset) {
-        setLoading(true);
-        setIsInitialLoad(false);
+        if (isInitialLoad) {
+          setLoading(true);
+        } else {
+          setIsRefreshing(true);
+        }
       } else {
         setLoadingMore(true);
       }
@@ -188,7 +189,7 @@ const Dashboard: React.FC = () => {
           }
         });
         setStockData(stockMap);
-        
+
         // Set pagination based on watchlist stocks
         const total = activeWatchlist.stocks?.length || 0;
         const totalPages = Math.ceil(total / pageLimit);
@@ -200,43 +201,56 @@ const Dashboard: React.FC = () => {
       } else {
         // Only call results API if no active watchlist
         const page = reset ? 1 : currentPage;
-        const results = await api.getLatestResults(page, pageLimit, debouncedSearchQuery);
-        
-        if (results?.stocks) {
+        const response = await api.getLatestResults(
+          page,
+          pageLimit,
+          debouncedSearchQuery,
+          Array.from(multiFilters.fireLevels),
+          Array.from(multiFilters.priceFilters),
+          Array.from(multiFilters.marketValueFilters),
+          Array.from(multiFilters.sectors),
+          Array.from(multiFilters.industries),
+          Array.from(multiFilters.volumeFilter),
+          sortOrder
+        );
+
+        console.log(`[DEBUG] loadStockData response: ${response?.stocks?.length} stocks, total: ${response?.pagination?.total}, pageLimit: ${pageLimit}, page: ${page}`);
+
+        if (response && response.stocks) {
           setStockData(prevData => {
             const stockMap = reset ? new Map<string, Stock>() : new Map(prevData);
-            results.stocks.forEach(stock => {
+            response.stocks.forEach(stock => {
               stockMap.set(stock.ticker, stock);
             });
             return stockMap;
           });
-          
-          // Update pagination state
-          if (results.pagination) {
-            setPagination({
-              total: results.pagination.total,
-              totalPages: results.pagination.totalPages,
-              hasMore: results.pagination.hasMore
-            });
-          }
+
+          setPagination({
+            total: response.pagination?.total || 0,
+            totalPages: response.pagination?.totalPages || 1,
+            hasMore: response.pagination?.hasMore || false
+          });
         }
       }
 
       if (reset) {
         setCurrentPage(1);
+        if (isInitialLoad) setIsInitialLoad(false);
       }
     } catch (err) {
       console.error('Error loading stock data:', err);
     } finally {
       setLoading(false);
       setLoadingMore(false);
+      setIsRefreshing(false);
     }
   };
+
 
   const loadHoldings = async () => {
     try {
       const holdingsData = await api.getHoldings();
-      
+
       // Handle both possible response formats
       let holdingsArray = [];
       if (holdingsData.holdings) {
@@ -250,7 +264,7 @@ const Dashboard: React.FC = () => {
           }
         }
       }
-      
+
       setHoldings(new Set(holdingsArray));
     } catch (err) {
       console.error('Error loading holdings:', err);
@@ -262,7 +276,7 @@ const Dashboard: React.FC = () => {
       const data = await api.getWatchlists();
       console.log('Loaded watchlists:', data.watchlists);
       setWatchlists(data.watchlists || []);
-      
+
       // Auto-load "Personal" watchlist for eye icon status
       if (data.watchlists && data.watchlists.length > 0) {
         const personalWatchlist = data.watchlists.find((w: any) => w.name === 'Personal');
@@ -292,36 +306,41 @@ const Dashboard: React.FC = () => {
 
   const loadActiveWatchlist = async (watchlistId?: string) => {
     try {
+      setIsRefreshing(true);
       const id = watchlistId || activeWatchlistId;
       if (!id) return;
-      
+
       console.log('Loading active watchlist:', id);
       const watchlist = await api.getWatchlist(id);
       console.log('Loaded watchlist:', watchlist);
       setActiveWatchlist(watchlist);
       setWatchlistStocks(new Set(watchlist.stocks || []));
-      
+
       // Reload stock data from the watchlist
       if (watchlist.stockData) {
-        const stockMap = new Map<string, Stock>();
-        watchlist.stockData.forEach((stock: Stock) => {
-          if (stock.ticker) {
-            stockMap.set(stock.ticker, stock);
-          }
+        setStockData(prev => {
+          const newMap = new Map(prev);
+          watchlist.stockData.forEach((stock: Stock) => {
+            if (stock.ticker) {
+              newMap.set(stock.ticker, stock);
+            }
+          });
+          return newMap;
         });
-        setStockData(stockMap);
-        
+
         // Set pagination based on watchlist stocks
         const total = watchlist.stocks?.length || 0;
         const totalPages = Math.ceil(total / pageLimit);
         setPagination({
           total,
           totalPages,
-          hasMore: 1 > totalPages
+          hasMore: 1 < totalPages
         });
       }
     } catch (err) {
       console.error('Error loading active watchlist:', err);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -356,22 +375,22 @@ const Dashboard: React.FC = () => {
   const handleAddNewTickers = async (newTickers: string[]) => {
     try {
       setScanProgress({ scanning: true, progress: null, message: 'Adding new tickers...' });
-      
+
       const result = await api.addNewTickers(newTickers);
-      
+
       if (result.success && result.added > 0) {
-        setScanProgress({ 
-          scanning: true, 
-          progress: null, 
-          message: `Added ${result.added} new tickers. Starting fire analysis...` 
+        setScanProgress({
+          scanning: true,
+          progress: null,
+          message: `Added ${result.added} new tickers. Starting fire analysis...`
         });
-        
+
         // Update tickers list immediately
         await loadTickers();
-        
+
         // Monitor scan progress
         monitorScanProgress();
-        
+
       } else {
         setScanProgress({ scanning: false, progress: null, message: null });
         setError(result.message || 'No new tickers to add');
@@ -387,25 +406,25 @@ const Dashboard: React.FC = () => {
     const checkProgress = async () => {
       try {
         const status = await api.getScanStatus();
-        
+
         if (status.scanning) {
           setScanProgress({
             scanning: true,
             progress: status.progress,
-            message: status.progress 
+            message: status.progress
               ? `Analyzing fire levels: ${status.progress.current}/${status.progress.total} (${status.progress.percentage}%)`
               : 'Analyzing fire levels for new tickers...'
           });
-          
+
           // Continue monitoring
           setTimeout(checkProgress, 2000);
         } else {
           // Scan completed
           setScanProgress({ scanning: false, progress: null, message: null });
-          
+
           // Refresh data
           await loadStockData();
-          
+
           if (status.error) {
             setError(`Scan completed with error: ${status.error}`);
           }
@@ -415,7 +434,7 @@ const Dashboard: React.FC = () => {
         setScanProgress({ scanning: false, progress: null, message: null });
       }
     };
-    
+
     checkProgress();
   };
 
@@ -469,12 +488,12 @@ const Dashboard: React.FC = () => {
     try {
       // Use the currently selected watchlist from dropdown, or fall back to "Personal"
       let targetWatchlistId = activeWatchlistId;
-      
+
       // If no watchlist is selected, try to find or create "Personal"
       if (!targetWatchlistId) {
         const personalWatchlist = watchlists.find((w: any) => w.name === 'Personal');
         targetWatchlistId = personalWatchlist?.id;
-        
+
         // If Personal watchlist doesn't exist, create it
         if (!targetWatchlistId) {
           try {
@@ -522,7 +541,7 @@ const Dashboard: React.FC = () => {
   const toggleFilter = (type: 'fire' | 'price' | 'marketValue' | 'sector' | 'employee' | 'ipo' | 'recommendation' | 'industry' | 'volume', value: number | string) => {
     setMultiFilters(prev => {
       const newFilters = { ...prev };
-      
+
       if (type === 'fire') {
         const newFireLevels = new Set(prev.fireLevels);
         if (newFireLevels.has(value as number)) {
@@ -596,18 +615,18 @@ const Dashboard: React.FC = () => {
         }
         newFilters.volumeFilter = newVolumeFilter;
       }
-      
+
       return newFilters;
     });
-    
+
     // Clear URL ticker parameter when any filter is applied
     window.history.pushState({}, '', window.location.pathname);
     setUrlTicker(null);
-    
+
     // Auto-set activeFilter based on whether we have any filters
     // Check the updated state by calculating hasFilters separately
     setActiveFilter(prev => {
-      const newFiltersSize = 
+      const newFiltersSize =
         (type === 'fire' ? (multiFilters.fireLevels.has(value as number) ? multiFilters.fireLevels.size - 1 : multiFilters.fireLevels.size + 1) : multiFilters.fireLevels.size) +
         (type === 'price' ? (multiFilters.priceFilters.has(value as string) ? multiFilters.priceFilters.size - 1 : multiFilters.priceFilters.size + 1) : multiFilters.priceFilters.size) +
         (type === 'marketValue' ? (multiFilters.marketValueFilters.has(value as string) ? multiFilters.marketValueFilters.size - 1 : multiFilters.marketValueFilters.size + 1) : multiFilters.marketValueFilters.size) +
@@ -617,12 +636,12 @@ const Dashboard: React.FC = () => {
         (type === 'volume' ? (multiFilters.volumeFilter.has(value as string) ? multiFilters.volumeFilter.size - 1 : multiFilters.volumeFilter.size + 1) : multiFilters.volumeFilter.size) +
         (type === 'recommendation' ? (multiFilters.recommendations.has(value as string) ? multiFilters.recommendations.size - 1 : multiFilters.recommendations.size + 1) : multiFilters.recommendations.size) +
         (type === 'industry' ? (multiFilters.industries.has(value as string) ? multiFilters.industries.size - 1 : multiFilters.industries.size + 1) : multiFilters.industries.size);
-      
+
       // If we're currently on a watchlist, keep the watchlist active
       if (prev.startsWith('watchlist-')) {
         return prev;
       }
-      
+
       return newFiltersSize > 0 ? 'multifilter' : 'anyfire';
     });
   };
@@ -639,107 +658,67 @@ const Dashboard: React.FC = () => {
       industries: new Set(),
       volumeFilter: new Set()
     });
-    
+
     // Clear URL parameters
     window.history.pushState({}, '', window.location.pathname);
     setUrlTicker(null);
-    
+
     // Don't clear watchlist selection - keep activeFilter as is if it's a watchlist
   };
 
   // Calculate stats - memoized to prevent re-renders
-  const tickersWithData = React.useMemo(() => 
-    tickers.filter(ticker => stockData.has(ticker)), 
+  const tickersWithData = React.useMemo(() =>
+    tickers.filter(ticker => stockData.has(ticker)),
     [tickers, stockData]
   );
-  
-  const fire5Tickers = React.useMemo(() => 
+
+  const fire5Tickers = React.useMemo(() =>
     tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 5),
     [tickersWithData, stockData]
   );
-  
-  const fire4Tickers = React.useMemo(() => 
+
+  const fire4Tickers = React.useMemo(() =>
     tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 4),
     [tickersWithData, stockData]
   );
-  
-  const fire3Tickers = React.useMemo(() => 
+
+  const fire3Tickers = React.useMemo(() =>
     tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 3),
     [tickersWithData, stockData]
   );
-  
-  const fire2Tickers = React.useMemo(() => 
+
+  const fire2Tickers = React.useMemo(() =>
     tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 2),
     [tickersWithData, stockData]
   );
-  
-  const fire1Tickers = React.useMemo(() => 
+
+  const fire1Tickers = React.useMemo(() =>
     tickersWithData.filter(ticker => stockData.get(ticker)?.fire_level === 1),
     [tickersWithData, stockData]
   );
-  
-  const anyFireTickers = React.useMemo(() => 
+
+  const anyFireTickers = React.useMemo(() =>
     tickersWithData.filter(ticker => (stockData.get(ticker)?.fire_level || 0) > 0),
     [tickersWithData, stockData]
   );
-  
-  const holdingTickers = React.useMemo(() => 
+
+  const holdingTickers = React.useMemo(() =>
     tickers.filter(ticker => holdings.has(ticker)),
     [tickers, holdings]
   );
 
   // Filter stocks based on active filter and search query
   const getFilteredStocks = () => {
-    let stocks;
+    let stocks: string[];
     switch (activeFilter) {
-      case 'fire5':
-        stocks = fire5Tickers;
-        break;
-      case 'fire4':
-        stocks = fire4Tickers;
-        break;
-      case 'fire3':
-        stocks = fire3Tickers;
-        break;
-      case 'fire2':
-        stocks = fire2Tickers;
-        break;
-      case 'fire1':
-        stocks = fire1Tickers;
-        break;
-      case 'anyfire':
-        stocks = anyFireTickers;
-        break;
-      case 'multifire':
-      case 'multifilter':
-        // Multi-select filtering
-        // Check if we're filtering a watchlist
-        if (activeFilter.startsWith('watchlist-')) {
-          // Start with watchlist stocks
-          stocks = Array.from(watchlistStocks).filter(ticker => stockData.has(ticker));
-        } else {
-          // Start with all tickers
-          stocks = tickersWithData;
-        }
-        
-        // Apply fire level filters
-        if (multiFilters.fireLevels.size > 0) {
-          stocks = stocks.filter(ticker => {
-            const fireLevel = stockData.get(ticker)?.fire_level || 0;
-            return multiFilters.fireLevels.has(fireLevel);
-          });
-        }
-        break;
       case 'holdings':
         stocks = holdingTickers;
         break;
       default:
-        // Check if it's a watchlist filter (starts with 'watchlist-')
         if (activeFilter.startsWith('watchlist-')) {
           // Get tickers from watchlist that also have stock data
           stocks = Array.from(watchlistStocks).filter(ticker => stockData.has(ticker));
-          
-          // Apply fire level filters if any are selected
+          // Apply fire level filters if any are selected (client-side for watchlist view only)
           if (multiFilters.fireLevels.size > 0) {
             stocks = stocks.filter(ticker => {
               const fireLevel = stockData.get(ticker)?.fire_level || 0;
@@ -747,142 +726,28 @@ const Dashboard: React.FC = () => {
             });
           }
         } else {
+          // For all other views: server already filtered and sorted, just use stockData in insertion order
           stocks = tickersWithData;
         }
     }
-    
-    // Apply price filter if selected
-    if (multiFilters.priceFilters.size > 0) {
-      stocks = stocks.filter(ticker => {
-        const stock = stockData.get(ticker);
-        if (!stock) return false;
-        
-        return Array.from(multiFilters.priceFilters).some(priceFilter => {
-          switch (priceFilter) {
-            case 'under1':
-              return stock.price < 1.0;
-            case '1to3':
-              return stock.price >= 1.0 && stock.price < 3.0;
-            case '3to5':
-              return stock.price >= 3.0 && stock.price < 5.0;
-            case '5to10':
-              return stock.price >= 5.0 && stock.price < 10.0;
-            case 'over10':
-              return stock.price >= 10.0;
-            default:
-              return true;
-          }
-        });
-      });
-    }
-    
-    // Apply market value filter if selected
-    if (multiFilters.marketValueFilters.size > 0) {
-      stocks = stocks.filter(ticker => {
-        const stock = stockData.get(ticker);
-        if (!stock) return false;
-        
-        const marketCap = stock.market_cap;
-        
-        // Skip stocks without market cap data
-        if (marketCap === null || marketCap === undefined || marketCap === 0) return false;
-        
-        return Array.from(multiFilters.marketValueFilters).some(marketValueFilter => {
-          switch (marketValueFilter) {
-            case 'under100':
-              // < $100M
-              return marketCap < 100;
-            case '100to300':
-              // $100M - $300M
-              return marketCap >= 100 && marketCap < 300;
-            case '300to1b':
-              // $300M - $1B
-              return marketCap >= 300 && marketCap < 1000;
-            case 'over1b':
-              // $1B+
-              return marketCap >= 1000;
-            default:
-              return true;
-          }
-        });
-      });
-    }
 
-    // Apply sector filter if selected
-    if (multiFilters.sectors.size > 0) {
-      stocks = stocks.filter(ticker => {
-        const stock = stockData.get(ticker);
-        if (!stock || !stock.sector) return false;
-        return multiFilters.sectors.has(stock.sector);
-      });
-    }
-
-    // Apply volume filter if selected
-    if (multiFilters.volumeFilter.size > 0) {
-      stocks = stocks.filter(ticker => {
-        const stock = stockData.get(ticker);
-        if (!stock) return false;
-        
-        const volume = stock.avg_volume;
-        
-        // Skip stocks without volume data
-        if (volume === null || volume === undefined) return false;
-        
-        return Array.from(multiFilters.volumeFilter).some(volumeFilter => {
-          switch (volumeFilter) {
-            case 'under500k':
-              return volume < 500000;
-            case '500kto1m':
-              return volume >= 500000 && volume < 1000000;
-            case '1mto2m':
-              return volume >= 1000000 && volume < 2000000;
-            case '2mto5m':
-              return volume >= 2000000 && volume < 5000000;
-            case '5mto10m':
-              return volume >= 5000000 && volume < 10000000;
-            case 'over10m':
-              return volume >= 10000000;
-            default:
-              return true;
-          }
-        });
-      });
-    }
-
-    // Apply industry filter if selected
-    if (multiFilters.industries.size > 0) {
-      stocks = stocks.filter(ticker => {
-        const stock = stockData.get(ticker);
-        if (!stock || !stock.industry) return false;
-        return multiFilters.industries.has(stock.industry);
-      });
-    }
+    // These filters are CLIENT-SIDE ONLY (not passed to server) because they are infrequent:
 
     // Apply employee count filter if selected
     if (multiFilters.employeeCount.size > 0) {
       stocks = stocks.filter(ticker => {
         const stock = stockData.get(ticker);
         if (!stock) return false;
-        
         const employees = stock.employee_count;
-        
-        // Skip stocks without employee count data
         if (employees === null || employees === undefined || employees === 0) return false;
-        
         return Array.from(multiFilters.employeeCount).some(employeeFilter => {
           switch (employeeFilter) {
-            case 'under50':
-              return employees < 50;
-            case '50to200':
-              return employees >= 50 && employees < 200;
-            case '200to1000':
-              return employees >= 200 && employees < 1000;
-            case '1000to5000':
-              return employees >= 1000 && employees < 5000;
-            case 'over5000':
-              return employees >= 5000;
-            default:
-              return true;
+            case 'under50': return employees < 50;
+            case '50to200': return employees >= 50 && employees < 200;
+            case '200to1000': return employees >= 200 && employees < 1000;
+            case '1000to5000': return employees >= 1000 && employees < 5000;
+            case 'over5000': return employees >= 5000;
+            default: return true;
           }
         });
       });
@@ -893,23 +758,16 @@ const Dashboard: React.FC = () => {
       stocks = stocks.filter(ticker => {
         const stock = stockData.get(ticker);
         if (!stock || !stock.ipo_date) return false;
-        
         const ipoDate = new Date(stock.ipo_date);
         const now = new Date();
         const yearsDiff = (now.getTime() - ipoDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
-        
         return Array.from(multiFilters.ipoDate).some(ipoFilter => {
           switch (ipoFilter) {
-            case 'lastYear':
-              return yearsDiff <= 1;
-            case 'last3Years':
-              return yearsDiff <= 3;
-            case 'last5Years':
-              return yearsDiff <= 5;
-            case 'older':
-              return yearsDiff > 5;
-            default:
-              return true;
+            case 'lastYear': return yearsDiff <= 1;
+            case 'last3Years': return yearsDiff <= 3;
+            case 'last5Years': return yearsDiff <= 5;
+            case 'older': return yearsDiff > 5;
+            default: return true;
           }
         });
       });
@@ -920,363 +778,31 @@ const Dashboard: React.FC = () => {
       stocks = stocks.filter(ticker => {
         const stock = stockData.get(ticker);
         if (!stock) return false;
-        
         return Array.from(multiFilters.recommendations).some(rec => {
-          if (rec === 'NONE') {
-            return !stock.recommendation || stock.recommendation === null;
-          }
+          if (rec === 'NONE') return !stock.recommendation || stock.recommendation === null;
           return stock.recommendation === rec;
         });
       });
     }
 
-    // Filter by search query if provided
-    if (searchQuery.trim()) {
-      // Split by comma, space, or newline to support multiple tickers
-      // Also remove quotes and other special characters
-      const queries = searchQuery
-        .split(/[,\s\n]+/)
-        .map(q => q.trim().replace(/['"]/g, '').toLowerCase())
-        .filter(q => q.length > 0);
-      
-      if (queries.length > 0) {
-        stocks = stocks.filter(ticker => 
-          queries.some(query => ticker.toLowerCase().includes(query))
-        );
-      }
-    }
-    
-    // Sort stocks based on selected sort option
-    return stocks.sort((a, b) => {
-      // Multi-sort: apply each sort criteria in order
-      if (sortOrder.length > 0) {
-        for (const sortKey of sortOrder) {
-          const stockA = stockData.get(a);
-          const stockB = stockData.get(b);
-          
-          if (!stockA || !stockB) continue;
-          
-          let comparison = 0;
-          
-          switch (sortKey) {
-            case 'combined-desc':
-              const combinedA = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
-              const combinedB = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
-              comparison = combinedB - combinedA;
-              break;
-            case 'combined-asc':
-              const combinedAsc = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
-              const combinedBsc = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
-              comparison = combinedAsc - combinedBsc;
-              break;
-            case 'vg-desc':
-              comparison = stockB.vanguard_pct - stockA.vanguard_pct;
-              break;
-            case 'vg-asc':
-              comparison = stockA.vanguard_pct - stockB.vanguard_pct;
-              break;
-            case 'br-desc':
-              comparison = stockB.blackrock_pct - stockA.blackrock_pct;
-              break;
-            case 'br-asc':
-              comparison = stockA.blackrock_pct - stockB.blackrock_pct;
-              break;
-            case 'ss-desc':
-              comparison = (stockB.statestreet_pct || 0) - (stockA.statestreet_pct || 0);
-              break;
-            case 'ss-asc':
-              comparison = (stockA.statestreet_pct || 0) - (stockB.statestreet_pct || 0);
-              break;
-            case 'fire-desc':
-              const fireA = stockA.fire_level || 0;
-              const fireB = stockB.fire_level || 0;
-              comparison = fireB - fireA;
-              break;
-            case 'fire-asc':
-              const fireAscA = stockA.fire_level || 0;
-              const fireAscB = stockB.fire_level || 0;
-              comparison = fireAscA - fireAscB;
-              break;
-            case 'price-desc':
-              comparison = stockB.price - stockA.price;
-              break;
-            case 'price-asc':
-              comparison = stockA.price - stockB.price;
-              break;
-            case 'market-value-desc':
-              const marketCapA = stockA.market_cap || 0;
-              const marketCapB = stockB.market_cap || 0;
-              comparison = marketCapB - marketCapA;
-              break;
-            case 'market-value-asc':
-              const marketCapAscA = stockA.market_cap || 0;
-              const marketCapAscB = stockB.market_cap || 0;
-              comparison = marketCapAscA - marketCapAscB;
-              break;
-            case 'daily-change-desc':
-              // Sort by daily price change from performance.day (gainers first = highest percentage first)
-              if (!stockA?.performance || !stockB?.performance) comparison = 0;
-              else comparison = (stockB.performance.day || 0) - (stockA.performance.day || 0);
-              break;
-            case 'daily-change-asc':
-              // Sort by daily price change from performance.day (losers first = lowest percentage first)
-              if (!stockA?.performance || !stockB?.performance) comparison = 0;
-              else comparison = (stockA.performance.day || 0) - (stockB.performance.day || 0);
-              break;
-            case 'weekly-change-desc':
-              // Sort by weekly performance (gainers first = highest percentage first)
-              if (!stockA?.performance || !stockB?.performance) comparison = 0;
-              else comparison = (stockB.performance.week || 0) - (stockA.performance.week || 0);
-              break;
-            case 'weekly-change-asc':
-              // Sort by weekly performance (losers first = lowest percentage first)
-              if (!stockA?.performance || !stockB?.performance) comparison = 0;
-              else comparison = (stockA.performance.week || 0) - (stockB.performance.week || 0);
-              break;
-            case 'monthly-change-desc':
-              // Sort by monthly performance (gainers first = highest percentage first)
-              if (!stockA?.performance || !stockB?.performance) comparison = 0;
-              else comparison = (stockB.performance.month || 0) - (stockA.performance.month || 0);
-              break;
-            case 'monthly-change-asc':
-              // Sort by monthly performance (losers first = lowest percentage first)
-              if (!stockA?.performance || !stockB?.performance) comparison = 0;
-              else comparison = (stockA.performance.month || 0) - (stockB.performance.month || 0);
-              break;
-            case 'price-asc-combined-desc':
-              // First sort by price (low to high)
-              const priceAsc = stockA.price - stockB.price;
-              if (priceAsc !== 0) {
-                comparison = priceAsc;
-              } else {
-                // Then by combined % (high to low) as tiebreaker
-                const combinedB = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
-                const combinedA = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
-                comparison = combinedB - combinedA;
-              }
-              break;
-            case 'employees-desc':
-              const empA = stockA.employee_count || 0;
-              const empB = stockB.employee_count || 0;
-              comparison = empB - empA;
-              break;
-            case 'employees-asc':
-              const empAscA = stockA.employee_count || 0;
-              const empAscB = stockB.employee_count || 0;
-              comparison = empAscA - empAscB;
-              break;
-            case 'ipo-date-desc':
-              // Sort by IPO date (newest first = most recent dates first)
-              if (!stockA?.ipo_date && !stockB?.ipo_date) comparison = 0;
-              else if (!stockA?.ipo_date) comparison = 1; // No IPO date goes to end
-              else if (!stockB?.ipo_date) comparison = -1;
-              else {
-                const dateA = new Date(stockA.ipo_date).getTime();
-                const dateB = new Date(stockB.ipo_date).getTime();
-                comparison = dateB - dateA; // Newer dates (higher timestamp) first
-              }
-              break;
-            case 'ipo-date-asc':
-              // Sort by IPO date (oldest first = earliest dates first)
-              if (!stockA?.ipo_date && !stockB?.ipo_date) comparison = 0;
-              else if (!stockA?.ipo_date) comparison = 1; // No IPO date goes to end
-              else if (!stockB?.ipo_date) comparison = -1;
-              else {
-                const dateA = new Date(stockA.ipo_date).getTime();
-                const dateB = new Date(stockB.ipo_date).getTime();
-                comparison = dateA - dateB; // Older dates (lower timestamp) first
-              }
-              break;
-            case 'inst-trans-desc':
-              // Sort by institutional transaction (buying = positive, highest first)
-              comparison = (stockB.inst_trans || 0) - (stockA.inst_trans || 0);
-              break;
-            case 'inst-trans-asc':
-              // Sort by institutional transaction (selling = negative, lowest first)
-              comparison = (stockA.inst_trans || 0) - (stockB.inst_trans || 0);
-              break;
-            case 'inst-own-desc':
-              // Sort by institutional ownership (highest first)
-              comparison = (stockB.inst_own || 0) - (stockA.inst_own || 0);
-              break;
-            case 'inst-own-asc':
-              // Sort by institutional ownership (lowest first)
-              comparison = (stockA.inst_own || 0) - (stockB.inst_own || 0);
-              break;
-            case 'holdings-value-desc':
-              // Sort by total institutional market value holdings (biggest first)
-              const totalValueB = (stockB.blackrock_market_value || 0) + (stockB.vanguard_market_value || 0) + (stockB.statestreet_market_value || 0);
-              const totalValueA = (stockA.blackrock_market_value || 0) + (stockA.vanguard_market_value || 0) + (stockA.statestreet_market_value || 0);
-              comparison = totalValueB - totalValueA;
-              break;
-            case 'holdings-value-asc':
-              // Sort by total institutional market value holdings (smallest first)
-              const totalValueA2 = (stockA.blackrock_market_value || 0) + (stockA.vanguard_market_value || 0) + (stockA.statestreet_market_value || 0);
-              const totalValueB2 = (stockB.blackrock_market_value || 0) + (stockB.vanguard_market_value || 0) + (stockB.statestreet_market_value || 0);
-              comparison = totalValueA2 - totalValueB2;
-              break;
-            case 'holdings-change-desc':
-              // Sort by combined holdings change (biggest increase first)
-              const combinedChangeB = (stockB.blackrock_change || 0) + (stockB.vanguard_change || 0) + (stockB.statestreet_change || 0);
-              const combinedChangeA = (stockA.blackrock_change || 0) + (stockA.vanguard_change || 0) + (stockA.statestreet_change || 0);
-              comparison = combinedChangeB - combinedChangeA;
-              break;
-            case 'holdings-change-asc':
-              // Sort by combined holdings change (biggest decrease first)
-              const combinedChangeA2 = (stockA.blackrock_change || 0) + (stockA.vanguard_change || 0) + (stockA.statestreet_change || 0);
-              const combinedChangeB2 = (stockB.blackrock_change || 0) + (stockB.vanguard_change || 0) + (stockB.statestreet_change || 0);
-              comparison = combinedChangeA2 - combinedChangeB2;
-              break;
-            case 'sma200-desc':
-              // Sort by SMA200 (highest/most above 200MA first)
-              comparison = (stockB.sma200 || 0) - (stockA.sma200 || 0);
-              break;
-            case 'sma200-asc':
-              // Sort by SMA200 (lowest/most below 200MA first)
-              comparison = (stockA.sma200 || 0) - (stockB.sma200 || 0);
-              break;
-          }
-          
-          // If this sort criteria produces a difference, return it
-          if (comparison !== 0) return comparison;
-        }
-        // All sort criteria resulted in equality
-        return 0;
-      }
-      
-      // Legacy single sort (fallback)
-      if (!sortBy) return 0;
-      
-      const stockA = stockData.get(a);
-      const stockB = stockData.get(b);
-      
-      // For holdings filter, some tickers might not have stock data
-      if (activeFilter === 'holdings') {
-        if (!stockA && !stockB) return a.localeCompare(b); // Sort alphabetically if neither has data
-        if (!stockA) return 1; // Put tickers without data at the end
-        if (!stockB) return -1; // Put tickers without data at the end
-      }
-      
-      if (!stockA || !stockB) return 0;
-      
-      switch (sortBy) {
-        case 'combined-desc':
-          // Sort by combined VG + BR + SS percentage (highest first)
-          const combinedA = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
-          const combinedB = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
-          return combinedB - combinedA;
-        case 'combined-asc':
-          // Sort by combined VG + BR + SS percentage (lowest first)
-          const combinedAsc = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
-          const combinedBsc = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
-          return combinedAsc - combinedBsc;
-        case 'vg-desc':
-          return stockB.vanguard_pct - stockA.vanguard_pct;
-        case 'vg-asc':
-          return stockA.vanguard_pct - stockB.vanguard_pct;
-        case 'br-desc':
-          return stockB.blackrock_pct - stockA.blackrock_pct;
-        case 'br-asc':
-          return stockA.blackrock_pct - stockB.blackrock_pct;
-        case 'ss-desc':
-          return (stockB.statestreet_pct || 0) - (stockA.statestreet_pct || 0);
-        case 'ss-asc':
-          return (stockA.statestreet_pct || 0) - (stockB.statestreet_pct || 0);
-        case 'fire-desc':
-          const fireA = stockA.fire_level || 0;
-          const fireB = stockB.fire_level || 0;
-          if (fireA !== fireB) return fireB - fireA;
-          // If fire levels are equal, sort by combined VG+BR+SS as secondary
-          const fireComboA = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
-          const fireComboB = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
-          return fireComboB - fireComboA;
-        case 'price-desc':
-          return stockB.price - stockA.price;
-        case 'price-asc':
-          return stockA.price - stockB.price;
-        case 'market-value-desc':
-          // Sort by market cap (highest first)
-          const marketCapA = stockA.market_cap || 0;
-          const marketCapB = stockB.market_cap || 0;
-          return marketCapB - marketCapA;
-        case 'market-value-asc':
-          // Sort by market cap (lowest first)
-          const marketCapAscA = stockA.market_cap || 0;
-          const marketCapAscB = stockB.market_cap || 0;
-          return marketCapAscA - marketCapAscB;
-        case 'daily-gainers':
-          // Sort by daily price change from performance.day (highest gains first)
-          if (!stockA?.performance || !stockB?.performance) return 0;
-          return (stockB.performance.day || 0) - (stockA.performance.day || 0);
-        case 'daily-losers':
-          // Sort by daily price change from performance.day (lowest/most negative first)
-          if (!stockA?.performance || !stockB?.performance) return 0;
-          return (stockA.performance.day || 0) - (stockB.performance.day || 0);
-        case 'weekly-gainers':
-          // Sort by weekly performance (highest gains first)
-          if (!stockA?.performance || !stockB?.performance) return 0;
-          return (stockB.performance.week || 0) - (stockA.performance.week || 0);
-        case 'weekly-losers':
-          // Sort by weekly performance (lowest/most negative first)
-          if (!stockA?.performance || !stockB?.performance) return 0;
-          return (stockA.performance.week || 0) - (stockB.performance.week || 0);
-        case 'monthly-gainers':
-          // Sort by monthly performance (highest gains first)
-          if (!stockA?.performance || !stockB?.performance) return 0;
-          return (stockB.performance.month || 0) - (stockA.performance.month || 0);
-        case 'monthly-losers':
-          // Sort by monthly performance (lowest/most negative first)
-          if (!stockA?.performance || !stockB?.performance) return 0;
-          return (stockA.performance.month || 0) - (stockB.performance.month || 0);
-        case 'employees-desc':
-          // Sort by employee count (highest first)
-          const empA = stockA.employee_count || 0;
-          const empB = stockB.employee_count || 0;
-          return empB - empA;
-        case 'ipo-newest':
-          // Sort by IPO date (newest first)
-          if (!stockA?.ipo_date && !stockB?.ipo_date) return 0;
-          if (!stockA?.ipo_date) return 1;
-          if (!stockB?.ipo_date) return -1;
-          return new Date(stockB.ipo_date).getTime() - new Date(stockA.ipo_date).getTime();
-        case 'ipo-oldest':
-          // Sort by IPO date (oldest first)
-          if (!stockA?.ipo_date && !stockB?.ipo_date) return 0;
-          if (!stockA?.ipo_date) return 1;
-          if (!stockB?.ipo_date) return -1;
-          return new Date(stockA.ipo_date).getTime() - new Date(stockB.ipo_date).getTime();
-        default:
-          // Default to combined VG + BR + SS (highest first)
-          const defaultA = stockA.vanguard_pct + stockA.blackrock_pct + (stockA.statestreet_pct || 0);
-          const defaultB = stockB.vanguard_pct + stockB.blackrock_pct + (stockB.statestreet_pct || 0);
-          return defaultB - defaultA;
-      }
-    });
+    // Server already handles: fire, price, marketCap, sector, industry, volume, sortOrder, searchQuery
+    // Server returns data pre-sorted — preserve that insertion order here (no re-sort needed)
+    return stocks;
   };
 
-  const filteredStocks = React.useMemo(() => 
-    getFilteredStocks(), 
+  const filteredStocks = React.useMemo(() =>
+    getFilteredStocks(),
     [
-      activeFilter, 
-      multiFilters, 
-      searchQuery, 
-      sortBy, 
-      sortOrder, 
-      tickersWithData, 
-      fire5Tickers, 
-      fire4Tickers, 
-      fire3Tickers, 
-      fire2Tickers, 
-      fire1Tickers, 
-      anyFireTickers, 
-      holdingTickers, 
-      stockData, 
-      livePriceData, 
-      topGainers, 
-      topLosers,
+      activeFilter,
+      multiFilters,
+      sortOrder,
+      tickersWithData,
+      holdingTickers,
+      stockData,
       watchlistStocks
     ]
   );
+
 
   // Calculate available sectors from all stocks with data
   const availableSectors = React.useMemo(() => {
@@ -1320,21 +846,32 @@ const Dashboard: React.FC = () => {
     };
   }, [searchQuery]);
 
-  if (loading) {
+  if (isInitialLoad && loading) {
     return (
       <div style={{
         display: 'flex',
+        flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '100%',
+        height: '100vh',
+        width: '100vw',
         fontSize: theme.typography.fontSize.lg,
         color: theme.ui.text.secondary,
+        backgroundColor: theme.ui.background,
         fontFamily: theme.typography.fontFamily
       }}>
-        Loading ticker data...
+        <div style={{
+          fontSize: '3rem',
+          marginBottom: '20px',
+          animation: 'spin 2s linear infinite'
+        }}>
+          🎯
+        </div>
+        Loading PennyWhales...
       </div>
     );
   }
+
 
   return (
     <div style={{
@@ -1366,11 +903,30 @@ const Dashboard: React.FC = () => {
               fontSize: '1.75rem',
               fontWeight: theme.typography.fontWeight.bold,
               color: theme.ui.text.primary,
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing.sm
             }}>
               🎯 Dashboard
+              <span style={{
+                fontSize: theme.typography.fontSize.sm,
+                backgroundColor: theme.ui.surface,
+                color: theme.ui.text.secondary,
+                padding: `4px 8px`,
+                borderRadius: theme.borderRadius.md,
+                border: `1px solid ${theme.ui.border}`,
+                fontWeight: theme.typography.fontWeight.medium,
+                display: 'inline-flex',
+                alignItems: 'center',
+                verticalAlign: 'middle'
+              }}>
+                {activeWatchlistId
+                  ? `${activeWatchlist?.stocks?.length || watchlistStocks.size || 0} Stocks`
+                  : `${pagination?.total || stockData.size || 0} Stocks`}
+              </span>
             </h1>
-            
+
             {(multiFilters.fireLevels.size > 0 || multiFilters.priceFilters.size > 0 || multiFilters.marketValueFilters.size > 0 || multiFilters.sectors.size > 0 || multiFilters.employeeCount.size > 0 || multiFilters.ipoDate.size > 0 || multiFilters.volumeFilter.size > 0) && (
               <span style={{
                 fontSize: theme.typography.fontSize.sm,
@@ -1388,7 +944,7 @@ const Dashboard: React.FC = () => {
                 {multiFilters.fireLevels.size + multiFilters.priceFilters.size + multiFilters.marketValueFilters.size + multiFilters.sectors.size + multiFilters.employeeCount.size + multiFilters.ipoDate.size + multiFilters.recommendations.size + multiFilters.industries.size + multiFilters.volumeFilter.size} active
               </span>
             )}
-            
+
             <button
               onClick={() => {
                 const shareData = filteredStocks.map(ticker => {
@@ -1400,9 +956,9 @@ const Dashboard: React.FC = () => {
                     vanguard_pct: stock?.vanguard_pct || 0
                   };
                 }).sort((a, b) => b.fire_level - a.fire_level);
-                
+
                 const jsonString = JSON.stringify(shareData, null, 2);
-                
+
                 navigator.clipboard.writeText(jsonString).then(() => {
                   alert(`Copied ${filteredStocks.length} tickers with fire levels to clipboard!`);
                 }).catch(err => {
@@ -1449,7 +1005,7 @@ const Dashboard: React.FC = () => {
               <span>Export</span>
             </button>
           </div>
-          
+
           {/* Right: Search and Actions */}
           <div style={{ display: 'flex', gap: theme.spacing.sm, alignItems: 'center' }}>
             {/* Search Input */}
@@ -1486,7 +1042,7 @@ const Dashboard: React.FC = () => {
                 e.currentTarget.style.backgroundColor = theme.ui.background;
               }}
             />
-          
+
             {/* Watchlist Dropdown */}
             {watchlists.length > 0 && (
               <select
@@ -1552,18 +1108,18 @@ const Dashboard: React.FC = () => {
                   e.currentTarget.style.boxShadow = activeWatchlistId ? theme.ui.shadow.md : 'none';
                 }}
               >
-                <option value="">📊 All Stocks ({pagination?.total || stockData.size})</option>
+                <option value="">📊 All Stocks</option>
                 {watchlists.map((watchlist) => {
                   const watchlistId = watchlist.id || watchlist._id;
                   return (
                     <option key={watchlistId} value={watchlistId}>
-                      👀 {watchlist.name} ({watchlist.stocks?.length || 0})
+                      👀 {watchlist.name}
                     </option>
                   );
                 })}
               </select>
             )}
-            
+
             <button
               onClick={() => setFilterPanelOpen(true)}
               style={{
@@ -1590,7 +1146,7 @@ const Dashboard: React.FC = () => {
             >
               🔍 Filters & Sort
             </button>
-            
+
             <button
               onClick={() => setShowModal(true)}
               style={{
@@ -1625,8 +1181,42 @@ const Dashboard: React.FC = () => {
       <div style={{
         flex: 1,
         padding: theme.spacing.lg,
-        overflow: 'auto'
+        overflow: 'auto',
+        position: 'relative'
       }}>
+        {/* Refreshing Overlay */}
+        {isRefreshing && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(255, 255, 255, 0.4)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 10,
+            backdropFilter: 'blur(2px)'
+          }}>
+            <div style={{
+              padding: '12px 24px',
+              backgroundColor: theme.ui.surface,
+              borderRadius: theme.borderRadius.lg,
+              boxShadow: theme.ui.shadow.md,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              fontWeight: theme.typography.fontWeight.semibold,
+              color: theme.ui.text.primary,
+              border: `1px solid ${theme.ui.border}`
+            }}>
+              <span style={{ animation: 'spin 1s linear infinite' }}>🔄</span>
+              Updating...
+            </div>
+          </div>
+        )}
+
         {error && (
           <div style={{
             padding: theme.spacing.md,
@@ -1693,7 +1283,7 @@ const Dashboard: React.FC = () => {
             padding: theme.spacing.xxl,
             color: theme.ui.text.secondary
           }}>
-            <h3 style={{ 
+            <h3 style={{
               margin: `0 0 ${theme.spacing.md} 0`,
               fontSize: theme.typography.fontSize.xl,
               fontWeight: theme.typography.fontWeight.semibold,
@@ -1701,7 +1291,7 @@ const Dashboard: React.FC = () => {
             }}>
               No tickers configured
             </h3>
-            <p style={{ 
+            <p style={{
               margin: 0,
               fontSize: theme.typography.fontSize.base
             }}>
@@ -1741,7 +1331,7 @@ const Dashboard: React.FC = () => {
               const direction = match[2].toLowerCase();
               const oldKey = direction === 'asc' ? `${sortKey}-desc` : `${sortKey}-asc`;
               const newKey = `${sortKey}-${direction}`;
-              
+
               setSortOrder(prev => {
                 const newOrder = prev.filter(s => s !== oldKey);
                 newOrder.push(newKey);
