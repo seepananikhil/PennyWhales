@@ -74,10 +74,12 @@
     "ticker": "OPEN",
     "targetPrice": 4.5,
     "condition": "below",
-    "active": true,
-    "triggered": false,
+    "active": false,
+    "triggered": true,
     "created": "2026-02-02T07:36:15.098Z",
-    "triggeredAt": null
+    "triggeredAt": "2026-04-14T18:30:03.264Z",
+    "triggeredPrice": 4.49,
+    "updated": "2026-04-14T18:30:03.264Z"
   },
   {
     "id": "alert_1770657263102",
@@ -94,9 +96,11 @@
     "ticker": "NFE",
     "targetPrice": 1,
     "condition": "below",
-    "active": true,
-    "triggered": false,
+    "active": false,
+    "triggered": true,
     "created": "2026-02-24T02:59:36.135Z",
-    "triggeredAt": null
+    "triggeredAt": "2026-04-14T18:30:10.081Z",
+    "triggeredPrice": 0.619,
+    "updated": "2026-04-14T18:30:10.082Z"
   }
 ]

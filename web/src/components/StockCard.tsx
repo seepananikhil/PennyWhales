@@ -62,6 +62,8 @@ const StockCard: React.FC<StockCardProps> = ({
   const [currentPrice, setCurrentPrice] = useState(
     livePrice?.price || stock.price || 0
   );
+
+  console.log(stock);
   const [priceChange, setPriceChange] = useState(livePrice?.priceChange || 0);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(
@@ -1407,10 +1409,10 @@ const StockCard: React.FC<StockCardProps> = ({
                 padding: "5px 4px",
                 borderRadius: "6px",
                 border: `1px solid ${stock.performance.day && stock.performance.day > 0
-                    ? "#c3e6cb"
-                    : stock.performance.day && stock.performance.day < 0
-                      ? "#f5c6cb"
-                      : "#e9ecef"
+                  ? "#c3e6cb"
+                  : stock.performance.day && stock.performance.day < 0
+                    ? "#f5c6cb"
+                    : "#e9ecef"
                   }`,
               }}
             >
@@ -1454,10 +1456,10 @@ const StockCard: React.FC<StockCardProps> = ({
                 padding: "5px 4px",
                 borderRadius: "6px",
                 border: `1px solid ${stock.performance.week !== undefined && stock.performance.week > 0
-                    ? "#c3e6cb"
-                    : stock.performance.week !== undefined && stock.performance.week < 0
-                      ? "#f5c6cb"
-                      : "#e9ecef"
+                  ? "#c3e6cb"
+                  : stock.performance.week !== undefined && stock.performance.week < 0
+                    ? "#f5c6cb"
+                    : "#e9ecef"
                   }`,
               }}
             >
@@ -1501,10 +1503,10 @@ const StockCard: React.FC<StockCardProps> = ({
                 padding: "5px 4px",
                 borderRadius: "6px",
                 border: `1px solid ${stock.performance.month !== undefined && stock.performance.month > 0
-                    ? "#c3e6cb"
-                    : stock.performance.month !== undefined && stock.performance.month < 0
-                      ? "#f5c6cb"
-                      : "#e9ecef"
+                  ? "#c3e6cb"
+                  : stock.performance.month !== undefined && stock.performance.month < 0
+                    ? "#f5c6cb"
+                    : "#e9ecef"
                   }`,
               }}
             >
@@ -1548,10 +1550,10 @@ const StockCard: React.FC<StockCardProps> = ({
                 padding: "5px 4px",
                 borderRadius: "6px",
                 border: `1px solid ${stock.performance.year !== undefined && stock.performance.year > 0
-                    ? "#c3e6cb"
-                    : stock.performance.year !== undefined && stock.performance.year < 0
-                      ? "#f5c6cb"
-                      : "#e9ecef"
+                  ? "#c3e6cb"
+                  : stock.performance.year !== undefined && stock.performance.year < 0
+                    ? "#f5c6cb"
+                    : "#e9ecef"
                   }`,
               }}
             >
