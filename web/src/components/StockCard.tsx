@@ -1455,19 +1455,11 @@ const StockCard: React.FC<StockCardProps> = ({
                       : "#f8f9fa",
                 padding: "5px 4px",
                 borderRadius: "6px",
-<<<<<<< HEAD
                 border: `1px solid ${stock.performance.week != null && stock.performance.week > 0
                     ? "#c3e6cb"
                     : stock.performance.week != null && stock.performance.week < 0
                       ? "#f5c6cb"
                       : "#e9ecef"
-=======
-                border: `1px solid ${stock.performance.week !== undefined && stock.performance.week > 0
-                  ? "#c3e6cb"
-                  : stock.performance.week !== undefined && stock.performance.week < 0
-                    ? "#f5c6cb"
-                    : "#e9ecef"
->>>>>>> 3ee4b3eaaf244839fb323a84189c52428ac3c353
                   }`,
               }}
             >
@@ -1510,19 +1502,11 @@ const StockCard: React.FC<StockCardProps> = ({
                       : "#f8f9fa",
                 padding: "5px 4px",
                 borderRadius: "6px",
-<<<<<<< HEAD
                 border: `1px solid ${stock.performance.month != null && stock.performance.month > 0
                     ? "#c3e6cb"
                     : stock.performance.month != null && stock.performance.month < 0
                       ? "#f5c6cb"
                       : "#e9ecef"
-=======
-                border: `1px solid ${stock.performance.month !== undefined && stock.performance.month > 0
-                  ? "#c3e6cb"
-                  : stock.performance.month !== undefined && stock.performance.month < 0
-                    ? "#f5c6cb"
-                    : "#e9ecef"
->>>>>>> 3ee4b3eaaf244839fb323a84189c52428ac3c353
                   }`,
               }}
             >
@@ -1565,19 +1549,11 @@ const StockCard: React.FC<StockCardProps> = ({
                       : "#f8f9fa",
                 padding: "5px 4px",
                 borderRadius: "6px",
-<<<<<<< HEAD
                 border: `1px solid ${stock.performance.year != null && stock.performance.year > 0
                     ? "#c3e6cb"
                     : stock.performance.year != null && stock.performance.year < 0
                       ? "#f5c6cb"
                       : "#e9ecef"
-=======
-                border: `1px solid ${stock.performance.year !== undefined && stock.performance.year > 0
-                  ? "#c3e6cb"
-                  : stock.performance.year !== undefined && stock.performance.year < 0
-                    ? "#f5c6cb"
-                    : "#e9ecef"
->>>>>>> 3ee4b3eaaf244839fb323a84189c52428ac3c353
                   }`,
               }}
             >
