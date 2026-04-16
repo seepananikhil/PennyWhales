@@ -44,7 +44,7 @@ const Sectors: React.FC = () => {
   const fetchSectorPerformance = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:9000/api/sectors/performance?timeframe=${timeframe}`);
+      const response = await fetch(`http://localhost:9001/api/sectors/performance?timeframe=${timeframe}`);
       const data = await response.json();
       
       if (data.sectors) {

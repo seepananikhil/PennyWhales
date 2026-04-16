@@ -93,7 +93,8 @@ async function scrapeFinvizScreener(url = process.env.FINVIZ_SCREENER_URL || 'ht
  * @returns {number|null} Performance percentage as float or null
  */
 function extractPerformance(html, label) {
-  const pattern = new RegExp(`>${label}</td>[\\s\\S]*?<span[^>]*>([-+]?\\d+\\.?\\d*)%</span>`);
+  // New structure: <div class="snapshot-td-label">Perf Week</div></td><td...><div class="snapshot-td-content"><b><span class="color-text...">1.87%</span></b></div>
+  const pattern = new RegExp(`<div[^>]*>\\s*${label}\\s*</div></td><td[^>]*><div class="snapshot-td-content"><b>(?:<span[^>]*>)?\\s*([-+]?\\d+\\.?\\d*)%`);
   const match = html.match(pattern);
   return match ? parseFloat(match[1]) : null;
 }
@@ -105,7 +106,8 @@ function extractPerformance(html, label) {
 function extractValue(html, label, occurrence = 1, inMillions = false) {
   try {
     const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = new RegExp(`>${escapedLabel}<\\/td><td[^>]*class="snapshot-td2[^"]*"[^>]*>(?:<b>)?(.*?)(?:<\\/b>)?<\\/td>`, 'g');
+    // New structure: <div class="snapshot-td-label">Label</div></td><td...><div class="snapshot-td-content"><b>Value</b></div>
+    const pattern = new RegExp(`<div[^>]*>\\s*${escapedLabel}\\s*</div></td><td[^>]*><div class="snapshot-td-content"><b>(?:<span[^>]*>)?\\s*([^<]+?)(?:</span>)?\\s*</b></div>`, 'g');
     
     let match;
     let count = 0;
@@ -115,7 +117,7 @@ function extractValue(html, label, occurrence = 1, inMillions = false) {
         let value = match[1].trim();
         if (value === '-' || value === '') return null;
         
-        // Remove HTML tags
+        // Remove any remaining HTML tags
         value = value.replace(/<[^>]*>/g, '');
         
         // Parse: "612.79M" or "1.50M" or "4017.54B"
@@ -147,8 +149,8 @@ function extractValue(html, label, occurrence = 1, inMillions = false) {
 function extractPercent(html, label, occurrence = 1) {
   try {
     const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    // Updated pattern to capture content including nested tags
-    const pattern = new RegExp(`>${escapedLabel}<\\/td><td[^>]*class="snapshot-td2[^"]*"[^>]*>(?:<b>)?(.*?)(?:<\\/b>)?<\\/td>`, 'g');
+    // New structure: <div class="snapshot-td-label">Label</div></td><td...><div class="snapshot-td-content"><b><span...>Value%</span></b></div>
+    const pattern = new RegExp(`<div[^>]*>\\s*${escapedLabel}\\s*</div></td><td[^>]*><div class="snapshot-td-content"><b>(?:<span[^>]*>)?\\s*([^<]+?)(?:</span>)?\\s*</b></div>`, 'g');
     
     let match;
     let count = 0;
@@ -158,8 +160,7 @@ function extractPercent(html, label, occurrence = 1) {
         const value = match[1].trim();
         if (value === '-' || value === '') return null;
         
-        // Extract percentage from the value (look for pattern like "+24.62%" or "-5.23%")
-        // This will work even if the percentage is inside span tags
+        // Extract percentage from the value
         const percentMatch = value.match(/([-+]?\d+\.?\d*)%/);
         if (percentMatch) {
           return parseFloat(percentMatch[1]);
@@ -180,7 +181,8 @@ function extractPercent(html, label, occurrence = 1) {
 function extractText(html, label) {
   try {
     const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = new RegExp(`>${escapedLabel}<\\/td><td[^>]*class="snapshot-td2[^"]*"[^>]*>(?:<b>)?([^<]+)(?:<\\/b>)?<\\/td>`);
+    // New structure: <div class="snapshot-td-label">Label</div></td><td...><div class="snapshot-td-content"><b>Text</b></div>
+    const pattern = new RegExp(`<div[^>]*>\\s*${escapedLabel}\\s*</div></td><td[^>]*><div class="snapshot-td-content"><b>(?:<span[^>]*>)?\\s*([^<]+?)(?:</span>)?\\s*</b></div>`);
     const match = html.match(pattern);
     
     if (match) {

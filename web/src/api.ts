@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { ScanResult, ScanStatus } from './types';
 
-const API_BASE = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:9000';
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:9001';
 
 export const api = {
   // Start a new scan

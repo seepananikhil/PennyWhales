@@ -668,8 +668,8 @@ const Dashboard: React.FC = () => {
 
   // Calculate stats - memoized to prevent re-renders
   const tickersWithData = React.useMemo(() =>
-    tickers.filter(ticker => stockData.has(ticker)),
-    [tickers, stockData]
+    Array.from(stockData.keys()),
+    [stockData]
   );
 
   const fire5Tickers = React.useMemo(() =>
